@@ -1,0 +1,199 @@
+/* ============================= */
+/* Zmienne - dopasuj do potrzeb */
+/* ============================= */
+:root {
+  /* Fonty: nagłówki (Playfair Display), treść (Open Sans) */
+  --font-heading: 'Playfair Display', serif;
+  --font-body: 'Open Sans', sans-serif;
+
+  /* Kolory i nakładka tła */
+  --color-primary: #f2f2f2;         /* Główny kolor tekstu */
+  --color-accent: #c19a6b;          /* Kolor akcentu (np. obramowania przycisków) */
+  --color-bg-overlay: rgba(0, 0, 0, 0.6); /* Przyciemnienie tła */
+
+  /* Rozmiary i proporcje (domyślne, większe na desktop) */
+  --logo-width: 500px;             /* Logo większe na dużych ekranach */
+  --subtitle-font-size: 1.5rem;    /* Rozmiar podtytułu */
+  --tagline-font-size: 1.4rem;     /* Rozmiar tekstu p */
+  --button-font-size: 1.2rem;      /* Zwiększony rozmiar tekstu przycisków */
+  --button-padding: 1rem 2.5rem;   /* Zwiększony padding przycisków */
+}
+
+/* ============================= */
+/* Reset & Box Sizing           */
+/* ============================= */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ============================= */
+/* Ustawienia body              */
+/* ============================= */
+body {
+  font-family: var(--font-body);
+  background-color: #000; /* Rezerwowe tło (gdyby obraz się nie wczytał) */
+  color: var(--color-primary);
+  overflow-x: hidden;
+}
+
+/* ============================= */
+/* Tło z nakładką               */
+/* ============================= */
+.background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* Nakładka przyciemniająca + obraz biblioteki */
+  background: linear-gradient(
+    var(--color-bg-overlay),
+    var(--color-bg-overlay)
+  ), 
+  url('images/bg.jpg') no-repeat center center fixed;
+  background-size: cover;
+  opacity: 0; /* Początkowo ukryte, fade in w jQuery */
+  z-index: -1;
+}
+
+/* ============================= */
+/* Kontener główny              */
+/* ============================= */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+  opacity: 0; /* Ukryty przed animacją (fade in w jQuery) */
+  padding: 0 1rem;
+}
+
+/* ============================= */
+/* Logo                          */
+/* ============================= */
+.logo {
+  width: var(--logo-width); /* Stała szerokość kontrolowana w :root */
+  height: auto;
+  margin-bottom: 1rem;
+  animation: slideDown 1s ease-out;
+}
+
+/* ============================= */
+/* Podtytuł                      */
+/* ============================= */
+.subtitle {
+  font-family: 'Marcellus SC', serif;  /* Nowy font */
+  color: #e0e0e0;                      /* Bledszy odcień bieli */
+  font-size: var(--subtitle-font-size);
+  letter-spacing: 2px;                 /* Rozstrzelenie liter */
+  margin-bottom: 2rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+  opacity: 0; /* Fade in obsługiwany przez jQuery */
+}
+
+/* ============================= */
+/* Tekst przewodni (tagline)    */
+/* ============================= */
+.tagline {
+  font-family: var(--font-body);
+  font-size: var(--tagline-font-size);
+  margin-bottom: 3rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+  line-height: 1.4;
+
+  /* Zapobiegamy nietypowemu dzieleniu słów */
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: break-word; /* lub 'anywhere' */
+  hyphens: none;
+}
+
+/* ============================= */
+/* Styl słów i liter wewnątrz .tagline */
+/* ============================= */
+.word {
+  display: inline-block;  /* Słowo to nierozrywalny blok w linii */
+  white-space: nowrap;    
+  margin-right: 2px;
+}
+
+.letter {
+  display: inline-block;   /* Umożliwia pionowe przesunięcie litery */
+  position: relative;
+  top: -10px;
+  opacity: 0;             /* Niewidoczne, fade in w script.js */
+}
+
+/* ============================= */
+/* Kontener przycisków          */
+/* ============================= */
+.buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ============================= */
+/* Styl przycisków              */
+/* ============================= */
+.button {
+  font-family: var(--font-body);
+  font-size: 1.3rem;   /* Zwiększony rozmiar tekstu */
+  font-weight: 600;    /* Pogrubienie tekstu */
+  padding: var(--button-padding);
+  border: 1px solid var(--color-accent); 
+  background: rgba(193, 154, 107, 0.2);
+  color: var(--color-primary);
+  border-radius: 30px;
+  cursor: pointer;
+  opacity: 0; /* Ukryty przed animacją, fade in z jQuery */
+  transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease;
+  flex: 1 1 200px; /* Zapewnia równe rozmiary przycisków z minimalną szerokością */
+  text-align: center;
+}
+
+
+/* Efekt hover: wypełnienie kolorem akcentu, zmiana koloru tekstu */
+.button:hover {
+  background: var(--color-accent);
+  color: #fff;
+  transform: scale(1.05);
+}
+
+/* ============================= */
+/* Animacje                     */
+/* ============================= */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================= */
+/* Responsywność                */
+/* ============================= */
+@media (max-width: 600px) {
+  /* Na mobilnych logo i podtytuł zmniejszają się proporcjonalnie */
+  :root {
+    --logo-width: 400px;       /* Zmniejszamy logo na telefonach */
+    --subtitle-font-size: calc(var(--logo-width) * 0.048); /* Proporcjonalne skalowanie podtytułu */
+    --tagline-font-size: 1.2rem;
+    --button-font-size: 1rem;
+    --button-padding: 0.7rem 1.5rem;
+  }
+
+  .tagline {
+    line-height: 1.3;
+    margin-bottom: 2rem; /* Dopasowanie na mniejszych ekranach */
+  }
+}
