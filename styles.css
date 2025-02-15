@@ -138,9 +138,7 @@ body {
   justify-content: center;
 }
 
-/* ============================= */
 /* Styl przycisków              */
-/* ============================= */
 .button {
   font-family: var(--font-body);
   font-size: 1.3rem;   /* Zwiększony rozmiar tekstu */
@@ -157,13 +155,22 @@ body {
   text-align: center;
 }
 
+/* Efekt hover – stosowany tylko na urządzeniach z precyzyjnym wskaźnikiem (PC) */
+@media (hover: hover) and (pointer: fine) {
+  .button:hover {
+    background: var(--color-accent);
+    color: #fff;
+    transform: scale(1.05);
+  }
+}
 
-/* Efekt hover: wypełnienie kolorem akcentu, zmiana koloru tekstu */
-.button:hover {
+/* Efekt kliknięcia (active) – działa zarówno na PC, jak i urządzeniach mobilnych */
+.button:active {
+  transform: scale(0.95);
   background: var(--color-accent);
   color: #fff;
-  transform: scale(1.05);
 }
+
 
 /* ============================= */
 /* Animacje                     */
