@@ -23,21 +23,8 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Loading Screen -->
-  <div class="loader-wrapper">
-    <div class="loader">
-      <div class="book-loader">
-        <div class="book-page"></div>
-        <div class="book-page"></div>
-        <div class="book-page"></div>
-      </div>
-      <p class="loading-text">Ładowanie BookLoft...</p>
-    </div>
-  </div>
-
-  <!-- Tło z animowanym gradientem -->
+  <!-- Tło -->
   <div class="background"></div>
-  <div class="animated-gradient"></div>
 
   <!-- Główny kontener -->
   <div class="container">
@@ -54,19 +41,23 @@
 
     <!-- Przyciski z ikonami -->
     <div class="buttons">
-      <button class="button glass-effect" id="allegro-btn">
+      <button class="button glass-effect main-button" id="allegro-btn">
         <i class="fas fa-shopping-cart"></i>
         <span>Allegro</span>
       </button>
-      <button class="button glass-effect" id="olx-btn">
+      <button class="button glass-effect main-button" id="olx-btn">
         <i class="fas fa-store"></i>
         <span>OLX</span>
       </button>
-      <button class="button glass-effect" id="instagram-btn">
+    </div>
+    
+    <!-- Przyciski social media -->
+    <div class="social-buttons">
+      <button class="button glass-effect social-button" id="instagram-btn">
         <i class="fab fa-instagram"></i>
         <span>Instagram</span>
       </button>
-      <button class="button glass-effect" id="facebook-btn">
+      <button class="button glass-effect social-button" id="facebook-btn">
         <i class="fab fa-facebook-f"></i>
         <span>Facebook</span>
       </button>
@@ -77,11 +68,11 @@
       <div class="info-card">
         <i class="fas fa-book-open"></i>
         <h3>Tysiące książek</h3>
-        <p>Szeroki wybór używanych książek w doskonałym stanie</p>
+        <p>Szeroki wybór używanych książek</p>
       </div>
       <div class="info-card">
         <i class="fas fa-recycle"></i>
-        <h3>Eko-friendly</h3>
+        <h3>Eco-friendly</h3>
         <p>Dajemy książkom drugie życie</p>
       </div>
       <div class="info-card">

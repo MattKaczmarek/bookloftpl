@@ -137,7 +137,6 @@ body {
 .buttons {
   display: flex;
   gap: 1rem;
-  flex-wrap: wrap;
   justify-content: center;
 }
 
@@ -208,110 +207,6 @@ body {
   }
 }
 
-/* ============================= */
-/* Loading Screen               */
-/* ============================= */
-.loader-wrapper {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 10000;
-  transition: opacity 0.5s ease;
-}
-
-.loader {
-  text-align: center;
-}
-
-.book-loader {
-  display: inline-block;
-  position: relative;
-  width: 80px;
-  height: 60px;
-}
-
-.book-page {
-  position: absolute;
-  width: 30px;
-  height: 50px;
-  background: var(--color-accent);
-  border: 1px solid var(--color-accent-light);
-  transform-origin: left center;
-  animation: flip 1.2s infinite ease-in-out;
-}
-
-.book-page:nth-child(1) {
-  left: 0;
-  animation-delay: -0.3s;
-}
-
-.book-page:nth-child(2) {
-  left: 25px;
-  animation-delay: -0.2s;
-}
-
-.book-page:nth-child(3) {
-  left: 50px;
-  animation-delay: -0.1s;
-}
-
-@keyframes flip {
-  0%, 60%, 100% {
-    transform: rotateY(0deg);
-  }
-  20% {
-    transform: rotateY(-90deg);
-  }
-  40% {
-    transform: rotateY(-180deg);
-  }
-}
-
-.loading-text {
-  color: var(--color-primary);
-  margin-top: 20px;
-  font-size: 1.2rem;
-  letter-spacing: 2px;
-}
-
-/* ============================= */
-/* Animated Gradient Background */
-/* ============================= */
-.animated-gradient {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(-45deg, 
-    rgba(193, 154, 107, 0.1), 
-    rgba(193, 154, 107, 0.05), 
-    rgba(242, 242, 242, 0.05), 
-    rgba(193, 154, 107, 0.1)
-  );
-  background-size: 400% 400%;
-  animation: gradientShift 15s ease infinite;
-  z-index: -1;
-  pointer-events: none;
-}
-
-@keyframes gradientShift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
 
 /* ============================= */
 /* Glassmorphism Effect         */
@@ -321,7 +216,7 @@ body {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--glass-border) !important;
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.2);
 }
 
 /* ============================= */
@@ -476,6 +371,27 @@ body {
   animation-delay: 5s;
 }
 
+/* Dodatkowe cząsteczki statyczne */
+.particles {
+  background-image: 
+    radial-gradient(2px 2px at 20% 30%, var(--color-accent), transparent),
+    radial-gradient(2px 2px at 40% 70%, var(--color-accent), transparent),
+    radial-gradient(1px 1px at 50% 50%, var(--color-accent), transparent),
+    radial-gradient(2px 2px at 70% 10%, var(--color-accent), transparent),
+    radial-gradient(1px 1px at 90% 60%, var(--color-accent), transparent);
+  background-size: 100% 100%;
+  animation: particlesFloat 40s linear infinite;
+}
+
+@keyframes particlesFloat {
+  from {
+    transform: translateY(0px);
+  }
+  to {
+    transform: translateY(-100vh);
+  }
+}
+
 @keyframes float {
   0% {
     transform: translateY(100vh) rotate(0deg);
@@ -504,6 +420,36 @@ body {
 }
 
 /* ============================= */
+/* Social Media Buttons         */
+/* ============================= */
+.social-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.social-button {
+  font-size: 1rem !important;
+  padding: 0.7rem 1.2rem !important;
+  opacity: 0;
+  flex: 0 0 auto;
+  min-width: 120px;
+}
+
+.social-button i {
+  font-size: 1.1rem;
+}
+
+/* Main buttons (Allegro, OLX) remain larger and side by side */
+.main-button {
+  font-size: var(--button-font-size);
+  padding: var(--button-padding);
+  flex: 0 0 auto;
+  min-width: 180px;
+}
+
+/* ============================= */
 /* Responsive adjustments       */
 /* ============================= */
 @media (max-width: 768px) {
@@ -518,8 +464,16 @@ body {
   .info-card i {
     font-size: 2.5rem;
   }
-  
+}
+
+@media (max-width: 480px) {
   .buttons {
+    flex-direction: column;
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .social-buttons {
     flex-direction: column;
     width: 100%;
     max-width: 300px;
@@ -527,5 +481,9 @@ body {
   
   .button {
     width: 100%;
+  }
+  
+  .main-button, .social-button {
+    min-width: 100%;
   }
 }

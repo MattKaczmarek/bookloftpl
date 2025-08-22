@@ -1,9 +1,4 @@
 $(document).ready(function() {
-  // Ukryj loading screen po załadowaniu strony
-  setTimeout(function() {
-    $('.loader-wrapper').fadeOut('slow');
-  }, 2000);
-  
   // 1) Fade in tła (z ciemnym gradientem + obraz biblioteki)
   $('.background').fadeTo(1500, 1);
 
@@ -90,13 +85,13 @@ $(document).ready(function() {
     }, duration * 1000);
   }
   
-  // Tworzenie początkowych cząsteczek
-  for(let i = 0; i < 5; i++) {
-    setTimeout(createParticle, i * 2000);
+  // Tworzenie początkowych cząsteczek - więcej cząsteczek
+  for(let i = 0; i < 10; i++) {
+    setTimeout(createParticle, i * 1000);
   }
   
-  // Tworzenie nowych cząsteczek co jakiś czas
-  setInterval(createParticle, 5000);
+  // Tworzenie nowych cząsteczek co jakiś czas - częściej
+  setInterval(createParticle, 2500);
 
   // Smooth scroll dla info-section
   $('.info-section').on('wheel', function(e) {
