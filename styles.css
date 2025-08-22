@@ -782,25 +782,38 @@ body {
     line-height: 1.4;
   }
   
+  .about-section {
+    padding: 40px 10px;
+  }
+  
   .about-content {
-    padding: 1.5rem;
+    padding: 1.2rem;
+    margin: 0 0.5rem;
   }
   
   .about-title {
-    font-size: 2rem;
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
   }
   
   .about-text p {
-    font-size: 1rem;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    line-height: 1.6;
   }
   
   .about-stats {
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1rem;
+    margin-top: 2rem;
   }
   
   .stat-number {
-    font-size: 1.8rem;
+    font-size: 1.6rem;
+  }
+  
+  .stat-label {
+    font-size: 0.9rem;
   }
   
   .scroll-down-btn {
