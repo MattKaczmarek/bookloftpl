@@ -618,11 +618,11 @@ body {
   right: -2px;
   bottom: -2px;
   background: linear-gradient(45deg, 
-    rgba(193, 154, 107, 0.1), 
-    rgba(193, 154, 107, 0.2), 
-    rgba(193, 154, 107, 0.1), 
-    rgba(193, 154, 107, 0.2),
-    rgba(193, 154, 107, 0.1));
+    rgba(193, 154, 107, 0.12), 
+    rgba(193, 154, 107, 0.22), 
+    rgba(193, 154, 107, 0.12), 
+    rgba(193, 154, 107, 0.22),
+    rgba(193, 154, 107, 0.12));
   border-radius: 27px;
   opacity: 0;
   transition: opacity 0.8s ease-out;
@@ -635,45 +635,21 @@ body {
 }
 
 @keyframes borderGlow {
-  0% {
-    background: linear-gradient(45deg, 
-      rgba(193, 154, 107, 0.1), 
-      rgba(193, 154, 107, 0.2), 
-      rgba(193, 154, 107, 0.1), 
-      rgba(193, 154, 107, 0.2),
-      rgba(193, 154, 107, 0.1));
-  }
-  25% {
+  0%, 100% {
     background: linear-gradient(45deg, 
       rgba(193, 154, 107, 0.12), 
-      rgba(193, 154, 107, 0.25), 
+      rgba(193, 154, 107, 0.22), 
       rgba(193, 154, 107, 0.12), 
-      rgba(193, 154, 107, 0.25),
+      rgba(193, 154, 107, 0.22),
       rgba(193, 154, 107, 0.12));
   }
   50% {
     background: linear-gradient(45deg, 
-      rgba(193, 154, 107, 0.15), 
-      rgba(193, 154, 107, 0.28), 
-      rgba(193, 154, 107, 0.15), 
-      rgba(193, 154, 107, 0.28),
-      rgba(193, 154, 107, 0.15));
-  }
-  75% {
-    background: linear-gradient(45deg, 
-      rgba(193, 154, 107, 0.12), 
-      rgba(193, 154, 107, 0.25), 
-      rgba(193, 154, 107, 0.12), 
-      rgba(193, 154, 107, 0.25),
-      rgba(193, 154, 107, 0.12));
-  }
-  100% {
-    background: linear-gradient(45deg, 
-      rgba(193, 154, 107, 0.1), 
-      rgba(193, 154, 107, 0.2), 
-      rgba(193, 154, 107, 0.1), 
-      rgba(193, 154, 107, 0.2),
-      rgba(193, 154, 107, 0.1));
+      rgba(193, 154, 107, 0.16), 
+      rgba(193, 154, 107, 0.26), 
+      rgba(193, 154, 107, 0.16), 
+      rgba(193, 154, 107, 0.26),
+      rgba(193, 154, 107, 0.16));
   }
 }
 
