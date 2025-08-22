@@ -618,24 +618,24 @@ body {
   right: -2px;
   bottom: -2px;
   background: linear-gradient(45deg, 
-    transparent, 
+    rgba(193, 154, 107, 0.1), 
     rgba(193, 154, 107, 0.2), 
-    transparent, 
+    rgba(193, 154, 107, 0.1), 
     rgba(193, 154, 107, 0.2),
-    transparent);
+    rgba(193, 154, 107, 0.1));
   border-radius: 27px;
   opacity: 0;
-  transition: opacity 0.6s ease;
+  transition: opacity 0.8s ease-out;
   z-index: -1;
 }
 
 .about-content:hover::before {
-  opacity: 0.7;
-  animation: borderGlow 3s ease-in-out infinite;
+  opacity: 0.6;
+  animation: borderGlow 4s ease-in-out infinite;
 }
 
 @keyframes borderGlow {
-  0%, 100% {
+  0% {
     background: linear-gradient(45deg, 
       rgba(193, 154, 107, 0.1), 
       rgba(193, 154, 107, 0.2), 
@@ -643,13 +643,37 @@ body {
       rgba(193, 154, 107, 0.2),
       rgba(193, 154, 107, 0.1));
   }
+  25% {
+    background: linear-gradient(45deg, 
+      rgba(193, 154, 107, 0.12), 
+      rgba(193, 154, 107, 0.25), 
+      rgba(193, 154, 107, 0.12), 
+      rgba(193, 154, 107, 0.25),
+      rgba(193, 154, 107, 0.12));
+  }
   50% {
     background: linear-gradient(45deg, 
       rgba(193, 154, 107, 0.15), 
-      rgba(193, 154, 107, 0.3), 
+      rgba(193, 154, 107, 0.28), 
       rgba(193, 154, 107, 0.15), 
-      rgba(193, 154, 107, 0.3),
+      rgba(193, 154, 107, 0.28),
       rgba(193, 154, 107, 0.15));
+  }
+  75% {
+    background: linear-gradient(45deg, 
+      rgba(193, 154, 107, 0.12), 
+      rgba(193, 154, 107, 0.25), 
+      rgba(193, 154, 107, 0.12), 
+      rgba(193, 154, 107, 0.25),
+      rgba(193, 154, 107, 0.12));
+  }
+  100% {
+    background: linear-gradient(45deg, 
+      rgba(193, 154, 107, 0.1), 
+      rgba(193, 154, 107, 0.2), 
+      rgba(193, 154, 107, 0.1), 
+      rgba(193, 154, 107, 0.2),
+      rgba(193, 154, 107, 0.1));
   }
 }
 
