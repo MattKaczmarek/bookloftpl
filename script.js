@@ -78,18 +78,12 @@ $(document).ready(function() {
   $('#scroll-to-about').click(function(e) {
     e.preventDefault();
     
-    currentSection = 1; // Ustaw aktualną sekcję na "O nas"
-    
     // Płynne scrollowanie z easing
     $('html, body').animate({
       scrollTop: $('#about').offset().top
     }, {
       duration: 1500,
-      easing: 'easeInOutCubic',
-      complete: function() {
-        // Animacja pojawiania się zawartości sekcji
-        $('.about-content').addClass('animate-in');
-      }
+      easing: 'easeInOutCubic'
     });
   });
 
@@ -99,109 +93,45 @@ $(document).ready(function() {
     return c/2*((t-=2)*t*t + 2) + b;
   };
 
-  // Obsługa scroll wheel i touch - przeskakiwanie między sekcjami
-  let isScrolling = false;
-  let currentSection = 0; // 0 = home, 1 = about
-  let touchStartY = 0;
-  let touchEndY = 0;
-  const sections = [
-    { element: '.container', offset: 0 },
-    { element: '#about', offset: 0 }
-  ];
+  // Intersection Observer dla animacji scroll
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -100px 0px'
+  };
 
-  // Funkcja do płynnego przejścia między sekcjami
-  function smoothScrollToSection(direction) {
-    if (isScrolling) return;
-    
-    isScrolling = true;
-    
-    if (direction > 0) { // Scroll w dół
-      if (currentSection < sections.length - 1) {
-        currentSection++;
-      }
-    } else { // Scroll w górę
-      if (currentSection > 0) {
-        currentSection--;
-      }
-    }
-    
-    scrollToSection(currentSection);
-  }
-
-  // Touch events dla mobile
-  $(document).on('touchstart', function(e) {
-    touchStartY = e.originalEvent.touches[0].clientY;
-  });
-
-  $(document).on('touchmove', function(e) {
-    if (isScrolling) {
-      e.preventDefault();
-    }
-  });
-
-  $(document).on('touchend', function(e) {
-    if (isScrolling) return;
-    
-    touchEndY = e.originalEvent.changedTouches[0].clientY;
-    const deltaY = touchStartY - touchEndY;
-    
-    // Minimalna odległość swipe
-    if (Math.abs(deltaY) > 50) {
-      e.preventDefault();
-      smoothScrollToSection(deltaY);
-    }
-  });
-
-  $(window).on('wheel', function(e) {
-    e.preventDefault();
-    const delta = e.originalEvent.deltaY;
-    smoothScrollToSection(delta);
-  });
-
-  // Obsługa klawiszy strzałek
-  $(document).keydown(function(e) {
-    if (isScrolling) return;
-    
-    if (e.keyCode === 40 || e.keyCode === 34) { // Strzałka w dół lub Page Down
-      e.preventDefault();
-      if (currentSection < sections.length - 1) {
-        currentSection++;
-        scrollToSection(currentSection);
-      }
-    } else if (e.keyCode === 38 || e.keyCode === 33) { // Strzałka w górę lub Page Up
-      e.preventDefault();
-      if (currentSection > 0) {
-        currentSection--;
-        scrollToSection(currentSection);
-      }
-    }
-  });
-
-  // Funkcja pomocnicza do scrollowania do sekcji
-  function scrollToSection(sectionIndex) {
-    isScrolling = true;
-    const targetSection = sections[sectionIndex];
-    let targetOffset;
-    
-    if (sectionIndex === 0) {
-      targetOffset = 0;
-    } else {
-      targetOffset = $(targetSection.element).offset().top;
-    }
-    
-    $('html, body').animate({
-      scrollTop: targetOffset
-    }, {
-      duration: 1500,
-      easing: 'easeInOutCubic',
-      complete: function() {
-        isScrolling = false;
-        if (sectionIndex === 1) {
-          $('.about-content').addClass('animate-in');
+  const observer = new IntersectionObserver(function(entries) {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('animate-in');
+        
+        // Animacja elementów wewnętrznych z opóźnieniem
+        if (entry.target.classList.contains('about-content')) {
+          setTimeout(() => {
+            $(entry.target).find('.about-title').addClass('title-animate');
+          }, 200);
+          
+          setTimeout(() => {
+            $(entry.target).find('.about-text p').each(function(index) {
+              setTimeout(() => {
+                $(this).addClass('text-animate');
+              }, index * 150);
+            });
+          }, 400);
+          
+          setTimeout(() => {
+            $(entry.target).find('.stat-item').each(function(index) {
+              setTimeout(() => {
+                $(this).addClass('stat-animate');
+              }, index * 200);
+            });
+          }, 800);
         }
       }
     });
-  }
+  }, observerOptions);
+
+  // Obserwuj sekcję O nas
+  observer.observe(document.querySelector('.about-content'));
 
   // Generowanie dynamicznych cząsteczek
   function createParticle() {
