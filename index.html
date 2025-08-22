@@ -16,13 +16,28 @@
     rel="stylesheet"
   >
   
+  <!-- Font Awesome dla ikon -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
   <!-- Styles -->
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <!-- Loading Screen -->
+  <div class="loader-wrapper">
+    <div class="loader">
+      <div class="book-loader">
+        <div class="book-page"></div>
+        <div class="book-page"></div>
+        <div class="book-page"></div>
+      </div>
+      <p class="loading-text">Ładowanie BookLoft...</p>
+    </div>
+  </div>
 
-  <!-- Tło -->
+  <!-- Tło z animowanym gradientem -->
   <div class="background"></div>
+  <div class="animated-gradient"></div>
 
   <!-- Główny kontener -->
   <div class="container">
@@ -37,12 +52,48 @@
       Sprzedajemy używane książki, dajemy im nowe życie! Zapraszamy do naszych sklepów na Allegro i OLX.
     </p>
 
-    <!-- Przyciski -->
+    <!-- Przyciski z ikonami -->
     <div class="buttons">
-      <button class="button" id="allegro-btn">Allegro</button>
-      <button class="button" id="olx-btn">OLX</button>
+      <button class="button glass-effect" id="allegro-btn">
+        <i class="fas fa-shopping-cart"></i>
+        <span>Allegro</span>
+      </button>
+      <button class="button glass-effect" id="olx-btn">
+        <i class="fas fa-store"></i>
+        <span>OLX</span>
+      </button>
+      <button class="button glass-effect" id="instagram-btn">
+        <i class="fab fa-instagram"></i>
+        <span>Instagram</span>
+      </button>
+      <button class="button glass-effect" id="facebook-btn">
+        <i class="fab fa-facebook-f"></i>
+        <span>Facebook</span>
+      </button>
+    </div>
+    
+    <!-- Sekcja z dodatkowymi informacjami -->
+    <div class="info-section">
+      <div class="info-card">
+        <i class="fas fa-book-open"></i>
+        <h3>Tysiące książek</h3>
+        <p>Szeroki wybór używanych książek w doskonałym stanie</p>
+      </div>
+      <div class="info-card">
+        <i class="fas fa-recycle"></i>
+        <h3>Eko-friendly</h3>
+        <p>Dajemy książkom drugie życie</p>
+      </div>
+      <div class="info-card">
+        <i class="fas fa-truck"></i>
+        <h3>Szybka wysyłka</h3>
+        <p>Bezpieczne pakowanie i szybka dostawa</p>
+      </div>
     </div>
   </div>
+  
+  <!-- Floating particles -->
+  <div class="particles"></div>
 
   <!-- jQuery + Twój skrypt -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

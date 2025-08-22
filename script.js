@@ -1,4 +1,9 @@
 $(document).ready(function() {
+  // Ukryj loading screen po załadowaniu strony
+  setTimeout(function() {
+    $('.loader-wrapper').fadeOut('slow');
+  }, 2000);
+  
   // 1) Fade in tła (z ciemnym gradientem + obraz biblioteki)
   $('.background').fadeTo(1500, 1);
 
@@ -56,5 +61,47 @@ $(document).ready(function() {
   
   $('#olx-btn').click(function(){
     window.open('https://www.olx.pl/oferty/uzytkownik/1kqSz0/', '_blank');
+  });
+
+  $('#instagram-btn').click(function(){
+    window.open('https://www.instagram.com/bookloft_pl/', '_blank');
+  });
+
+  $('#facebook-btn').click(function(){
+    window.open('https://www.facebook.com/bookloft.pl', '_blank');
+  });
+
+  // Generowanie dynamicznych cząsteczek
+  function createParticle() {
+    const particle = $('<div class="particle"></div>');
+    const startX = Math.random() * 100;
+    const duration = 15 + Math.random() * 20;
+    
+    particle.css({
+      left: startX + '%',
+      animationDuration: duration + 's',
+      animationDelay: Math.random() * 5 + 's'
+    });
+    
+    $('.particles').append(particle);
+    
+    setTimeout(function() {
+      particle.remove();
+    }, duration * 1000);
+  }
+  
+  // Tworzenie początkowych cząsteczek
+  for(let i = 0; i < 5; i++) {
+    setTimeout(createParticle, i * 2000);
+  }
+  
+  // Tworzenie nowych cząsteczek co jakiś czas
+  setInterval(createParticle, 5000);
+
+  // Smooth scroll dla info-section
+  $('.info-section').on('wheel', function(e) {
+    e.preventDefault();
+    const delta = e.originalEvent.deltaY;
+    $(this).scrollTop($(this).scrollTop() + delta * 0.3);
   });
 });
