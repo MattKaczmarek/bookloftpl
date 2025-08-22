@@ -312,8 +312,9 @@ body {
 /* ============================= */
 .info-section {
   display: flex;
-  gap: 2rem;
-  margin-top: 4rem;
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+  margin-bottom: 2rem;
   flex-wrap: wrap;
   justify-content: center;
   opacity: 0;
@@ -326,9 +327,9 @@ body {
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--glass-border);
   border-radius: 15px;
-  padding: 1.2rem;
-  flex: 1 1 200px;
-  max-width: 250px;
+  padding: 1rem;
+  flex: 1 1 180px;
+  max-width: 220px;
   text-align: center;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -663,15 +664,30 @@ body {
 /* ============================= */
 @media (max-width: 768px) {
   .info-section {
-    margin-top: 3rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    gap: 0.8rem;
   }
   
   .info-card {
-    padding: 1rem;
+    padding: 0.6rem;
+    flex: 1 1 120px;
+    max-width: 140px;
   }
   
   .info-card i {
-    font-size: 1.8rem;
+    font-size: 1.2rem;
+    margin-bottom: 0.3rem;
+  }
+  
+  .info-card h3 {
+    font-size: 0.9rem;
+    margin-bottom: 0.2rem;
+  }
+  
+  .info-card p {
+    font-size: 0.75rem;
+    line-height: 1.1;
   }
   
   .main-button {
@@ -710,9 +726,10 @@ body {
 
 @media (max-width: 480px) {
   .buttons {
-    flex-direction: column;
+    flex-direction: row;
+    gap: 0.8rem;
+    justify-content: center;
     width: 100%;
-    align-items: center;
   }
   
   .social-buttons {
@@ -721,13 +738,46 @@ body {
     align-items: center;
   }
   
-  .main-button, .social-button {
-    width: 250px;
+  .info-section {
+    margin-top: 1rem;
+    margin-bottom: 0.8rem;
+    gap: 0.6rem;
+  }
+  
+  .info-card {
+    padding: 0.5rem;
+    flex: 1 1 100px;
+    max-width: 110px;
+  }
+  
+  .info-card i {
+    font-size: 1rem;
+    margin-bottom: 0.2rem;
+  }
+  
+  .info-card h3 {
+    font-size: 0.8rem;
+    margin-bottom: 0.1rem;
+  }
+  
+  .info-card p {
+    font-size: 0.7rem;
+    line-height: 1.05;
+  }
+  
+  .main-button {
+    width: 140px;
+    font-size: 1rem !important;
+    padding: 0.8rem 1.2rem !important;
+  }
+  
+  .social-button {
+    width: 200px;
   }
   
   .tagline {
     font-size: calc(var(--tagline-font-size) - 0.2rem);
-    margin-bottom: 2.5rem;
+    margin-bottom: 2rem;
     max-width: 95%;
     line-height: 1.4;
   }
