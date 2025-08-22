@@ -67,12 +67,132 @@ $(document).ready(function() {
   });
 
   $('#instagram-btn').click(function(){
-    window.open('https://www.instagram.com/bookloft_pl/', '_blank');
+    window.open('https://www.instagram.com/bookloft.pl?igsh=dmg0ZTRra3BoaGh0', '_blank');
   });
 
   $('#facebook-btn').click(function(){
-    window.open('https://www.facebook.com/bookloft.pl', '_blank');
+    window.open('https://www.facebook.com/profile.php?id=100081830936011', '_blank');
   });
+
+  // Płynne scrollowanie do sekcji "O nas"
+  $('#scroll-to-about').click(function(e) {
+    e.preventDefault();
+    
+    currentSection = 1; // Ustaw aktualną sekcję na "O nas"
+    
+    // Płynne scrollowanie z easing
+    $('html, body').animate({
+      scrollTop: $('#about').offset().top
+    }, {
+      duration: 1500,
+      easing: 'easeInOutCubic',
+      complete: function() {
+        // Animacja pojawiania się zawartości sekcji
+        $('.about-content').addClass('animate-in');
+      }
+    });
+  });
+
+  // Custom easing function
+  $.easing.easeInOutCubic = function (x, t, b, c, d) {
+    if ((t/=d/2) < 1) return c/2*t*t*t + b;
+    return c/2*((t-=2)*t*t + 2) + b;
+  };
+
+  // Obsługa scroll wheel - przeskakiwanie między sekcjami
+  let isScrolling = false;
+  let currentSection = 0; // 0 = home, 1 = about
+  const sections = [
+    { element: '.container', offset: 0 },
+    { element: '#about', offset: 0 }
+  ];
+
+  $(window).on('wheel', function(e) {
+    if (isScrolling) return; // Zapobiegaj wielokrotnym scrollom podczas animacji
+    
+    e.preventDefault();
+    isScrolling = true;
+    
+    const delta = e.originalEvent.deltaY;
+    
+    if (delta > 0) { // Scroll w dół
+      if (currentSection < sections.length - 1) {
+        currentSection++;
+      }
+    } else { // Scroll w górę
+      if (currentSection > 0) {
+        currentSection--;
+      }
+    }
+    
+    // Przejdź do sekcji
+    const targetSection = sections[currentSection];
+    let targetOffset;
+    
+    if (currentSection === 0) {
+      targetOffset = 0; // Góra strony
+    } else {
+      targetOffset = $(targetSection.element).offset().top;
+    }
+    
+    $('html, body').animate({
+      scrollTop: targetOffset
+    }, {
+      duration: 1500,
+      easing: 'easeInOutCubic',
+      complete: function() {
+        isScrolling = false;
+        if (currentSection === 1) {
+          $('.about-content').addClass('animate-in');
+        }
+      }
+    });
+  });
+
+  // Obsługa klawiszy strzałek
+  $(document).keydown(function(e) {
+    if (isScrolling) return;
+    
+    if (e.keyCode === 40 || e.keyCode === 34) { // Strzałka w dół lub Page Down
+      e.preventDefault();
+      if (currentSection < sections.length - 1) {
+        currentSection++;
+        scrollToSection(currentSection);
+      }
+    } else if (e.keyCode === 38 || e.keyCode === 33) { // Strzałka w górę lub Page Up
+      e.preventDefault();
+      if (currentSection > 0) {
+        currentSection--;
+        scrollToSection(currentSection);
+      }
+    }
+  });
+
+  // Funkcja pomocnicza do scrollowania do sekcji
+  function scrollToSection(sectionIndex) {
+    isScrolling = true;
+    const targetSection = sections[sectionIndex];
+    let targetOffset;
+    
+    if (sectionIndex === 0) {
+      targetOffset = 0;
+    } else {
+      targetOffset = $(targetSection.element).offset().top;
+    }
+    
+    $('html, body').animate({
+      scrollTop: targetOffset
+    }, {
+      duration: 1500,
+      easing: 'easeInOutCubic',
+      complete: function() {
+        isScrolling = false;
+        if (sectionIndex === 1) {
+          $('.about-content').addClass('animate-in');
+        }
+      }
+    });
+  }
 
   // Generowanie dynamicznych cząsteczek
   function createParticle() {
