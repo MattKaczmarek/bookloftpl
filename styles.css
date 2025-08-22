@@ -630,26 +630,26 @@ body {
 }
 
 .about-content:hover::before {
-  opacity: 1;
-  animation: borderGlow 2s ease-in-out infinite;
+  opacity: 0.7;
+  animation: borderGlow 3s ease-in-out infinite;
 }
 
 @keyframes borderGlow {
   0%, 100% {
     background: linear-gradient(45deg, 
-      transparent, 
+      rgba(193, 154, 107, 0.1), 
       rgba(193, 154, 107, 0.2), 
-      transparent, 
+      rgba(193, 154, 107, 0.1), 
       rgba(193, 154, 107, 0.2),
-      transparent);
+      rgba(193, 154, 107, 0.1));
   }
   50% {
     background: linear-gradient(45deg, 
-      rgba(193, 154, 107, 0.1), 
-      rgba(193, 154, 107, 0.4), 
-      rgba(193, 154, 107, 0.1), 
-      rgba(193, 154, 107, 0.4),
-      rgba(193, 154, 107, 0.1));
+      rgba(193, 154, 107, 0.15), 
+      rgba(193, 154, 107, 0.3), 
+      rgba(193, 154, 107, 0.15), 
+      rgba(193, 154, 107, 0.3),
+      rgba(193, 154, 107, 0.15));
   }
 }
 
