@@ -783,12 +783,12 @@ body {
   
   .info-card h3 {
     font-size: 0.9rem;
-    margin-bottom: 0.2rem;
+    margin-bottom: 0.4rem;
   }
   
   .info-card p {
     font-size: 0.75rem;
-    line-height: 1.1;
+    line-height: 1.3;
   }
   
   .main-button {
@@ -858,12 +858,12 @@ body {
   
   .info-card h3 {
     font-size: 0.8rem;
-    margin-bottom: 0.1rem;
+    margin-bottom: 0.3rem;
   }
   
   .info-card p {
     font-size: 0.7rem;
-    line-height: 1.05;
+    line-height: 1.25;
   }
   
   .main-button {
