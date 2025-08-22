@@ -103,17 +103,53 @@ body {
 /* ============================= */
 .tagline {
   font-family: var(--font-body);
-  font-size: var(--tagline-font-size);
-  margin-bottom: 3rem;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
-  line-height: 1.4;
+  font-size: calc(var(--tagline-font-size) + 0.1rem);
+  margin-bottom: 3.5rem;
+  line-height: 1.6;
+  font-weight: 600;
+  max-width: 650px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  position: relative;
+  
+  /* Podstawowy kolor */
+  color: var(--color-primary);
+  
+  /* Animowany efekt mienienia się */
+  text-shadow: 
+    0 0 8px rgba(193, 154, 107, 0.6),
+    0 0 12px rgba(193, 154, 107, 0.4),
+    0 0 16px rgba(193, 154, 107, 0.2),
+    0 2px 4px rgba(0, 0, 0, 0.8);
+  
+  animation: shimmer 4s ease-in-out infinite;
 
   /* Zapobiegamy nietypowemu dzieleniu słów */
   white-space: normal;
   word-break: normal;
-  overflow-wrap: break-word; /* lub 'anywhere' */
+  overflow-wrap: break-word;
   hyphens: none;
 }
+
+/* Animacja mienienia się */
+@keyframes shimmer {
+  0%, 100% {
+    text-shadow: 
+      0 0 8px rgba(193, 154, 107, 0.6),
+      0 0 12px rgba(193, 154, 107, 0.4),
+      0 0 16px rgba(193, 154, 107, 0.2),
+      0 2px 4px rgba(0, 0, 0, 0.8);
+  }
+  50% {
+    text-shadow: 
+      0 0 12px rgba(193, 154, 107, 0.9),
+      0 0 18px rgba(193, 154, 107, 0.7),
+      0 0 24px rgba(193, 154, 107, 0.4),
+      0 2px 4px rgba(0, 0, 0, 0.8);
+  }
+}
+
 
 /* ============================= */
 /* Styl słów i liter wewnątrz .tagline */
@@ -371,16 +407,23 @@ body {
   animation-delay: 5s;
 }
 
-/* Dodatkowe cząsteczki statyczne */
+/* Dodatkowe cząsteczki statyczne - więcej */
 .particles {
   background-image: 
-    radial-gradient(2px 2px at 20% 30%, var(--color-accent), transparent),
+    radial-gradient(2px 2px at 10% 20%, var(--color-accent), transparent),
+    radial-gradient(1px 1px at 25% 10%, var(--color-accent), transparent),
     radial-gradient(2px 2px at 40% 70%, var(--color-accent), transparent),
-    radial-gradient(1px 1px at 50% 50%, var(--color-accent), transparent),
+    radial-gradient(1px 1px at 55% 30%, var(--color-accent), transparent),
     radial-gradient(2px 2px at 70% 10%, var(--color-accent), transparent),
-    radial-gradient(1px 1px at 90% 60%, var(--color-accent), transparent);
+    radial-gradient(1px 1px at 85% 80%, var(--color-accent), transparent),
+    radial-gradient(1px 1px at 15% 60%, var(--color-accent), transparent),
+    radial-gradient(2px 2px at 35% 90%, var(--color-accent), transparent),
+    radial-gradient(1px 1px at 60% 15%, var(--color-accent), transparent),
+    radial-gradient(2px 2px at 80% 45%, var(--color-accent), transparent),
+    radial-gradient(1px 1px at 95% 25%, var(--color-accent), transparent),
+    radial-gradient(2px 2px at 5% 85%, var(--color-accent), transparent);
   background-size: 100% 100%;
-  animation: particlesFloat 40s linear infinite;
+  animation: particlesFloat 35s linear infinite;
 }
 
 @keyframes particlesFloat {
@@ -483,6 +526,13 @@ body {
   .social-button {
     width: 140px;
   }
+  
+  .tagline {
+    font-size: calc(var(--tagline-font-size) - 0.1rem);
+    margin-bottom: 3rem;
+    max-width: 90%;
+    line-height: 1.5;
+  }
 }
 
 @media (max-width: 480px) {
@@ -500,5 +550,12 @@ body {
   
   .main-button, .social-button {
     width: 250px;
+  }
+  
+  .tagline {
+    font-size: calc(var(--tagline-font-size) - 0.2rem);
+    margin-bottom: 2.5rem;
+    max-width: 95%;
+    line-height: 1.4;
   }
 }

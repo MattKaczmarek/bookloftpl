@@ -78,12 +78,17 @@ $(document).ready(function() {
   function createParticle() {
     const particle = $('<div class="particle"></div>');
     const startX = Math.random() * 100;
-    const duration = 15 + Math.random() * 20;
+    const duration = 12 + Math.random() * 18;
+    const size = 2 + Math.random() * 3; // Różne rozmiary 2-5px
+    const opacity = 0.3 + Math.random() * 0.5; // Różne przezroczystości
     
     particle.css({
       left: startX + '%',
       animationDuration: duration + 's',
-      animationDelay: Math.random() * 5 + 's'
+      animationDelay: Math.random() * 3 + 's',
+      width: size + 'px',
+      height: size + 'px',
+      opacity: opacity
     });
     
     $('.particles').append(particle);
@@ -93,13 +98,13 @@ $(document).ready(function() {
     }, duration * 1000);
   }
   
-  // Tworzenie początkowych cząsteczek - więcej cząsteczek
-  for(let i = 0; i < 10; i++) {
-    setTimeout(createParticle, i * 1000);
+  // Tworzenie początkowych cząsteczek - dużo więcej
+  for(let i = 0; i < 15; i++) {
+    setTimeout(createParticle, i * 500);
   }
   
-  // Tworzenie nowych cząsteczek co jakiś czas - częściej
-  setInterval(createParticle, 2500);
+  // Tworzenie nowych cząsteczek co jakiś czas - bardzo często
+  setInterval(createParticle, 1500);
 
   // Smooth scroll dla info-section
   $('.info-section').on('wheel', function(e) {
