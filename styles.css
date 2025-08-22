@@ -553,6 +553,11 @@ body {
   animation: bounce 2s infinite;
 }
 
+.scroll-down-btn.active {
+  transform: translateY(-1px) scale(0.98);
+  box-shadow: 0 4px 12px rgba(193, 154, 107, 0.2);
+}
+
 @media (hover: hover) and (pointer: fine) {
   .scroll-down-btn:hover {
     transform: translateY(-3px);

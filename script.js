@@ -74,17 +74,43 @@ $(document).ready(function() {
     window.open('https://www.facebook.com/profile.php?id=100081830936011', '_blank');
   });
 
-  // Płynne scrollowanie do sekcji "O nas"
-  $('#scroll-to-about').click(function(e) {
+  // Płynne scrollowanie do sekcji "O nas" - kompatybilne z mobile
+  $('#scroll-to-about').on('click touchend', function(e) {
     e.preventDefault();
+    e.stopPropagation();
     
-    // Płynne scrollowanie z easing
-    $('html, body').animate({
-      scrollTop: $('#about').offset().top
-    }, {
-      duration: 1500,
-      easing: 'easeInOutCubic'
-    });
+    const aboutSection = $('#about');
+    if (aboutSection.length) {
+      // Mobile-friendly scrolling
+      if (typeof aboutSection.offset() !== 'undefined') {
+        const targetTop = aboutSection.offset().top;
+        
+        // Dla mobile używaj native smooth scroll jeśli dostępne
+        if ('scrollBehavior' in document.documentElement.style) {
+          window.scrollTo({
+            top: targetTop,
+            behavior: 'smooth'
+          });
+        } else {
+          // Fallback dla starszych mobile browsers
+          $('html, body').animate({
+            scrollTop: targetTop
+          }, {
+            duration: 1500,
+            easing: 'easeInOutCubic'
+          });
+        }
+      }
+    }
+  });
+
+  // Dodatkowa obsługa touch dla mobile
+  $('#scroll-to-about').on('touchstart', function(e) {
+    $(this).addClass('active');
+  });
+  
+  $('#scroll-to-about').on('touchend touchcancel', function(e) {
+    $(this).removeClass('active');
   });
 
   // Custom easing function
@@ -93,10 +119,10 @@ $(document).ready(function() {
     return c/2*((t-=2)*t*t + 2) + b;
   };
 
-  // Intersection Observer dla animacji scroll
+  // Intersection Observer dla animacji scroll - kompatybilny z mobile
   const observerOptions = {
     threshold: 0.1,
-    rootMargin: '0px 0px -100px 0px'
+    rootMargin: '0px 0px -50px 0px'
   };
 
   const observer = new IntersectionObserver(function(entries) {
@@ -130,8 +156,27 @@ $(document).ready(function() {
     });
   }, observerOptions);
 
-  // Obserwuj sekcję O nas
-  observer.observe(document.querySelector('.about-content'));
+  // Obserwuj sekcję O nas - z fallback dla starszych przeglądarek mobile
+  const aboutContent = document.querySelector('.about-content');
+  if (aboutContent) {
+    if ('IntersectionObserver' in window) {
+      observer.observe(aboutContent);
+    } else {
+      // Fallback dla starszych mobile browsers
+      $(window).on('scroll', function() {
+        const scrollTop = $(window).scrollTop();
+        const aboutTop = $('#about').offset().top;
+        const windowHeight = $(window).height();
+        
+        if (scrollTop + windowHeight > aboutTop + 100) {
+          $('.about-content').addClass('animate-in');
+          $('.about-title').addClass('title-animate');
+          $('.about-text p').addClass('text-animate');
+          $('.stat-item').addClass('stat-animate');
+        }
+      });
+    }
+  }
 
   // Generowanie dynamicznych cząsteczek
   function createParticle() {
