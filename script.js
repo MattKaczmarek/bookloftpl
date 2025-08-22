@@ -99,23 +99,23 @@ $(document).ready(function() {
     return c/2*((t-=2)*t*t + 2) + b;
   };
 
-  // Obsługa scroll wheel - przeskakiwanie między sekcjami
+  // Obsługa scroll wheel i touch - przeskakiwanie między sekcjami
   let isScrolling = false;
   let currentSection = 0; // 0 = home, 1 = about
+  let touchStartY = 0;
+  let touchEndY = 0;
   const sections = [
     { element: '.container', offset: 0 },
     { element: '#about', offset: 0 }
   ];
 
-  $(window).on('wheel', function(e) {
-    if (isScrolling) return; // Zapobiegaj wielokrotnym scrollom podczas animacji
+  // Funkcja do płynnego przejścia między sekcjami
+  function smoothScrollToSection(direction) {
+    if (isScrolling) return;
     
-    e.preventDefault();
     isScrolling = true;
     
-    const delta = e.originalEvent.deltaY;
-    
-    if (delta > 0) { // Scroll w dół
+    if (direction > 0) { // Scroll w dół
       if (currentSection < sections.length - 1) {
         currentSection++;
       }
@@ -125,28 +125,37 @@ $(document).ready(function() {
       }
     }
     
-    // Przejdź do sekcji
-    const targetSection = sections[currentSection];
-    let targetOffset;
-    
-    if (currentSection === 0) {
-      targetOffset = 0; // Góra strony
-    } else {
-      targetOffset = $(targetSection.element).offset().top;
+    scrollToSection(currentSection);
+  }
+
+  // Touch events dla mobile
+  $(document).on('touchstart', function(e) {
+    touchStartY = e.originalEvent.touches[0].clientY;
+  });
+
+  $(document).on('touchmove', function(e) {
+    if (isScrolling) {
+      e.preventDefault();
     }
+  });
+
+  $(document).on('touchend', function(e) {
+    if (isScrolling) return;
     
-    $('html, body').animate({
-      scrollTop: targetOffset
-    }, {
-      duration: 1500,
-      easing: 'easeInOutCubic',
-      complete: function() {
-        isScrolling = false;
-        if (currentSection === 1) {
-          $('.about-content').addClass('animate-in');
-        }
-      }
-    });
+    touchEndY = e.originalEvent.changedTouches[0].clientY;
+    const deltaY = touchStartY - touchEndY;
+    
+    // Minimalna odległość swipe
+    if (Math.abs(deltaY) > 50) {
+      e.preventDefault();
+      smoothScrollToSection(deltaY);
+    }
+  });
+
+  $(window).on('wheel', function(e) {
+    e.preventDefault();
+    const delta = e.originalEvent.deltaY;
+    smoothScrollToSection(delta);
   });
 
   // Obsługa klawiszy strzałek

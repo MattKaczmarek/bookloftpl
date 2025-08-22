@@ -39,6 +39,8 @@ body {
   background-color: #000; /* Rezerwowe tło (gdyby obraz się nie wczytał) */
   color: var(--color-primary);
   overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: manipulation;
 }
 
 /* ============================= */
@@ -57,8 +59,20 @@ body {
   ), 
   url('images/bg.jpg') no-repeat center center fixed;
   background-size: cover;
+  background-attachment: fixed;
   opacity: 0; /* Początkowo ukryte, fade in w jQuery */
   z-index: -1;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+/* Mobile fix dla background attachment */
+@media (max-width: 768px) {
+  .background {
+    background-attachment: scroll;
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 /* ============================= */
