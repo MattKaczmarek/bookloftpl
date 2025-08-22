@@ -41,12 +41,20 @@ $(document).ready(function() {
     // a animacja trwa 105ms.
     var totalTaglineTime = 14 * (letterIndex - 1) + 105;
 
-    // 4) Po zakończeniu animacji tagline pojawiają się przyciski
+    // 4) Po zakończeniu animacji tagline pojawiają się przyciski z fadeInUp
     setTimeout(function() {
-      $('.button').each(function(index) {
-        $(this).delay(500 * index).fadeTo(1000, 1);
-      });
-    }, totalTaglineTime);
+      // Najpierw Allegro i OLX (główne przyciski) - jeden po drugim
+      $('#allegro-btn').addClass('buttons-fade-in');
+      
+      setTimeout(function() {
+        $('#olx-btn').addClass('buttons-fade-in');
+      }, 300);
+      
+      // Potem social media przyciski jednocześnie (po 800ms)
+      setTimeout(function() {
+        $('.social-button').addClass('buttons-fade-in');
+      }, 800);
+    }, totalTaglineTime * 0.7);
   });
 
   // 5) Obsługa kliknięć przycisków (otwarcie nowych kart)
