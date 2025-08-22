@@ -89,8 +89,6 @@ $(document).ready(function() {
       complete: function() {
         // Animacja pojawiania się zawartości sekcji
         $('.about-content').addClass('animate-in');
-        // Ukryj przycisk "Dowiedz się więcej"
-        $('.scroll-down-container').hide();
       }
     });
   });
@@ -146,9 +144,6 @@ $(document).ready(function() {
         isScrolling = false;
         if (currentSection === 1) {
           $('.about-content').addClass('animate-in');
-          $('.scroll-down-container').hide();
-        } else if (currentSection === 0) {
-          $('.scroll-down-container').show();
         }
       }
     });
@@ -194,9 +189,6 @@ $(document).ready(function() {
         isScrolling = false;
         if (sectionIndex === 1) {
           $('.about-content').addClass('animate-in');
-          $('.scroll-down-container').hide();
-        } else if (sectionIndex === 0) {
-          $('.scroll-down-container').show();
         }
       }
     });
