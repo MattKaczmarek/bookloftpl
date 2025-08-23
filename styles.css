@@ -559,13 +559,12 @@ body {
 
 .particle {
   position: absolute;
-  width: 4px;
-  height: 4px;
+  width: 2px;
+  height: 2px;
   background: var(--color-accent);
   border-radius: 50%;
-  opacity: 0.8;
-  animation: simpleFloat 15s infinite linear;
-  box-shadow: 0 0 6px rgba(193, 154, 107, 0.4);
+  opacity: 0.6;
+  box-shadow: 0 0 3px rgba(193, 154, 107, 0.3);
 }
 
 @keyframes simpleFloat {

@@ -138,43 +138,20 @@ $(document).ready(function() {
     $('.stat-item').addClass('stat-animate');
   }
   
-  // WebView-compatible particles generation
-  function createWebViewParticle() {
+  // Horizontal floating particles
+  function createHorizontalParticle() {
     const particle = $('<div class="particle"></div>');
-    const startX = Math.random() * 100;
-    const duration = 8 + Math.random() * 4; // 8-12s faster
-    const size = 3 + Math.random() * 3; // 3-6px
-    const opacity = 0.5 + Math.random() * 0.3; // 0.5-0.8
-    
-    particle.css({
-      left: startX + '%',
-      bottom: '-20px',
-      width: size + 'px',
-      height: size + 'px',
-      opacity: opacity,
-      'animation-duration': duration + 's',
-      'animation-delay': Math.random() * 2 + 's'
-    });
-    
-    $('.particles-container').append(particle);
-    
-    // Remove particle after animation
-    setTimeout(function() {
-      particle.remove();
-    }, (duration + 2) * 1000);
-  }
-  
-  // Create floating particles from different positions
-  function createFloatingParticle() {
-    const particle = $('<div class="particle"></div>');
-    const startX = Math.random() * 100;
     const startY = Math.random() * 100; // Random Y position
     const duration = 6 + Math.random() * 4; // 6-10s
-    const size = 2 + Math.random() * 2; // 2-4px smaller for floating
-    const opacity = 0.4 + Math.random() * 0.3; // 0.4-0.7
+    const size = 1 + Math.random() * 2; // 1-3px smaller
+    const opacity = 0.4 + Math.random() * 0.4; // 0.4-0.8
+    const fromLeft = Math.random() > 0.5; // 50% chance from left or right
+    
+    const startX = fromLeft ? '-5%' : '105%';
+    const endX = fromLeft ? '105%' : '-5%';
     
     particle.css({
-      left: startX + '%',
+      left: startX,
       top: startY + '%',
       width: size + 'px',
       height: size + 'px',
@@ -182,14 +159,12 @@ $(document).ready(function() {
       animation: 'none'
     });
     
-    // Random floating movement
-    const endX = Math.random() * 100;
-    const endY = Math.random() * 100;
+    // Horizontal movement with slight Y variation
+    const endY = startY + (Math.random() - 0.5) * 20; // slight Y drift
     
     particle.animate({
-      left: endX + '%',
-      top: endY + '%',
-      opacity: 0
+      left: endX,
+      top: endY + '%'
     }, duration * 1000, 'linear', function() {
       particle.remove();
     });
@@ -197,20 +172,13 @@ $(document).ready(function() {
     $('.particles-container').append(particle);
   }
   
-  // Mix of bottom-up and floating particles
-  for(let i = 0; i < 12; i++) {
+  // Create many horizontal particles
+  for(let i = 0; i < 20; i++) {
     setTimeout(function() {
-      createWebViewParticle();
-    }, i * 300);
+      createHorizontalParticle();
+    }, i * 200);
   }
   
-  for(let i = 0; i < 8; i++) {
-    setTimeout(function() {
-      createFloatingParticle();
-    }, i * 500);
-  }
-  
-  // Continue creating particles
-  setInterval(createWebViewParticle, 1200);
-  setInterval(createFloatingParticle, 2000);
+  // Continue creating horizontal particles frequently
+  setInterval(createHorizontalParticle, 800);
 });
