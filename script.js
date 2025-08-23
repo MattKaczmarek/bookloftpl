@@ -137,4 +137,40 @@ $(document).ready(function() {
     $('.about-text').addClass('text-animate');
     $('.stat-item').addClass('stat-animate');
   }
+  
+  // WebView-compatible particles generation
+  function createWebViewParticle() {
+    const particle = $('<div class="particle"></div>');
+    const startX = Math.random() * 100;
+    const duration = 12 + Math.random() * 8; // 12-20s
+    const size = 2 + Math.random() * 2; // 2-4px
+    const opacity = 0.3 + Math.random() * 0.3; // 0.3-0.6
+    
+    particle.css({
+      left: startX + '%',
+      bottom: '-10px',
+      width: size + 'px',
+      height: size + 'px',
+      opacity: opacity,
+      'animation-duration': duration + 's',
+      'animation-delay': Math.random() * 2 + 's'
+    });
+    
+    $('.particles-container').append(particle);
+    
+    // Remove particle after animation
+    setTimeout(function() {
+      particle.remove();
+    }, (duration + 2) * 1000);
+  }
+  
+  // Create initial particles with staggered timing
+  for(let i = 0; i < 8; i++) {
+    setTimeout(function() {
+      createWebViewParticle();
+    }, i * 1000);
+  }
+  
+  // Create new particles periodically
+  setInterval(createWebViewParticle, 3000);
 });
