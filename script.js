@@ -37,7 +37,7 @@ $(document).ready(function() {
           'opacity': '1',
           'top': '0'
         });
-      }, index * 30); // 30ms między literami
+      }, index * 20); // 20ms między literami - szybciej
     });
   }, 1300);
   
