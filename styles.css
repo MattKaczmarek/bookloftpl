@@ -120,11 +120,10 @@ body {
   opacity: 0;
   text-shadow: 
     0 2px 4px rgba(0, 0, 0, 0.5),
-    0 0 10px rgba(224, 224, 224, 0.4),
-    0 0 20px rgba(255, 255, 255, 0.3),
-    0 0 30px rgba(255, 255, 255, 0.1);
+    0 0 5px rgba(224, 224, 224, 0.15),
+    0 0 10px rgba(255, 255, 255, 0.1);
   transition: opacity 1s ease;
-  animation: silverGlow 2.5s ease-in-out infinite;
+  animation: silverGlow 3s ease-in-out infinite;
 }
 
 /* ============================= */
@@ -638,21 +637,19 @@ body {
   }
 }
 
-/* WebView-compatible silver glow animation */
+/* WebView-compatible silver glow animation - minimal intensity */
 @keyframes silverGlow {
   0%, 100% {
     text-shadow: 
       0 2px 4px rgba(0, 0, 0, 0.5),
-      0 0 10px rgba(224, 224, 224, 0.4),
-      0 0 20px rgba(255, 255, 255, 0.3),
-      0 0 30px rgba(255, 255, 255, 0.1);
+      0 0 5px rgba(224, 224, 224, 0.15),
+      0 0 10px rgba(255, 255, 255, 0.1);
   }
   50% {
     text-shadow: 
       0 2px 4px rgba(0, 0, 0, 0.5),
-      0 0 15px rgba(224, 224, 224, 0.7),
-      0 0 25px rgba(255, 255, 255, 0.5),
-      0 0 35px rgba(255, 255, 255, 0.2);
+      0 0 8px rgba(224, 224, 224, 0.25),
+      0 0 15px rgba(255, 255, 255, 0.15);
   }
 }
 
