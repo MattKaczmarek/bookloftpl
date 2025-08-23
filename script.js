@@ -5,19 +5,7 @@ $(document).ready(function() {
   }
   window.scrollTo(0, 0);
   
-  // Przygotowanie tekstu tagline do animacji
-  const taglineText = $('.tagline').text().trim();
-  $('.tagline').empty();
-  const words = taglineText.split(' ');
-  
-  words.forEach((word) => {
-    const $wordSpan = $('<span class="word"></span>');
-    for (let i = 0; i < word.length; i++) {
-      const $letterSpan = $('<span class="letter"></span>').text(word[i]);
-      $wordSpan.append($letterSpan);
-    }
-    $('.tagline').append($wordSpan).append(' ');
-  });
+  // Przygotowanie tekstu tagline - bez animacji liter, tylko fade-in
   
   // KROK 1: Fade-in dla tła + logo + podtytuł razem
   $('.background').css('opacity', '1');
@@ -29,22 +17,14 @@ $(document).ready(function() {
     $('.container').css('opacity', '1');
   }, 500);
   
-  // KROK 3: Przyciski Allegro/OLX + animacja tagline razem po 1.3s
+  // KROK 3: Przyciski Allegro/OLX + tagline fade-in razem po 1.3s
   setTimeout(function() {
     // Główne przyciski razem
     $('#allegro-btn').css('opacity', '1');
     $('#olx-btn').css('opacity', '1');
     
-    // Animacja liter tagline (równocześnie)
-    $('.tagline .letter').each(function(index) {
-      var letter = $(this);
-      setTimeout(function() {
-        letter.css({
-          'opacity': '1',
-          'top': '0'
-        });
-      }, index * 15); // 15ms między literami - jeszcze szybciej
-    });
+    // Tagline fade-in całego tekstu na raz
+    $('.tagline').css('opacity', '1');
   }, 1300);
   
   // KROK 4: Info cards + social buttons + scroll button razem na końcu po 3s
