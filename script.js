@@ -115,7 +115,7 @@ $(document).ready(function() {
                 stat.addClass('stat-animate');
               }, index * 300);
             });
-          }, 1800);
+          }, 1400);
         }
       });
     }, observerOptions);
