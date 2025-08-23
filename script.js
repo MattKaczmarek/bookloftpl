@@ -105,13 +105,8 @@ $(document).ready(function() {
           }, 200);
           
           setTimeout(function() {
-            $('.about-text p').each(function(index) {
-              var paragraph = $(this);
-              setTimeout(function() {
-                paragraph.addClass('text-animate');
-              }, index * 200);
-            });
-          }, 400);
+            $('.about-text').addClass('text-animate');
+          }, 600);
           
           setTimeout(function() {
             $('.stat-item').each(function(index) {
@@ -120,7 +115,7 @@ $(document).ready(function() {
                 stat.addClass('stat-animate');
               }, index * 300);
             });
-          }, 1200);
+          }, 1800);
         }
       });
     }, observerOptions);
@@ -133,7 +128,7 @@ $(document).ready(function() {
     // Fallback - pokazuj od razu jeśli brak Intersection Observer
     $('.about-content').css('opacity', '1');
     $('.about-title').css('opacity', '1');
-    $('.about-text p').addClass('text-animate');
+    $('.about-text').addClass('text-animate');
     $('.stat-item').addClass('stat-animate');
   }
 });

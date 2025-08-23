@@ -418,12 +418,12 @@ body {
 }
 
 
-.about-text p {
+.about-text {
   opacity: 0;
-  transition: opacity 0.8s ease;
+  transition: opacity 1s ease;
 }
 
-.about-text p.text-animate {
+.about-text.text-animate {
   opacity: 1;
 }
 
@@ -444,7 +444,6 @@ body {
 @media (hover: hover) {
   .stat-item:hover {
     transform: translateY(-3px);
-    background: rgba(193, 154, 107, 0.1);
   }
 }
 
