@@ -173,7 +173,7 @@ body {
   position: relative;
   top: -5px;
   opacity: 0;
-  transition: opacity 0.3s ease, top 0.3s ease;
+  transition: opacity 0.2s ease, top 0.2s ease;
 }
 
 /* ============================= */

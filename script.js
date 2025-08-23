@@ -43,7 +43,7 @@ $(document).ready(function() {
           'opacity': '1',
           'top': '0'
         });
-      }, index * 20); // 20ms między literami - szybciej
+      }, index * 15); // 15ms między literami - jeszcze szybciej
     });
   }, 1300);
   
@@ -195,13 +195,13 @@ $(document).ready(function() {
     $('.particles-container').append(particle);
   }
   
-  // Create ENORMOUS amount of multi-directional particles
-  for(let i = 0; i < 80; i++) {
+  // Create particles - reduced amount for mobile performance
+  for(let i = 0; i < 60; i++) {
     setTimeout(function() {
       createMultiDirectionalParticle();
-    }, i * 50);
+    }, i * 60);
   }
   
-  // Continue creating particles EXTREMELY frequently
-  setInterval(createMultiDirectionalParticle, 150);
+  // Continue creating particles - less frequently for mobile
+  setInterval(createMultiDirectionalParticle, 200);
 });
