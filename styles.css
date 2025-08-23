@@ -822,12 +822,12 @@ body {
   
   .about-content {
     padding: 1rem;
-    margin: 0;
-    width: 100%;
+    margin: 1rem;
+    width: calc(100% - 2rem);
     display: flex;
     flex-direction: column;
     justify-content: center;
-    min-height: calc(100vh - 30px);
+    min-height: calc(100vh - 60px);
   }
   
   .about-title {
@@ -842,9 +842,21 @@ body {
   }
   
   .about-stats {
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
     gap: 0.8rem;
     margin-top: 1.5rem;
+    justify-items: center;
+  }
+  
+  .stat-item:nth-child(1), .stat-item:nth-child(2) {
+    grid-row: 1;
+  }
+  
+  .stat-item:nth-child(3) {
+    grid-column: 1 / -1;
+    grid-row: 2;
   }
   
   .stat-number {
