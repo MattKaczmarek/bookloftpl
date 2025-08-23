@@ -376,7 +376,7 @@ body {
 /* ============================= */
 .about-section {
   min-height: 100vh;
-  background: #1a1a1a;
+  background: rgba(26, 26, 26, 0.85);
   padding: 80px 20px;
   position: relative;
   overflow: hidden;
