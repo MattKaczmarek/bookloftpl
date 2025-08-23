@@ -13,21 +13,17 @@ $(document).ready(function() {
     $('.tagline').append($wordSpan).append(' ');
   });
   
-  // KROK 1: Fade-in dla tła
+  // KROK 1: Fade-in dla tła + logo + podtytuł razem
   $('.background').css('opacity', '1');
+  $('.logo').css('opacity', '1');
+  $('.subtitle').css('opacity', '1');
   
   // KROK 2: Container po 500ms
   setTimeout(function() {
     $('.container').css('opacity', '1');
   }, 500);
   
-  // KROK 3: Logo + podtytuł razem po 1s
-  setTimeout(function() {
-    $('.logo').css('opacity', '1');
-    $('.subtitle').css('opacity', '1');
-  }, 1000);
-  
-  // KROK 4: Przyciski Allegro/OLX + animacja tagline razem po 1.8s
+  // KROK 3: Przyciski Allegro/OLX + animacja tagline razem po 1.3s
   setTimeout(function() {
     // Główne przyciski razem
     $('#allegro-btn').css('opacity', '1');
@@ -43,14 +39,14 @@ $(document).ready(function() {
         });
       }, index * 30); // 30ms między literami
     });
-  }, 1800);
+  }, 1300);
   
-  // KROK 5: Info cards + social buttons + scroll button razem na końcu po 3.5s
+  // KROK 4: Info cards + social buttons + scroll button razem na końcu po 3s
   setTimeout(function() {
     $('.info-section').css('opacity', '1');
     $('.social-button').css('opacity', '1');
     $('.scroll-down-btn').css('opacity', '1');
-  }, 3500);
+  }, 3000);
   
   // Obsługa kliknięć przycisków (otwarcie nowych kart)
   $('#allegro-btn').click(function(){
