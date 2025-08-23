@@ -60,8 +60,9 @@ body {
   url('images/bg.jpg') no-repeat center center fixed;
   background-size: cover;
   background-attachment: fixed;
-  opacity: 1;
+  opacity: 0;
   z-index: -1;
+  transition: opacity 1.5s ease;
 }
 
 /* Mobile fix dla background attachment */
@@ -81,8 +82,9 @@ body {
   justify-content: center;
   min-height: 100vh;
   text-align: center;
-  opacity: 1;
+  opacity: 0;
   padding: 0 1rem;
+  transition: opacity 1.5s ease;
 }
 
 /* ============================= */
@@ -103,7 +105,9 @@ body {
   font-size: var(--subtitle-font-size);
   letter-spacing: 2px;                 /* Rozstrzelenie liter */
   margin-bottom: 2rem;
-  opacity: 1;
+  opacity: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  transition: opacity 1s ease;
 }
 
 /* ============================= */
@@ -123,6 +127,7 @@ body {
   
   /* Podstawowy kolor */
   color: var(--color-primary);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 
   /* Zapobiegamy nietypowemu dzieleniu słów */
   white-space: normal;
@@ -144,8 +149,9 @@ body {
 .letter {
   display: inline-block;   /* Umożliwia pionowe przesunięcie litery */
   position: relative;
-  top: 0;
-  opacity: 1;
+  top: -5px;
+  opacity: 0;
+  transition: opacity 0.3s ease, top 0.3s ease;
 }
 
 /* ============================= */
@@ -168,9 +174,10 @@ body {
   color: var(--color-primary);
   border-radius: 5px;
   cursor: pointer;
-  opacity: 1;
+  opacity: 0;
   flex: 1 1 200px; /* Zapewnia równe rozmiary przycisków z minimalną szerokością */
   text-align: center;
+  transition: background 0.3s ease, opacity 0.5s ease;
 }
 
 
@@ -204,6 +211,13 @@ body {
   border: 1px solid var(--color-accent) !important;
 }
 
+/* Simple hover effect for buttons */
+@media (hover: hover) {
+  .button:hover {
+    background: #444;
+  }
+}
+
 /* ============================= */
 /* Simple Buttons               */
 /* ============================= */
@@ -233,7 +247,8 @@ body {
   margin-bottom: 2rem;
   flex-wrap: wrap;
   justify-content: center;
-  opacity: 1;
+  opacity: 0;
+  transition: opacity 1s ease;
 }
 
 .info-card {
@@ -244,6 +259,13 @@ body {
   flex: 1 1 180px;
   max-width: 220px;
   text-align: center;
+  transition: background 0.3s ease;
+}
+
+@media (hover: hover) {
+  .info-card:hover {
+    background: #333;
+  }
 }
 
 .info-card i {
@@ -280,7 +302,7 @@ body {
 .social-button {
   font-size: 1rem !important;
   padding: 0.8rem 1.5rem !important;
-  opacity: 1;
+  opacity: 0;
   flex: 0 0 auto;
   width: 150px;
 }
@@ -295,7 +317,7 @@ body {
   padding: 1.2rem 3rem !important;
   flex: 0 0 auto;
   width: 200px;
-  opacity: 1;
+  opacity: 0;
 }
 
 
@@ -336,7 +358,14 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  opacity: 1;
+  opacity: 0;
+  transition: background 0.3s ease, opacity 0.5s ease;
+}
+
+@media (hover: hover) {
+  .scroll-down-btn:hover {
+    background: #333;
+  }
 }
 
 .scroll-down-btn i {
@@ -366,21 +395,24 @@ body {
   border: 1px solid var(--color-accent);
   border-radius: 5px;
   padding: 3rem;
-  opacity: 1;
+  opacity: 0;
   transform: none;
   position: relative;
   overflow: hidden;
+  transition: opacity 1s ease;
 }
 
 
 .about-text p {
-  opacity: 1;
+  opacity: 0;
   transform: none;
+  transition: opacity 0.5s ease;
 }
 
 .stat-item {
-  opacity: 1;
+  opacity: 0;
   transform: none;
+  transition: opacity 0.5s ease;
 }
 
 .about-title {
@@ -389,7 +421,9 @@ body {
   color: var(--color-primary);
   text-align: center;
   margin-bottom: 2.5rem;
-  opacity: 1;
+  opacity: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  transition: opacity 0.8s ease;
 }
 
 .about-text p {
