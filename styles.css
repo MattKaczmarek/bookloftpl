@@ -120,8 +120,9 @@ body {
   opacity: 0;
   text-shadow: 
     0 2px 4px rgba(0, 0, 0, 0.5),
-    0 0 5px rgba(224, 224, 224, 0.15),
-    0 0 10px rgba(255, 255, 255, 0.1);
+    0 0 8px rgba(224, 224, 224, 0.2),
+    0 0 15px rgba(255, 255, 255, 0.15),
+    0 0 25px rgba(255, 255, 255, 0.08);
   transition: opacity 1s ease;
   animation: silverGlow 3s ease-in-out infinite;
 }
@@ -141,14 +142,13 @@ body {
   text-align: center;
   position: relative;
   
-  /* Podstawowy kolor */
+  /* Podstawowy kolor ze stałą złotą poświatą */
   color: var(--color-primary);
   text-shadow: 
     0 1px 3px rgba(0, 0, 0, 0.5),
-    0 0 10px rgba(193, 154, 107, 0.4),
-    0 0 20px rgba(193, 154, 107, 0.2),
-    0 0 30px rgba(193, 154, 107, 0.1);
-  animation: goldenGlow 3s ease-in-out infinite;
+    0 0 8px rgba(193, 154, 107, 0.3),
+    0 0 15px rgba(193, 154, 107, 0.2),
+    0 0 25px rgba(193, 154, 107, 0.1);
 
   /* Zapobiegamy nietypowemu dzieleniu słów */
   white-space: normal;
@@ -637,19 +637,21 @@ body {
   }
 }
 
-/* WebView-compatible silver glow animation - minimal intensity */
+/* WebView-compatible silver glow animation - slightly intensified */
 @keyframes silverGlow {
   0%, 100% {
     text-shadow: 
       0 2px 4px rgba(0, 0, 0, 0.5),
-      0 0 5px rgba(224, 224, 224, 0.15),
-      0 0 10px rgba(255, 255, 255, 0.1);
+      0 0 8px rgba(224, 224, 224, 0.2),
+      0 0 15px rgba(255, 255, 255, 0.15),
+      0 0 25px rgba(255, 255, 255, 0.08);
   }
   50% {
     text-shadow: 
       0 2px 4px rgba(0, 0, 0, 0.5),
-      0 0 8px rgba(224, 224, 224, 0.25),
-      0 0 15px rgba(255, 255, 255, 0.15);
+      0 0 12px rgba(224, 224, 224, 0.35),
+      0 0 20px rgba(255, 255, 255, 0.25),
+      0 0 30px rgba(255, 255, 255, 0.12);
   }
 }
 
