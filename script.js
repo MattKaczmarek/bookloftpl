@@ -103,8 +103,8 @@ $(document).ready(function() {
     const observer = new IntersectionObserver(function(entries) {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          // Fade-in about content
-          $('.about-content').css('opacity', '1');
+          // Fade-in and scale-up about content
+          $('.about-content').css('opacity', '1').addClass('scale-animate');
           
           setTimeout(function() {
             $('.about-title').css('opacity', '1');
@@ -122,6 +122,9 @@ $(document).ready(function() {
               }, index * 300);
             });
           }, 1400);
+        } else {
+          // Scale down when leaving viewport
+          $('.about-content').removeClass('scale-animate');
         }
       });
     }, observerOptions);
@@ -132,7 +135,7 @@ $(document).ready(function() {
     }
   } else {
     // Fallback - pokazuj od razu jeśli brak Intersection Observer
-    $('.about-content').css('opacity', '1');
+    $('.about-content').css('opacity', '1').addClass('scale-animate');
     $('.about-title').css('opacity', '1');
     $('.about-text').addClass('text-animate');
     $('.stat-item').addClass('stat-animate');

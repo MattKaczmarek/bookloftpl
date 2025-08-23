@@ -332,13 +332,14 @@ body {
   font-size: 1.1rem;
 }
 
-/* Main buttons (Allegro, OLX) - larger and equal width */
+/* Main buttons (Allegro, OLX) - larger and equal width with slow fade-in */
 .main-button {
   font-size: 1.4rem !important;
   padding: 1.2rem 3rem !important;
   flex: 0 0 auto;
   width: 200px;
   opacity: 0;
+  transition: opacity 1.2s ease;
 }
 
 
@@ -395,7 +396,7 @@ body {
 /* ============================= */
 .about-section {
   min-height: 100vh;
-  background: rgba(26, 26, 26, 0.6);
+  background: rgba(0, 0, 0, 0.85);
   padding: 80px 20px;
   position: relative;
   overflow: hidden;
@@ -414,10 +415,15 @@ body {
   border-radius: 15px;
   padding: 3rem;
   opacity: 0;
-  transform: none;
+  transform: scale(0.95);
   position: relative;
   overflow: hidden;
-  transition: opacity 1s ease, background 0.3s ease;
+  transition: opacity 1s ease, background 0.3s ease, transform 0.8s ease;
+}
+
+/* Klasa dla animacji skalowania podczas scrollowania */
+.about-content.scale-animate {
+  transform: scale(1);
 }
 
 @media (hover: hover) {
@@ -698,12 +704,14 @@ body {
   }
   
   .main-button {
-    width: 180px;
-    font-size: 1.2rem !important;
+    width: 220px;
+    font-size: 1.4rem !important;
+    padding: 1.1rem 2.5rem !important;
   }
   
   .social-button {
     width: 140px;
+    font-size: 0.9rem !important;
   }
   
   .tagline {
@@ -777,13 +785,14 @@ body {
   }
   
   .main-button {
-    width: 140px;
-    font-size: 1rem !important;
-    padding: 0.8rem 1.2rem !important;
+    width: 200px;
+    font-size: 1.3rem !important;
+    padding: 1rem 2rem !important;
   }
   
   .social-button {
-    width: 200px;
+    width: 160px;
+    font-size: 0.85rem !important;
   }
   
   .tagline {
