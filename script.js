@@ -1,4 +1,10 @@
 $(document).ready(function() {
+  // Wymuszenie powrotu na górę strony po odświeżeniu
+  if (history.scrollRestoration) {
+    history.scrollRestoration = 'manual';
+  }
+  window.scrollTo(0, 0);
+  
   // Przygotowanie tekstu tagline do animacji
   const taglineText = $('.tagline').text().trim();
   $('.tagline').empty();
