@@ -10,9 +10,9 @@
   --color-primary: #f2f2f2;         /* Główny kolor tekstu */
   --color-accent: #c19a6b;          /* Kolor akcentu (np. obramowania przycisków) */
   --color-accent-light: #d4af86;    /* Jaśniejszy akcent */
-  --color-bg-overlay: rgba(0, 0, 0, 0.6); /* Przyciemnienie tła */
-  --glass-bg: rgba(255, 255, 255, 0.1); /* Glassmorphism background */
-  --glass-border: rgba(255, 255, 255, 0.2); /* Glassmorphism border */
+  --color-bg-overlay: rgba(0, 0, 0, 0.8); /* Przyciemnienie tła */
+  --glass-bg: rgba(40, 40, 40, 0.9); /* Solid background */
+  --glass-border: #c19a6b; /* Solid border */
 
   /* Rozmiary i proporcje (domyślne, większe na desktop) */
   --logo-width: 500px;             /* Logo większe na dużych ekranach */
@@ -60,18 +60,14 @@ body {
   url('images/bg.jpg') no-repeat center center fixed;
   background-size: cover;
   background-attachment: fixed;
-  opacity: 0; /* Początkowo ukryte, fade in w jQuery */
+  opacity: 1;
   z-index: -1;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  will-change: transform;
 }
 
 /* Mobile fix dla background attachment */
 @media (max-width: 768px) {
   .background {
     background-attachment: scroll;
-    transform: translate3d(0, 0, 0);
   }
 }
 
@@ -85,7 +81,7 @@ body {
   justify-content: center;
   min-height: 100vh;
   text-align: center;
-  opacity: 0; /* Ukryty przed animacją (fade in w jQuery) */
+  opacity: 1;
   padding: 0 1rem;
 }
 
@@ -96,7 +92,6 @@ body {
   width: var(--logo-width); /* Stała szerokość kontrolowana w :root */
   height: auto;
   margin-bottom: 1rem;
-  animation: slideDown 1s ease-out;
 }
 
 /* ============================= */
@@ -108,8 +103,7 @@ body {
   font-size: var(--subtitle-font-size);
   letter-spacing: 2px;                 /* Rozstrzelenie liter */
   margin-bottom: 2rem;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
-  opacity: 0; /* Fade in obsługiwany przez jQuery */
+  opacity: 1;
 }
 
 /* ============================= */
@@ -129,39 +123,12 @@ body {
   
   /* Podstawowy kolor */
   color: var(--color-primary);
-  
-  /* Animowany efekt mienienia się */
-  text-shadow: 
-    0 0 8px rgba(193, 154, 107, 0.6),
-    0 0 12px rgba(193, 154, 107, 0.4),
-    0 0 16px rgba(193, 154, 107, 0.2),
-    0 2px 4px rgba(0, 0, 0, 0.8);
-  
-  animation: shimmer 4s ease-in-out infinite;
 
   /* Zapobiegamy nietypowemu dzieleniu słów */
   white-space: normal;
   word-break: normal;
   overflow-wrap: break-word;
   hyphens: none;
-}
-
-/* Animacja mienienia się */
-@keyframes shimmer {
-  0%, 100% {
-    text-shadow: 
-      0 0 8px rgba(193, 154, 107, 0.6),
-      0 0 12px rgba(193, 154, 107, 0.4),
-      0 0 16px rgba(193, 154, 107, 0.2),
-      0 2px 4px rgba(0, 0, 0, 0.8);
-  }
-  50% {
-    text-shadow: 
-      0 0 12px rgba(193, 154, 107, 0.9),
-      0 0 18px rgba(193, 154, 107, 0.7),
-      0 0 24px rgba(193, 154, 107, 0.4),
-      0 2px 4px rgba(0, 0, 0, 0.8);
-  }
 }
 
 
@@ -177,8 +144,8 @@ body {
 .letter {
   display: inline-block;   /* Umożliwia pionowe przesunięcie litery */
   position: relative;
-  top: -10px;
-  opacity: 0;             /* Niewidoczne, fade in w script.js */
+  top: 0;
+  opacity: 1;
 }
 
 /* ============================= */
@@ -197,46 +164,17 @@ body {
   font-weight: 600;    /* Pogrubienie tekstu */
   padding: var(--button-padding);
   border: 1px solid var(--color-accent); 
-  background: rgba(193, 154, 107, 0.2);
+  background: #333;
   color: var(--color-primary);
-  border-radius: 30px;
+  border-radius: 5px;
   cursor: pointer;
-  opacity: 0; /* Ukryty przed animacją, fade in z jQuery */
-  transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease;
+  opacity: 1;
   flex: 1 1 200px; /* Zapewnia równe rozmiary przycisków z minimalną szerokością */
   text-align: center;
 }
 
-/* Efekt hover – stosowany tylko na urządzeniach z precyzyjnym wskaźnikiem (PC) */
-@media (hover: hover) and (pointer: fine) {
-  .button:hover {
-    background: var(--color-accent);
-    color: #fff;
-    transform: scale(1.05);
-  }
-}
-
-/* Efekt kliknięcia (active) – działa zarówno na PC, jak i urządzeniach mobilnych */
-.button:active {
-  transform: scale(0.95);
-  background: var(--color-accent);
-  color: #fff;
-}
 
 
-/* ============================= */
-/* Animacje                     */
-/* ============================= */
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
 /* ============================= */
 /* Responsywność                */
@@ -259,18 +197,15 @@ body {
 
 
 /* ============================= */
-/* Glassmorphism Effect         */
+/* Simple solid style           */
 /* ============================= */
 .glass-effect {
-  background: var(--glass-bg) !important;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid var(--glass-border) !important;
-  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.2);
+  background: #2a2a2a !important;
+  border: 1px solid var(--color-accent) !important;
 }
 
 /* ============================= */
-/* Enhanced Buttons             */
+/* Simple Buttons               */
 /* ============================= */
 .button {
   display: flex;
@@ -278,47 +213,14 @@ body {
   justify-content: center;
   gap: 10px;
   position: relative;
-  overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .button i {
   font-size: 1.3rem;
-  transition: transform 0.3s ease;
 }
 
 .button span {
   font-weight: 600;
-}
-
-.button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, 
-    transparent, 
-    rgba(255, 255, 255, 0.2), 
-    transparent
-  );
-  transition: left 0.6s ease;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .button:hover {
-    transform: translateY(-5px) scale(1.05);
-    box-shadow: 0 15px 35px rgba(193, 154, 107, 0.3);
-  }
-  
-  .button:hover::before {
-    left: 100%;
-  }
-  
-  .button:hover i {
-    transform: rotate(15deg) scale(1.2);
-  }
 }
 
 /* ============================= */
@@ -331,21 +233,17 @@ body {
   margin-bottom: 2rem;
   flex-wrap: wrap;
   justify-content: center;
-  opacity: 0;
-  animation: fadeInUp 1s ease-out 3s forwards;
+  opacity: 1;
 }
 
 .info-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid var(--glass-border);
-  border-radius: 15px;
+  background: #2a2a2a;
+  border: 1px solid var(--color-accent);
+  border-radius: 5px;
   padding: 1rem;
   flex: 1 1 180px;
   max-width: 220px;
   text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .info-card i {
@@ -367,115 +265,7 @@ body {
   line-height: 1.3;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .info-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 20px 40px rgba(193, 154, 107, 0.2);
-  }
-}
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ============================= */
-/* Floating Particles           */
-/* ============================= */
-.particles {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  overflow: hidden;
-  z-index: 1;
-}
-
-.particles::before,
-.particles::after {
-  content: '';
-  position: absolute;
-  width: 2px;
-  height: 2px;
-  background: var(--color-accent);
-  border-radius: 50%;
-  animation: float 20s infinite linear;
-}
-
-.particles::before {
-  left: 10%;
-  animation-duration: 25s;
-  animation-delay: 0s;
-}
-
-.particles::after {
-  left: 80%;
-  animation-duration: 30s;
-  animation-delay: 5s;
-}
-
-/* Dodatkowe cząsteczki statyczne - więcej */
-.particles {
-  background-image: 
-    radial-gradient(2px 2px at 10% 20%, var(--color-accent), transparent),
-    radial-gradient(1px 1px at 25% 10%, var(--color-accent), transparent),
-    radial-gradient(2px 2px at 40% 70%, var(--color-accent), transparent),
-    radial-gradient(1px 1px at 55% 30%, var(--color-accent), transparent),
-    radial-gradient(2px 2px at 70% 10%, var(--color-accent), transparent),
-    radial-gradient(1px 1px at 85% 80%, var(--color-accent), transparent),
-    radial-gradient(1px 1px at 15% 60%, var(--color-accent), transparent),
-    radial-gradient(2px 2px at 35% 90%, var(--color-accent), transparent),
-    radial-gradient(1px 1px at 60% 15%, var(--color-accent), transparent),
-    radial-gradient(2px 2px at 80% 45%, var(--color-accent), transparent),
-    radial-gradient(1px 1px at 95% 25%, var(--color-accent), transparent),
-    radial-gradient(2px 2px at 5% 85%, var(--color-accent), transparent);
-  background-size: 100% 100%;
-  animation: particlesFloat 35s linear infinite;
-}
-
-@keyframes particlesFloat {
-  from {
-    transform: translateY(0px);
-  }
-  to {
-    transform: translateY(-100vh);
-  }
-}
-
-@keyframes float {
-  0% {
-    transform: translateY(100vh) rotate(0deg);
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(-100vh) rotate(720deg);
-    opacity: 0;
-  }
-}
-
-.particle {
-  position: absolute;
-  width: 3px;
-  height: 3px;
-  background: radial-gradient(circle, var(--color-accent) 0%, transparent 70%);
-  border-radius: 50%;
-  animation: float 20s infinite linear;
-  box-shadow: 0 0 10px var(--color-accent);
-}
 
 /* ============================= */
 /* Social Media Buttons         */
@@ -490,7 +280,7 @@ body {
 .social-button {
   font-size: 1rem !important;
   padding: 0.8rem 1.5rem !important;
-  opacity: 0;
+  opacity: 1;
   flex: 0 0 auto;
   width: 150px;
 }
@@ -505,17 +295,9 @@ body {
   padding: 1.2rem 3rem !important;
   flex: 0 0 auto;
   width: 200px;
-  opacity: 0;
+  opacity: 1;
 }
 
-/* Animacje przycisków - podobne do info-cards */
-.buttons-fade-in {
-  animation: fadeInUp 0.8s ease-out forwards;
-}
-
-.social-buttons-fade-in {
-  animation: fadeInUp 0.8s ease-out forwards;
-}
 
 /* ============================= */
 /* Scroll Down Button           */
@@ -528,53 +310,23 @@ body {
 }
 
 .scroll-down-btn {
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid var(--glass-border);
-  border-radius: 50px;
+  background: #2a2a2a;
+  border: 1px solid var(--color-accent);
+  border-radius: 5px;
   padding: 1rem 2rem;
   color: var(--color-primary);
   font-family: var(--font-body);
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 10px;
-  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.2);
-  opacity: 0;
-  animation: fadeInUp 1s ease-out 4s forwards;
+  opacity: 1;
 }
 
 .scroll-down-btn i {
   font-size: 1.2rem;
-  animation: bounce 2s infinite;
-}
-
-.scroll-down-btn.active {
-  transform: translateY(-1px) scale(0.98);
-  box-shadow: 0 4px 12px rgba(193, 154, 107, 0.2);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .scroll-down-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(193, 154, 107, 0.3);
-  }
-}
-
-@keyframes bounce {
-  0%, 20%, 50%, 80%, 100% {
-    transform: translateY(0);
-  }
-  40% {
-    transform: translateY(-5px);
-  }
-  60% {
-    transform: translateY(-3px);
-  }
 }
 
 /* ============================= */
@@ -582,12 +334,7 @@ body {
 /* ============================= */
 .about-section {
   min-height: 100vh;
-  background: linear-gradient(
-    135deg,
-    rgba(0, 0, 0, 0.9) 0%,
-    rgba(0, 0, 0, 0.8) 50%,
-    rgba(0, 0, 0, 0.9) 100%
-  );
+  background: #1a1a1a;
   padding: 80px 20px;
   position: relative;
   overflow: hidden;
@@ -601,101 +348,25 @@ body {
 }
 
 .about-content {
-  background: var(--glass-bg);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border: 1px solid var(--glass-border);
-  border-radius: 25px;
+  background: #2a2a2a;
+  border: 1px solid var(--color-accent);
+  border-radius: 5px;
   padding: 3rem;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-  opacity: 0;
-  transform: scale(0.9) translateY(50px);
-  transition: all 1.2s cubic-bezier(0.23, 1, 0.32, 1), 
-              box-shadow 0.6s ease-out,
-              transform 0.6s ease-out;
+  opacity: 1;
+  transform: none;
   position: relative;
   overflow: hidden;
 }
 
-.about-content::before {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  background: linear-gradient(45deg, 
-    rgba(193, 154, 107, 0.12), 
-    rgba(193, 154, 107, 0.22), 
-    rgba(193, 154, 107, 0.12), 
-    rgba(193, 154, 107, 0.22),
-    rgba(193, 154, 107, 0.12));
-  border-radius: 27px;
-  opacity: 0;
-  transition: opacity 0.8s ease-out;
-  z-index: -1;
-}
-
-.about-content:hover::before {
-  opacity: 0.3;
-}
-
-.about-content:hover {
-  box-shadow: 0 25px 50px rgba(193, 154, 107, 0.15);
-  transform: translateY(-2px);
-}
-
-.about-content.animate-in {
-  opacity: 1;
-  transform: scale(1) translateY(0);
-  box-shadow: 0 25px 50px rgba(193, 154, 107, 0.3);
-}
-
-/* Nowe animacje dla elementów wewnętrznych */
 
 .about-text p {
-  opacity: 0;
-  transform: translateX(-30px);
-  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.about-text p.text-animate {
   opacity: 1;
-  transform: translateX(0);
+  transform: none;
 }
 
 .stat-item {
-  opacity: 0;
-  transform: translateY(40px) rotateX(15deg);
-  transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-  transform-origin: center bottom;
-}
-
-.stat-item.stat-animate {
   opacity: 1;
-  transform: translateY(0) rotateX(0);
-}
-
-/* Hover efekty dla stat items */
-.stat-item:hover {
-  transform: translateY(-10px) scale(1.05);
-  transition: transform 0.3s ease;
-}
-
-.stat-item:hover .stat-number {
-  animation: pulse 0.6s ease-in-out;
-  text-shadow: 
-    0 0 15px rgba(193, 154, 107, 0.7),
-    0 0 25px rgba(193, 154, 107, 0.4);
-}
-
-@keyframes pulse {
-  0%, 100% { 
-    transform: scale(1); 
-  }
-  50% { 
-    transform: scale(1.1); 
-  }
+  transform: none;
 }
 
 .about-title {
@@ -704,18 +375,7 @@ body {
   color: var(--color-primary);
   text-align: center;
   margin-bottom: 2.5rem;
-  text-shadow: 
-    0 0 10px rgba(193, 154, 107, 0.5),
-    0 2px 4px rgba(0, 0, 0, 0.8);
-  animation: shimmer 4s ease-in-out infinite;
-  opacity: 0;
-  transform: translateY(30px) scale(0.9);
-  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.about-title.title-animate {
   opacity: 1;
-  transform: translateY(0) scale(1);
 }
 
 .about-text p {
@@ -753,7 +413,6 @@ body {
   font-size: 2.5rem;
   font-weight: 700;
   color: var(--color-accent);
-  text-shadow: 0 0 10px rgba(193, 154, 107, 0.4);
   margin-bottom: 0.5rem;
 }
 

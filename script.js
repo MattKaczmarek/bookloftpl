@@ -1,63 +1,21 @@
 $(document).ready(function() {
-  // 1) Fade in tła (z ciemnym gradientem + obraz biblioteki)
-  $('.background').fadeTo(1500, 1);
-
-  // 2) Przygotowanie tekstu do animacji literka po literce dla .tagline
-  const taglineText = $('.tagline').text().trim();
-  $('.tagline').empty();
-  const words = taglineText.split(' ');
-
-  words.forEach((word) => {
-    const $wordSpan = $('<span class="word"></span>');
-    for (let i = 0; i < word.length; i++) {
-      const $letterSpan = $('<span class="letter"></span>').text(word[i]);
-      $wordSpan.append($letterSpan);
-    }
-    $('.tagline').append($wordSpan).append(' ');
+  // Wszystko widoczne od razu - bez animacji
+  $('.background').css('opacity', '1');
+  $('.container').css('opacity', '1');
+  $('.subtitle').css('opacity', '1');
+  
+  // Tekst tagline bez animacji
+  $('.tagline .letter').css({
+    'opacity': '1',
+    'top': '0'
   });
-
-  // 3) Fade in kontenera (logo, podtytuł, tekst)
-  $('.container').fadeTo(1500, 1, function() {
-    // Logo pozostaje niezmienione (animacja CSS)
-
-    // Jednoczesne wyświetlenie podtytułu i animacja tekstu (.tagline)
-    $('.subtitle').fadeTo(1000, 1);
-
-    // Animacja literka po literce dla .tagline, 30% szybciej niż wcześniej
-    let letterIndex = 0;
-    $('.word').each(function() {
-      $(this).find('.letter').each(function() {
-        // Opóźnienie: 20ms * 0.7 ≈ 14ms na literę, animacja: 150ms * 0.7 ≈ 105ms
-        $(this).delay(14 * letterIndex).animate({
-          opacity: 1,
-          top: '0'
-        }, 105);
-        letterIndex++;
-      });
-    });
-
-    // Obliczamy łączny czas animacji tagline:
-    // ostatnia litera zacznie się animować po: 14*(letterIndex-1) ms,
-    // a animacja trwa 105ms.
-    var totalTaglineTime = 14 * (letterIndex - 1) + 105;
-
-    // 4) Po zakończeniu animacji tagline pojawiają się przyciski z fadeInUp
-    setTimeout(function() {
-      // Najpierw Allegro i OLX (główne przyciski) - jeden po drugim
-      $('#allegro-btn').addClass('buttons-fade-in');
-      
-      setTimeout(function() {
-        $('#olx-btn').addClass('buttons-fade-in');
-      }, 300);
-      
-      // Potem social media przyciski jednocześnie (po 800ms)
-      setTimeout(function() {
-        $('.social-button').addClass('buttons-fade-in');
-      }, 800);
-    }, totalTaglineTime * 0.7);
-  });
-
-  // 5) Obsługa kliknięć przycisków (otwarcie nowych kart)
+  
+  // Wszystkie przyciski widoczne od razu
+  $('.button').css('opacity', '1');
+  $('.info-card').css('opacity', '1');
+  $('.scroll-down-btn').css('opacity', '1');
+  
+  // Obsługa kliknięć przycisków (otwarcie nowych kart)
   $('#allegro-btn').click(function(){
     window.open('https://allegro.pl/uzytkownik/BookLoft/sklep', '_blank');
   });
@@ -74,146 +32,32 @@ $(document).ready(function() {
     window.open('https://www.facebook.com/profile.php?id=100081830936011', '_blank');
   });
 
-  // Płynne scrollowanie do sekcji "O nas" - kompatybilne z mobile
-  $('#scroll-to-about').on('click touchend', function(e) {
+  // Płynne scrollowanie do sekcji "O nas"
+  $('#scroll-to-about').on('click', function(e) {
     e.preventDefault();
-    e.stopPropagation();
     
     const aboutSection = $('#about');
     if (aboutSection.length) {
-      // Mobile-friendly scrolling
-      if (typeof aboutSection.offset() !== 'undefined') {
-        const targetTop = aboutSection.offset().top;
-        
-        // Dla mobile używaj native smooth scroll jeśli dostępne
-        if ('scrollBehavior' in document.documentElement.style) {
-          window.scrollTo({
-            top: targetTop,
-            behavior: 'smooth'
-          });
-        } else {
-          // Fallback dla starszych mobile browsers
-          $('html, body').animate({
-            scrollTop: targetTop
-          }, {
-            duration: 1500,
-            easing: 'easeInOutCubic'
-          });
-        }
+      const targetTop = aboutSection.offset().top;
+      
+      // Używaj native smooth scroll jeśli dostępne
+      if ('scrollBehavior' in document.documentElement.style) {
+        window.scrollTo({
+          top: targetTop,
+          behavior: 'smooth'
+        });
+      } else {
+        // Fallback dla starszych browsers
+        $('html, body').animate({
+          scrollTop: targetTop
+        }, 1000);
       }
     }
   });
-
-  // Dodatkowa obsługa touch dla mobile
-  $('#scroll-to-about').on('touchstart', function(e) {
-    $(this).addClass('active');
-  });
   
-  $('#scroll-to-about').on('touchend touchcancel', function(e) {
-    $(this).removeClass('active');
-  });
-
-  // Custom easing function
-  $.easing.easeInOutCubic = function (x, t, b, c, d) {
-    if ((t/=d/2) < 1) return c/2*t*t*t + b;
-    return c/2*((t-=2)*t*t + 2) + b;
-  };
-
-  // Intersection Observer dla animacji scroll - kompatybilny z mobile
-  const observerOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
-  };
-
-  const observer = new IntersectionObserver(function(entries) {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('animate-in');
-        
-        // Animacja elementów wewnętrznych z opóźnieniem
-        if (entry.target.classList.contains('about-content')) {
-          setTimeout(() => {
-            $(entry.target).find('.about-title').addClass('title-animate');
-          }, 200);
-          
-          setTimeout(() => {
-            $(entry.target).find('.about-text p').each(function(index) {
-              setTimeout(() => {
-                $(this).addClass('text-animate');
-              }, index * 150);
-            });
-          }, 400);
-          
-          setTimeout(() => {
-            $(entry.target).find('.stat-item').each(function(index) {
-              setTimeout(() => {
-                $(this).addClass('stat-animate');
-              }, index * 200);
-            });
-          }, 800);
-        }
-      }
-    });
-  }, observerOptions);
-
-  // Obserwuj sekcję O nas - z fallback dla starszych przeglądarek mobile
-  const aboutContent = document.querySelector('.about-content');
-  if (aboutContent) {
-    if ('IntersectionObserver' in window) {
-      observer.observe(aboutContent);
-    } else {
-      // Fallback dla starszych mobile browsers
-      $(window).on('scroll', function() {
-        const scrollTop = $(window).scrollTop();
-        const aboutTop = $('#about').offset().top;
-        const windowHeight = $(window).height();
-        
-        if (scrollTop + windowHeight > aboutTop + 100) {
-          $('.about-content').addClass('animate-in');
-          $('.about-title').addClass('title-animate');
-          $('.about-text p').addClass('text-animate');
-          $('.stat-item').addClass('stat-animate');
-        }
-      });
-    }
-  }
-
-  // Generowanie dynamicznych cząsteczek
-  function createParticle() {
-    const particle = $('<div class="particle"></div>');
-    const startX = Math.random() * 100;
-    const duration = 12 + Math.random() * 18;
-    const size = 2 + Math.random() * 3; // Różne rozmiary 2-5px
-    const opacity = 0.3 + Math.random() * 0.5; // Różne przezroczystości
-    
-    particle.css({
-      left: startX + '%',
-      animationDuration: duration + 's',
-      animationDelay: Math.random() * 3 + 's',
-      width: size + 'px',
-      height: size + 'px',
-      opacity: opacity
-    });
-    
-    $('.particles').append(particle);
-    
-    setTimeout(function() {
-      particle.remove();
-    }, duration * 1000);
-  }
-  
-  // Tworzenie początkowych cząsteczek - dużo więcej
-  for(let i = 0; i < 15; i++) {
-    setTimeout(createParticle, i * 500);
-  }
-  
-  // Tworzenie nowych cząsteczek co jakiś czas - bardzo często
-  setInterval(createParticle, 1500);
-
-  // Smooth scroll dla info-section
-  $('.info-section').on('wheel', function(e) {
-    e.preventDefault();
-    const delta = e.originalEvent.deltaY;
-    $(this).scrollTop($(this).scrollTop() + delta * 0.3);
-  });
+  // Sekcja "O nas" widoczna od razu bez animacji
+  $('.about-content').css('opacity', '1');
+  $('.about-title').css('opacity', '1');
+  $('.about-text p').css('opacity', '1');
+  $('.stat-item').css('opacity', '1');
 });
