@@ -138,33 +138,56 @@ $(document).ready(function() {
     $('.stat-item').addClass('stat-animate');
   }
   
-  // Horizontal floating particles
-  function createHorizontalParticle() {
+  // Multi-directional particle system
+  function createMultiDirectionalParticle() {
     const particle = $('<div class="particle"></div>');
-    const startY = Math.random() * 100; // Random Y position
-    const duration = 4 + Math.random() * 3; // 4-7s faster movement
-    const size = 1 + Math.random() * 2; // 1-3px smaller
-    const opacity = 0.4 + Math.random() * 0.4; // 0.4-0.8
-    const fromLeft = Math.random() > 0.5; // 50% chance from left or right
+    const size = 1 + Math.random() * 1.5; // 1-2.5px very small
+    const opacity = 0.3 + Math.random() * 0.5; // 0.3-0.8
+    const duration = 8 + Math.random() * 6; // 8-14s slow floating
     
-    const startX = fromLeft ? '-5%' : '105%';
-    const endX = fromLeft ? '105%' : '-5%';
+    // Random direction: horizontal, vertical, or diagonal
+    const direction = Math.floor(Math.random() * 4);
+    let startX, startY, endX, endY;
+    
+    switch(direction) {
+      case 0: // Left to Right
+        startX = '-5%';
+        endX = '105%';
+        startY = Math.random() * 100 + '%';
+        endY = (Math.random() * 100) + '%';
+        break;
+      case 1: // Right to Left  
+        startX = '105%';
+        endX = '-5%';
+        startY = Math.random() * 100 + '%';
+        endY = (Math.random() * 100) + '%';
+        break;
+      case 2: // Top to Bottom
+        startY = '-5%';
+        endY = '105%';
+        startX = Math.random() * 100 + '%';
+        endX = (Math.random() * 100) + '%';
+        break;
+      case 3: // Bottom to Top
+        startY = '105%';
+        endY = '-5%';
+        startX = Math.random() * 100 + '%';
+        endX = (Math.random() * 100) + '%';
+        break;
+    }
     
     particle.css({
       left: startX,
-      top: startY + '%',
+      top: startY,
       width: size + 'px',
       height: size + 'px',
       opacity: opacity,
       animation: 'none'
     });
     
-    // Horizontal movement with slight Y variation
-    const endY = startY + (Math.random() - 0.5) * 20; // slight Y drift
-    
     particle.animate({
       left: endX,
-      top: endY + '%'
+      top: endY
     }, duration * 1000, 'linear', function() {
       particle.remove();
     });
@@ -172,13 +195,13 @@ $(document).ready(function() {
     $('.particles-container').append(particle);
   }
   
-  // Create MASSIVE amount of horizontal particles
-  for(let i = 0; i < 50; i++) {
+  // Create ENORMOUS amount of multi-directional particles
+  for(let i = 0; i < 80; i++) {
     setTimeout(function() {
-      createHorizontalParticle();
-    }, i * 100);
+      createMultiDirectionalParticle();
+    }, i * 50);
   }
   
-  // Continue creating horizontal particles VERY frequently
-  setInterval(createHorizontalParticle, 300);
+  // Continue creating particles EXTREMELY frequently
+  setInterval(createMultiDirectionalParticle, 150);
 });
