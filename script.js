@@ -1,19 +1,39 @@
 $(document).ready(function() {
-  // Proste fade-in dla tła
+  // Przygotowanie tekstu tagline do animacji
+  const taglineText = $('.tagline').text().trim();
+  $('.tagline').empty();
+  const words = taglineText.split(' ');
+  
+  words.forEach((word) => {
+    const $wordSpan = $('<span class="word"></span>');
+    for (let i = 0; i < word.length; i++) {
+      const $letterSpan = $('<span class="letter"></span>').text(word[i]);
+      $wordSpan.append($letterSpan);
+    }
+    $('.tagline').append($wordSpan).append(' ');
+  });
+  
+  // KROK 1: Fade-in dla tła
   $('.background').css('opacity', '1');
   
-  // Fade-in dla kontenera po 500ms
+  // KROK 2: Container po 500ms
   setTimeout(function() {
     $('.container').css('opacity', '1');
   }, 500);
   
-  // Fade-in dla podtytułu po 1s
+  // KROK 3: Logo + podtytuł razem po 1s
   setTimeout(function() {
+    $('.logo').css('opacity', '1');
     $('.subtitle').css('opacity', '1');
   }, 1000);
   
-  // Animacja liter w tagline
+  // KROK 4: Przyciski Allegro/OLX + animacja tagline razem po 1.8s
   setTimeout(function() {
+    // Główne przyciski razem
+    $('#allegro-btn').css('opacity', '1');
+    $('#olx-btn').css('opacity', '1');
+    
+    // Animacja liter tagline (równocześnie)
     $('.tagline .letter').each(function(index) {
       var letter = $(this);
       setTimeout(function() {
@@ -23,28 +43,12 @@ $(document).ready(function() {
         });
       }, index * 30); // 30ms między literami
     });
-  }, 1500);
+  }, 1800);
   
-  // Fade-in przycisków głównych
-  setTimeout(function() {
-    $('#allegro-btn').css('opacity', '1');
-    setTimeout(function() {
-      $('#olx-btn').css('opacity', '1');
-    }, 200);
-  }, 2000);
-  
-  // Fade-in przycisków social media
-  setTimeout(function() {
-    $('.social-button').css('opacity', '1');
-  }, 2500);
-  
-  // Fade-in info cards
+  // KROK 5: Info cards + social buttons + scroll button razem na końcu po 3.5s
   setTimeout(function() {
     $('.info-section').css('opacity', '1');
-  }, 3000);
-  
-  // Fade-in scroll button
-  setTimeout(function() {
+    $('.social-button').css('opacity', '1');
     $('.scroll-down-btn').css('opacity', '1');
   }, 3500);
   
