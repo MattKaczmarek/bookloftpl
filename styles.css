@@ -585,31 +585,22 @@ body {
   }
 }
 
-/* Static particles scattered around screen */
+/* Reduced static particles */
 .particles-container {
   background-image: 
-    radial-gradient(2px 2px at 15% 25%, var(--color-accent), transparent),
-    radial-gradient(3px 3px at 35% 15%, var(--color-accent), transparent),
-    radial-gradient(2px 2px at 55% 35%, var(--color-accent), transparent),
-    radial-gradient(3px 3px at 75% 25%, var(--color-accent), transparent),
-    radial-gradient(2px 2px at 85% 45%, var(--color-accent), transparent),
-    radial-gradient(3px 3px at 25% 65%, var(--color-accent), transparent),
-    radial-gradient(2px 2px at 45% 75%, var(--color-accent), transparent),
-    radial-gradient(3px 3px at 65% 85%, var(--color-accent), transparent),
-    radial-gradient(2px 2px at 85% 75%, var(--color-accent), transparent),
-    radial-gradient(3px 3px at 5% 55%, var(--color-accent), transparent),
-    radial-gradient(2px 2px at 95% 35%, var(--color-accent), transparent),
-    radial-gradient(3px 3px at 15% 85%, var(--color-accent), transparent);
+    radial-gradient(2px 2px at 20% 30%, var(--color-accent), transparent),
+    radial-gradient(2px 2px at 70% 60%, var(--color-accent), transparent),
+    radial-gradient(2px 2px at 90% 20%, var(--color-accent), transparent);
   background-size: 100% 100%;
-  animation: sparkle 8s ease-in-out infinite;
+  animation: sparkle 10s ease-in-out infinite;
 }
 
 @keyframes sparkle {
   0%, 100% {
-    opacity: 0.3;
+    opacity: 0.4;
   }
   50% {
-    opacity: 0.7;
+    opacity: 0.8;
   }
 }
 

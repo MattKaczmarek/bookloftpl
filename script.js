@@ -142,9 +142,9 @@ $(document).ready(function() {
   function createWebViewParticle() {
     const particle = $('<div class="particle"></div>');
     const startX = Math.random() * 100;
-    const duration = 10 + Math.random() * 6; // 10-16s
+    const duration = 8 + Math.random() * 4; // 8-12s faster
     const size = 3 + Math.random() * 3; // 3-6px
-    const opacity = 0.4 + Math.random() * 0.4; // 0.4-0.8
+    const opacity = 0.5 + Math.random() * 0.3; // 0.5-0.8
     
     particle.css({
       left: startX + '%',
@@ -153,7 +153,7 @@ $(document).ready(function() {
       height: size + 'px',
       opacity: opacity,
       'animation-duration': duration + 's',
-      'animation-delay': Math.random() * 3 + 's'
+      'animation-delay': Math.random() * 2 + 's'
     });
     
     $('.particles-container').append(particle);
@@ -161,16 +161,56 @@ $(document).ready(function() {
     // Remove particle after animation
     setTimeout(function() {
       particle.remove();
-    }, (duration + 3) * 1000);
+    }, (duration + 2) * 1000);
   }
   
-  // Create more initial particles
-  for(let i = 0; i < 15; i++) {
+  // Create floating particles from different positions
+  function createFloatingParticle() {
+    const particle = $('<div class="particle"></div>');
+    const startX = Math.random() * 100;
+    const startY = Math.random() * 100; // Random Y position
+    const duration = 6 + Math.random() * 4; // 6-10s
+    const size = 2 + Math.random() * 2; // 2-4px smaller for floating
+    const opacity = 0.4 + Math.random() * 0.3; // 0.4-0.7
+    
+    particle.css({
+      left: startX + '%',
+      top: startY + '%',
+      width: size + 'px',
+      height: size + 'px',
+      opacity: opacity,
+      animation: 'none'
+    });
+    
+    // Random floating movement
+    const endX = Math.random() * 100;
+    const endY = Math.random() * 100;
+    
+    particle.animate({
+      left: endX + '%',
+      top: endY + '%',
+      opacity: 0
+    }, duration * 1000, 'linear', function() {
+      particle.remove();
+    });
+    
+    $('.particles-container').append(particle);
+  }
+  
+  // Mix of bottom-up and floating particles
+  for(let i = 0; i < 12; i++) {
     setTimeout(function() {
       createWebViewParticle();
-    }, i * 400);
+    }, i * 300);
   }
   
-  // Create new particles more frequently
-  setInterval(createWebViewParticle, 1500);
+  for(let i = 0; i < 8; i++) {
+    setTimeout(function() {
+      createFloatingParticle();
+    }, i * 500);
+  }
+  
+  // Continue creating particles
+  setInterval(createWebViewParticle, 1200);
+  setInterval(createFloatingParticle, 2000);
 });
