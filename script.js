@@ -142,18 +142,18 @@ $(document).ready(function() {
   function createWebViewParticle() {
     const particle = $('<div class="particle"></div>');
     const startX = Math.random() * 100;
-    const duration = 12 + Math.random() * 8; // 12-20s
-    const size = 2 + Math.random() * 2; // 2-4px
-    const opacity = 0.3 + Math.random() * 0.3; // 0.3-0.6
+    const duration = 10 + Math.random() * 6; // 10-16s
+    const size = 3 + Math.random() * 3; // 3-6px
+    const opacity = 0.4 + Math.random() * 0.4; // 0.4-0.8
     
     particle.css({
       left: startX + '%',
-      bottom: '-10px',
+      bottom: '-20px',
       width: size + 'px',
       height: size + 'px',
       opacity: opacity,
       'animation-duration': duration + 's',
-      'animation-delay': Math.random() * 2 + 's'
+      'animation-delay': Math.random() * 3 + 's'
     });
     
     $('.particles-container').append(particle);
@@ -161,16 +161,16 @@ $(document).ready(function() {
     // Remove particle after animation
     setTimeout(function() {
       particle.remove();
-    }, (duration + 2) * 1000);
+    }, (duration + 3) * 1000);
   }
   
-  // Create initial particles with staggered timing
-  for(let i = 0; i < 8; i++) {
+  // Create more initial particles
+  for(let i = 0; i < 15; i++) {
     setTimeout(function() {
       createWebViewParticle();
-    }, i * 1000);
+    }, i * 400);
   }
   
-  // Create new particles periodically
-  setInterval(createWebViewParticle, 3000);
+  // Create new particles more frequently
+  setInterval(createWebViewParticle, 1500);
 });

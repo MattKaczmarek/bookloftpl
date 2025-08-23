@@ -559,56 +559,58 @@ body {
 
 .particle {
   position: absolute;
-  width: 3px;
-  height: 3px;
+  width: 4px;
+  height: 4px;
   background: var(--color-accent);
   border-radius: 50%;
-  opacity: 0.6;
+  opacity: 0.8;
   animation: simpleFloat 15s infinite linear;
+  box-shadow: 0 0 6px rgba(193, 154, 107, 0.4);
 }
 
 @keyframes simpleFloat {
   0% {
-    transform: translateY(100vh) translateX(0);
+    transform: translateY(110vh) translateX(0);
     opacity: 0;
   }
-  10% {
-    opacity: 0.6;
+  5% {
+    opacity: 0.8;
   }
-  90% {
-    opacity: 0.6;
+  95% {
+    opacity: 0.8;
   }
   100% {
-    transform: translateY(-10vh) translateX(50px);
+    transform: translateY(-20vh) translateX(100px);
     opacity: 0;
   }
 }
 
-/* Static particles using CSS only */
-.particles-container::before,
-.particles-container::after {
-  content: '';
-  position: absolute;
-  width: 2px;
-  height: 2px;
-  background: var(--color-accent);
-  border-radius: 50%;
-  opacity: 0.3;
-  animation: staticFloat 20s infinite linear;
+/* Static particles scattered around screen */
+.particles-container {
+  background-image: 
+    radial-gradient(2px 2px at 15% 25%, var(--color-accent), transparent),
+    radial-gradient(3px 3px at 35% 15%, var(--color-accent), transparent),
+    radial-gradient(2px 2px at 55% 35%, var(--color-accent), transparent),
+    radial-gradient(3px 3px at 75% 25%, var(--color-accent), transparent),
+    radial-gradient(2px 2px at 85% 45%, var(--color-accent), transparent),
+    radial-gradient(3px 3px at 25% 65%, var(--color-accent), transparent),
+    radial-gradient(2px 2px at 45% 75%, var(--color-accent), transparent),
+    radial-gradient(3px 3px at 65% 85%, var(--color-accent), transparent),
+    radial-gradient(2px 2px at 85% 75%, var(--color-accent), transparent),
+    radial-gradient(3px 3px at 5% 55%, var(--color-accent), transparent),
+    radial-gradient(2px 2px at 95% 35%, var(--color-accent), transparent),
+    radial-gradient(3px 3px at 15% 85%, var(--color-accent), transparent);
+  background-size: 100% 100%;
+  animation: sparkle 8s ease-in-out infinite;
 }
 
-.particles-container::before {
-  left: 20%;
-  top: 30%;
-  animation-delay: 0s;
-  animation-duration: 25s;
-}
-
-.particles-container::after {
-  left: 70%;
-  top: 60%;
-  animation-delay: 10s;
-  animation-duration: 30s;
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 @keyframes staticFloat {
