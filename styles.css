@@ -171,10 +171,10 @@ body {
   font-size: 1.3rem;   /* Zwiększony rozmiar tekstu */
   font-weight: 600;    /* Pogrubienie tekstu */
   padding: var(--button-padding);
-  border: 1px solid var(--color-accent); 
-  background: #333;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
   color: var(--color-primary);
-  border-radius: 5px;
+  border-radius: 30px;
   cursor: pointer;
   opacity: 0;
   flex: 1 1 200px; /* Zapewnia równe rozmiary przycisków z minimalną szerokością */
@@ -216,7 +216,7 @@ body {
 /* Simple hover effect for buttons */
 @media (hover: hover) {
   .button:hover {
-    background: #444;
+    background: rgba(255, 255, 255, 0.2);
   }
 }
 
@@ -254,9 +254,9 @@ body {
 }
 
 .info-card {
-  background: #2a2a2a;
-  border: 1px solid var(--color-accent);
-  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 15px;
   padding: 1rem;
   flex: 1 1 180px;
   max-width: 220px;
@@ -266,7 +266,7 @@ body {
 
 @media (hover: hover) {
   .info-card:hover {
-    background: #333;
+    background: rgba(255, 255, 255, 0.15);
   }
 }
 
@@ -345,9 +345,9 @@ body {
 }
 
 .scroll-down-btn {
-  background: #2a2a2a;
-  border: 1px solid var(--color-accent);
-  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50px;
   padding: 1rem 2rem;
   color: var(--color-primary);
   font-family: var(--font-body);
@@ -363,7 +363,7 @@ body {
 
 @media (hover: hover) {
   .scroll-down-btn:hover {
-    background: #333;
+    background: rgba(255, 255, 255, 0.2);
   }
 }
 
