@@ -386,7 +386,7 @@ body {
 /* ============================= */
 .about-section {
   min-height: 100vh;
-  background: rgba(26, 26, 26, 0.85);
+  background: rgba(26, 26, 26, 0.6);
   padding: 80px 20px;
   position: relative;
   overflow: hidden;
@@ -400,15 +400,22 @@ body {
 }
 
 .about-content {
-  background: #2a2a2a;
-  border: 1px solid var(--color-accent);
-  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(193, 154, 107, 0.3);
+  border-radius: 15px;
   padding: 3rem;
   opacity: 0;
   transform: none;
   position: relative;
   overflow: hidden;
-  transition: opacity 1s ease;
+  transition: opacity 1s ease, background 0.3s ease;
+}
+
+@media (hover: hover) {
+  .about-content:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(193, 154, 107, 0.5);
+  }
 }
 
 
@@ -421,7 +428,17 @@ body {
 .stat-item {
   opacity: 0;
   transform: none;
-  transition: opacity 0.5s ease;
+  transition: opacity 0.5s ease, transform 0.3s ease;
+  cursor: default;
+  padding: 0.5rem;
+  border-radius: 10px;
+}
+
+@media (hover: hover) {
+  .stat-item:hover {
+    transform: translateY(-3px);
+    background: rgba(193, 154, 107, 0.1);
+  }
 }
 
 .about-title {
@@ -432,7 +449,14 @@ body {
   margin-bottom: 2.5rem;
   opacity: 0;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  transition: opacity 0.8s ease;
+  transition: opacity 0.8s ease, color 0.3s ease;
+  cursor: default;
+}
+
+@media (hover: hover) {
+  .about-title:hover {
+    color: #e8e8e8;
+  }
 }
 
 .about-text p {
@@ -442,12 +466,28 @@ body {
   color: #e0e0e0;
   margin-bottom: 1.5rem;
   text-align: justify;
+  transition: color 0.3s ease;
+}
+
+@media (hover: hover) {
+  .about-text p:hover {
+    color: #f0f0f0;
+  }
 }
 
 .about-text .highlight {
   color: var(--color-accent);
   font-weight: 600;
   text-shadow: 0 0 5px rgba(193, 154, 107, 0.3);
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+  cursor: default;
+}
+
+@media (hover: hover) {
+  .about-text .highlight:hover {
+    color: #d4af86;
+    text-shadow: 0 0 8px rgba(193, 154, 107, 0.5);
+  }
 }
 
 .about-stats {
@@ -471,6 +511,15 @@ body {
   font-weight: 700;
   color: var(--color-accent);
   margin-bottom: 0.5rem;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+  cursor: default;
+}
+
+@media (hover: hover) {
+  .stat-number:hover {
+    color: #d4af86;
+    text-shadow: 0 0 10px rgba(193, 154, 107, 0.3);
+  }
 }
 
 .stat-label {
@@ -479,6 +528,13 @@ body {
   font-size: 1rem;
   color: var(--color-primary);
   font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+@media (hover: hover) {
+  .stat-item:hover .stat-label {
+    color: #f0f0f0;
+  }
 }
 
 /* ============================= */
