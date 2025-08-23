@@ -142,7 +142,7 @@ $(document).ready(function() {
   function createHorizontalParticle() {
     const particle = $('<div class="particle"></div>');
     const startY = Math.random() * 100; // Random Y position
-    const duration = 6 + Math.random() * 4; // 6-10s
+    const duration = 4 + Math.random() * 3; // 4-7s faster movement
     const size = 1 + Math.random() * 2; // 1-3px smaller
     const opacity = 0.4 + Math.random() * 0.4; // 0.4-0.8
     const fromLeft = Math.random() > 0.5; // 50% chance from left or right
@@ -172,13 +172,13 @@ $(document).ready(function() {
     $('.particles-container').append(particle);
   }
   
-  // Create many horizontal particles
-  for(let i = 0; i < 20; i++) {
+  // Create MASSIVE amount of horizontal particles
+  for(let i = 0; i < 50; i++) {
     setTimeout(function() {
       createHorizontalParticle();
-    }, i * 200);
+    }, i * 100);
   }
   
-  // Continue creating horizontal particles frequently
-  setInterval(createHorizontalParticle, 800);
+  // Continue creating horizontal particles VERY frequently
+  setInterval(createHorizontalParticle, 300);
 });

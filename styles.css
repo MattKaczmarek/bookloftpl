@@ -584,14 +584,21 @@ body {
   }
 }
 
-/* Reduced static particles */
+/* MORE static particles for density */
 .particles-container {
   background-image: 
+    radial-gradient(1px 1px at 10% 15%, var(--color-accent), transparent),
     radial-gradient(2px 2px at 20% 30%, var(--color-accent), transparent),
+    radial-gradient(1px 1px at 35% 10%, var(--color-accent), transparent),
+    radial-gradient(2px 2px at 50% 25%, var(--color-accent), transparent),
+    radial-gradient(1px 1px at 65% 40%, var(--color-accent), transparent),
     radial-gradient(2px 2px at 70% 60%, var(--color-accent), transparent),
-    radial-gradient(2px 2px at 90% 20%, var(--color-accent), transparent);
+    radial-gradient(1px 1px at 80% 20%, var(--color-accent), transparent),
+    radial-gradient(2px 2px at 90% 45%, var(--color-accent), transparent),
+    radial-gradient(1px 1px at 15% 70%, var(--color-accent), transparent),
+    radial-gradient(2px 2px at 40% 85%, var(--color-accent), transparent);
   background-size: 100% 100%;
-  animation: sparkle 10s ease-in-out infinite;
+  animation: sparkle 8s ease-in-out infinite;
 }
 
 @keyframes sparkle {
