@@ -27,12 +27,12 @@ $(document).ready(function() {
     $('.tagline').css('opacity', '1');
   }, 1300);
   
-  // KROK 4: Info cards + social buttons + scroll button razem na końcu po 3s
+  // KROK 4: Social buttons + info cards + scroll button razem po 1.8s
   setTimeout(function() {
-    $('.info-section').css('opacity', '1');
     $('.social-button').css('opacity', '1');
+    $('.info-section').css('opacity', '1');
     $('.scroll-down-btn').css('opacity', '1');
-  }, 3000);
+  }, 1800);
   
   // Obsługa kliknięć przycisków (otwarcie nowych kart)
   $('#allegro-btn').click(function(){
