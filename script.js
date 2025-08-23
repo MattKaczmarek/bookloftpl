@@ -195,13 +195,19 @@ $(document).ready(function() {
     $('.particles-container').append(particle);
   }
   
-  // Create particles - minimal amount for mobile performance
-  for(let i = 0; i < 40; i++) {
+  // Responsive particles - more for PC, less for mobile
+  const isMobile = window.innerWidth <= 768;
+  const particleCount = isMobile ? 40 : 100;
+  const spawnDelay = isMobile ? 80 : 50;
+  const spawnInterval = isMobile ? 300 : 150;
+  
+  // Create initial particles based on device
+  for(let i = 0; i < particleCount; i++) {
     setTimeout(function() {
       createMultiDirectionalParticle();
-    }, i * 80);
+    }, i * spawnDelay);
   }
   
-  // Continue creating particles - much less frequently for mobile
-  setInterval(createMultiDirectionalParticle, 300);
+  // Continue creating particles with device-specific frequency
+  setInterval(createMultiDirectionalParticle, spawnInterval);
 });
