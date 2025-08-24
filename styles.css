@@ -115,7 +115,6 @@ body {
   transition: opacity 1.5s ease;
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
-  will-change: opacity;
 }
 
 /* Mobile fix dla background attachment */
@@ -129,15 +128,8 @@ body {
     left: 0;
     transform: translate3d(0, 0, 0);
     -webkit-transform: translate3d(0, 0, 0);
-    will-change: auto; /* Wyłączamy will-change na mobile dla oszczędności pamięci */
   }
   
-  /* Redukcja will-change na mobile */
-  .container, .logo, .subtitle, .button, .info-section, 
-  .social-button, .main-button, .scroll-down-btn,
-  .about-content, .about-text, .stat-item, .about-title {
-    will-change: auto !important;
-  }
 }
 
 /* ============================= */
@@ -153,7 +145,6 @@ body {
   opacity: 0;
   padding: 0 1rem;
   transition: opacity 1.5s ease;
-  will-change: opacity;
 }
 
 /* ============================= */
@@ -165,7 +156,6 @@ body {
   margin-bottom: 1rem;
   opacity: 0;
   transition: opacity 1s ease;
-  will-change: opacity;
 }
 
 /* ============================= */
@@ -182,7 +172,6 @@ body {
     0 2px 4px rgba(0, 0, 0, 0.5),
     0 0 10px rgba(224, 224, 224, 0.25);
   transition: opacity 1s ease;
-  will-change: opacity;
 }
 
 /* ============================= */
@@ -232,7 +221,6 @@ body {
   opacity: 0;
   transform: translateY(-5px);
   transition: opacity 0.2s ease, transform 0.2s ease;
-  will-change: opacity, transform;
 }
 
 /* ============================= */
@@ -258,8 +246,7 @@ body {
   opacity: 0;
   flex: 1 1 200px; /* Zapewnia równe rozmiary przycisków z minimalną szerokością */
   text-align: center;
-  transition: background 0.3s ease, opacity 0.5s ease;
-  will-change: background, opacity;
+  transition: opacity 0.5s ease;
 }
 
 
@@ -294,7 +281,7 @@ body {
 }
 
 /* Simple hover effect for buttons */
-@media (hover: hover) {
+@media (hover: hover) and (pointer: fine) {
   .button:hover {
     background: rgba(255, 255, 255, 0.2);
   }
@@ -331,7 +318,6 @@ body {
   justify-content: center;
   opacity: 0;
   transition: opacity 1s ease;
-  will-change: opacity;
 }
 
 .info-card {
@@ -344,11 +330,10 @@ body {
   text-align: center;
   opacity: 0;
   transform: translateX(-30px);
-  transition: background 0.3s ease, opacity 0.6s ease, transform 0.6s ease;
-  will-change: opacity, transform;
+  transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
-@media (hover: hover) {
+@media (hover: hover) and (pointer: fine) {
   .info-card:hover {
     background: rgba(255, 255, 255, 0.15);
   }
@@ -391,7 +376,6 @@ body {
   opacity: 0;
   flex: 0 0 auto;
   width: 150px;
-  will-change: opacity;
 }
 
 .social-button i {
@@ -406,7 +390,6 @@ body {
   width: 200px;
   opacity: 0;
   transition: opacity 1.2s ease;
-  will-change: opacity;
 }
 
 
@@ -445,11 +428,10 @@ body {
   align-items: center;
   gap: 10px;
   opacity: 0;
-  transition: background 0.3s ease, opacity 0.5s ease;
-  will-change: background, opacity;
+  transition: opacity 0.5s ease;
 }
 
-@media (hover: hover) {
+@media (hover: hover) and (pointer: fine) {
   .scroll-down-btn:hover {
     background: rgba(255, 255, 255, 0.2);
   }
@@ -487,11 +469,11 @@ body {
   position: relative;
   overflow: hidden;
   transition: opacity 1s ease, transform 0.8s ease;
-  will-change: opacity, transform;
 }
 
-.about-content:hover {
-  transition: background 0.3s ease;
+@media (hover: hover) and (pointer: fine) {
+  .about-content:hover {
+    }
 }
 
 /* Klasa dla animacji skalowania podczas scrollowania */
@@ -499,7 +481,7 @@ body {
   transform: scale(1);
 }
 
-@media (hover: hover) {
+@media (hover: hover) and (pointer: fine) {
   .about-content:hover {
     background: rgba(255, 255, 255, 0.07);
   }
@@ -509,7 +491,6 @@ body {
 .about-text {
   opacity: 0;
   transition: opacity 1s ease;
-  will-change: opacity;
 }
 
 .about-text.text-animate {
@@ -523,7 +504,6 @@ body {
   cursor: default;
   padding: 0.5rem;
   border-radius: 10px;
-  will-change: opacity, transform;
 }
 
 .stat-item.stat-animate {
@@ -531,10 +511,9 @@ body {
   transform: translateX(0);
 }
 
-@media (hover: hover) {
+@media (hover: hover) and (pointer: fine) {
   .stat-item:hover {
     transform: translateY(-3px);
-    will-change: auto;
   }
 }
 
@@ -548,12 +527,11 @@ body {
   text-shadow: 
     0 2px 4px rgba(0, 0, 0, 0.5),
     0 0 10px rgba(224, 224, 224, 0.25);
-  transition: opacity 0.8s ease, color 0.3s ease;
+  transition: opacity 0.8s ease;
   cursor: default;
-  will-change: opacity;
 }
 
-@media (hover: hover) {
+@media (hover: hover) and (pointer: fine) {
   .about-title:hover {
     color: #e8e8e8;
   }
@@ -566,10 +544,9 @@ body {
   color: #e0e0e0;
   margin-bottom: 1.5rem;
   text-align: justify;
-  transition: color 0.3s ease;
 }
 
-@media (hover: hover) {
+@media (hover: hover) and (pointer: fine) {
   .about-text p:hover {
     color: #f0f0f0;
   }
@@ -579,11 +556,10 @@ body {
   color: var(--color-accent);
   font-weight: 600;
   text-shadow: 0 0 5px rgba(193, 154, 107, 0.3);
-  transition: color 0.3s ease, text-shadow 0.3s ease;
   cursor: default;
 }
 
-@media (hover: hover) {
+@media (hover: hover) and (pointer: fine) {
   .about-text .highlight:hover {
     color: #d4af86;
     text-shadow: 0 0 8px rgba(193, 154, 107, 0.5);
@@ -615,11 +591,10 @@ body {
     0 1px 3px rgba(0, 0, 0, 0.5),
     0 0 8px rgba(193, 154, 107, 0.3),
     0 0 15px rgba(193, 154, 107, 0.2);
-  transition: color 0.3s ease, text-shadow 0.3s ease;
   cursor: default;
 }
 
-@media (hover: hover) {
+@media (hover: hover) and (pointer: fine) {
   .stat-number:hover {
     color: #d4af86;
     text-shadow: 0 0 10px rgba(193, 154, 107, 0.3);
@@ -632,10 +607,9 @@ body {
   font-size: 1rem;
   color: var(--color-primary);
   font-weight: 500;
-  transition: color 0.3s ease;
 }
 
-@media (hover: hover) {
+@media (hover: hover) and (pointer: fine) {
   .stat-item:hover .stat-label {
     color: #f0f0f0;
   }
