@@ -1,4 +1,54 @@
 /* ============================= */
+/* Klasy animacji z opóźnieniami dla lepszej wydajności */
+/* ============================= */
+.fade-in-instant {
+  opacity: 1 !important;
+  transition: opacity 1s ease;
+}
+
+.fade-in-delay-200 {
+  opacity: 1 !important;
+  transition: opacity 1s ease;
+  transition-delay: 200ms;
+}
+
+.fade-in-delay-600 {
+  opacity: 1 !important;
+  transition: opacity 1s ease;
+  transition-delay: 600ms;
+}
+
+.fade-in-delay-1000 {
+  opacity: 1 !important;
+  transition: opacity 1s ease;
+  transition-delay: 1000ms;
+}
+
+.fade-in-delay-1400 {
+  opacity: 1 !important;
+  transition: opacity 1s ease;
+  transition-delay: 1400ms;
+}
+
+.fade-in-delay-1800 {
+  opacity: 1 !important;
+  transition: opacity 1s ease;
+  transition-delay: 1800ms;
+}
+
+.fade-in-delay-2200 {
+  opacity: 1 !important;
+  transition: opacity 1s ease;
+  transition-delay: 2200ms;
+}
+
+.fade-in-delay-2500 {
+  opacity: 1 !important;
+  transition: opacity 1s ease;
+  transition-delay: 2500ms;
+}
+
+/* ============================= */
 /* Zmienne - dopasuj do potrzeb */
 /* ============================= */
 :root {
@@ -65,7 +115,7 @@ body {
   transition: opacity 1.5s ease;
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
-  will-change: transform;
+  will-change: opacity;
 }
 
 /* Mobile fix dla background attachment */
@@ -79,6 +129,14 @@ body {
     left: 0;
     transform: translate3d(0, 0, 0);
     -webkit-transform: translate3d(0, 0, 0);
+    will-change: auto; /* Wyłączamy will-change na mobile dla oszczędności pamięci */
+  }
+  
+  /* Redukcja will-change na mobile */
+  .container, .logo, .subtitle, .button, .info-section, 
+  .social-button, .main-button, .scroll-down-btn,
+  .about-content, .about-text, .stat-item, .about-title {
+    will-change: auto !important;
   }
 }
 
@@ -95,6 +153,7 @@ body {
   opacity: 0;
   padding: 0 1rem;
   transition: opacity 1.5s ease;
+  will-change: opacity;
 }
 
 /* ============================= */
@@ -106,6 +165,7 @@ body {
   margin-bottom: 1rem;
   opacity: 0;
   transition: opacity 1s ease;
+  will-change: opacity;
 }
 
 /* ============================= */
@@ -120,11 +180,9 @@ body {
   opacity: 0;
   text-shadow: 
     0 2px 4px rgba(0, 0, 0, 0.5),
-    0 0 8px rgba(224, 224, 224, 0.2),
-    0 0 15px rgba(255, 255, 255, 0.15),
-    0 0 25px rgba(255, 255, 255, 0.08);
+    0 0 10px rgba(224, 224, 224, 0.25);
   transition: opacity 1s ease;
-  animation: silverGlow 3s ease-in-out infinite;
+  will-change: opacity;
 }
 
 /* ============================= */
@@ -141,6 +199,8 @@ body {
   margin-right: auto;
   text-align: center;
   position: relative;
+  opacity: 0;
+  transition: opacity 1s ease;
   
   /* Podstawowy kolor ze stałą złotą poświatą */
   color: var(--color-primary);
@@ -169,10 +229,10 @@ body {
 
 .letter {
   display: inline-block;   /* Umożliwia pionowe przesunięcie litery */
-  position: relative;
-  top: -5px;
   opacity: 0;
-  transition: opacity 0.2s ease, top 0.2s ease;
+  transform: translateY(-5px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  will-change: opacity, transform;
 }
 
 /* ============================= */
@@ -199,6 +259,7 @@ body {
   flex: 1 1 200px; /* Zapewnia równe rozmiary przycisków z minimalną szerokością */
   text-align: center;
   transition: background 0.3s ease, opacity 0.5s ease;
+  will-change: background, opacity;
 }
 
 
@@ -270,6 +331,7 @@ body {
   justify-content: center;
   opacity: 0;
   transition: opacity 1s ease;
+  will-change: opacity;
 }
 
 .info-card {
@@ -280,7 +342,10 @@ body {
   flex: 1 1 180px;
   max-width: 220px;
   text-align: center;
-  transition: background 0.3s ease;
+  opacity: 0;
+  transform: translateX(-30px);
+  transition: background 0.3s ease, opacity 0.6s ease, transform 0.6s ease;
+  will-change: opacity, transform;
 }
 
 @media (hover: hover) {
@@ -326,6 +391,7 @@ body {
   opacity: 0;
   flex: 0 0 auto;
   width: 150px;
+  will-change: opacity;
 }
 
 .social-button i {
@@ -340,6 +406,7 @@ body {
   width: 200px;
   opacity: 0;
   transition: opacity 1.2s ease;
+  will-change: opacity;
 }
 
 
@@ -379,6 +446,7 @@ body {
   gap: 10px;
   opacity: 0;
   transition: background 0.3s ease, opacity 0.5s ease;
+  will-change: background, opacity;
 }
 
 @media (hover: hover) {
@@ -418,7 +486,12 @@ body {
   transform: scale(0.95);
   position: relative;
   overflow: hidden;
-  transition: opacity 1s ease, background 0.3s ease, transform 0.8s ease;
+  transition: opacity 1s ease, transform 0.8s ease;
+  will-change: opacity, transform;
+}
+
+.about-content:hover {
+  transition: background 0.3s ease;
 }
 
 /* Klasa dla animacji skalowania podczas scrollowania */
@@ -436,6 +509,7 @@ body {
 .about-text {
   opacity: 0;
   transition: opacity 1s ease;
+  will-change: opacity;
 }
 
 .about-text.text-animate {
@@ -444,21 +518,23 @@ body {
 
 .stat-item {
   opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transform: translateX(-30px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
   cursor: default;
   padding: 0.5rem;
   border-radius: 10px;
+  will-change: opacity, transform;
 }
 
 .stat-item.stat-animate {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateX(0);
 }
 
 @media (hover: hover) {
   .stat-item:hover {
     transform: translateY(-3px);
+    will-change: auto;
   }
 }
 
@@ -471,11 +547,10 @@ body {
   opacity: 0;
   text-shadow: 
     0 2px 4px rgba(0, 0, 0, 0.5),
-    0 0 8px rgba(224, 224, 224, 0.2),
-    0 0 15px rgba(255, 255, 255, 0.15);
+    0 0 10px rgba(224, 224, 224, 0.25);
   transition: opacity 0.8s ease, color 0.3s ease;
-  animation: silverGlow 3s ease-in-out infinite;
   cursor: default;
+  will-change: opacity;
 }
 
 @media (hover: hover) {
@@ -567,52 +642,6 @@ body {
 }
 
 
-/* WebView-compatible golden glow animation */
-@keyframes goldenGlow {
-  0%, 100% {
-    text-shadow: 
-      0 1px 3px rgba(0, 0, 0, 0.5),
-      0 0 10px rgba(193, 154, 107, 0.4),
-      0 0 20px rgba(193, 154, 107, 0.2),
-      0 0 30px rgba(193, 154, 107, 0.1);
-  }
-  50% {
-    text-shadow: 
-      0 1px 3px rgba(0, 0, 0, 0.5),
-      0 0 15px rgba(193, 154, 107, 0.7),
-      0 0 25px rgba(193, 154, 107, 0.4),
-      0 0 35px rgba(193, 154, 107, 0.2);
-  }
-}
-
-/* WebView-compatible silver glow animation - slightly intensified */
-@keyframes silverGlow {
-  0%, 100% {
-    text-shadow: 
-      0 2px 4px rgba(0, 0, 0, 0.5),
-      0 0 8px rgba(224, 224, 224, 0.2),
-      0 0 15px rgba(255, 255, 255, 0.15),
-      0 0 25px rgba(255, 255, 255, 0.08);
-  }
-  50% {
-    text-shadow: 
-      0 2px 4px rgba(0, 0, 0, 0.5),
-      0 0 12px rgba(224, 224, 224, 0.35),
-      0 0 20px rgba(255, 255, 255, 0.25),
-      0 0 30px rgba(255, 255, 255, 0.12);
-  }
-}
-
-@keyframes staticFloat {
-  0%, 100% {
-    transform: translateY(0) rotate(0deg);
-    opacity: 0.3;
-  }
-  50% {
-    transform: translateY(-20px) rotate(180deg);
-    opacity: 0.6;
-  }
-}
 
 /* ============================= */
 /* Responsive adjustments       */
@@ -681,6 +710,7 @@ body {
   }
 }
 
+
 @media (max-width: 480px) {
   .version-display {
     font-size: 0.6rem;
@@ -694,10 +724,18 @@ body {
   }
   
   .social-buttons {
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     width: 100%;
-    justify-content: center;
+    justify-items: center;
     gap: 0.8rem;
+  }
+  
+  /* Facebook na środku pod pozostałymi */
+  #facebook-btn {
+    grid-column: 1 / -1;
+    width: 140px;
+    margin: 0 auto;
   }
   
   .info-section {
