@@ -69,12 +69,12 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Helper function to add button event listeners (click + middle click) with tracking
-  function addButtonListeners(element, url, trackingLabel) {
+  function addButtonListeners(element, url, trackingLabel, eventName) {
     if (!element) return;
     
     const openUrl = () => {
-      // Track the button click
-      trackEvent('click', 'button', trackingLabel);
+      // Track the button click with platform name as event
+      trackEvent(eventName, 'button', trackingLabel);
       window.open(url, '_blank');
     };
     
@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function() {
     element.addEventListener('mousedown', function(e) {
       if (e.button === 1) { // Middle mouse button
         e.preventDefault();
-        trackEvent('middle_click', 'button', trackingLabel);
+        trackEvent(eventName, 'button', trackingLabel);
         window.open(url, '_blank');
       }
     }, { passive: false });
@@ -143,19 +143,19 @@ document.addEventListener('DOMContentLoaded', function() {
   requestAnimationFrame(runAnimationSequence);
   
   // Obsługa kliknięć przycisków (otwarcie nowych kart) - with tracking
-  addButtonListeners(elements.allegroBtn, 'https://allegro.pl/uzytkownik/BookLoft/sklep', 'allegro_button');
-  addButtonListeners(elements.olxBtn, 'https://www.olx.pl/oferty/uzytkownik/1kqSz0/', 'olx_button');
-  addButtonListeners(elements.instagramBtn, 'https://www.instagram.com/bookloft.pl?igsh=dmg0ZTRra3BoaGh0', 'instagram_button');
-  addButtonListeners(elements.facebookBtn, 'https://www.facebook.com/profile.php?id=100081830936011', 'facebook_button');
-  addButtonListeners(elements.tiktokBtn, 'https://www.tiktok.com/@bookloft.pl', 'tiktok_button');
+  addButtonListeners(elements.allegroBtn, 'https://allegro.pl/uzytkownik/BookLoft/sklep', 'allegro_button', 'allegro');
+  addButtonListeners(elements.olxBtn, 'https://www.olx.pl/oferty/uzytkownik/1kqSz0/', 'olx_button', 'olx');
+  addButtonListeners(elements.instagramBtn, 'https://www.instagram.com/bookloft.pl?igsh=dmg0ZTRra3BoaGh0', 'instagram_button', 'instagram');
+  addButtonListeners(elements.facebookBtn, 'https://www.facebook.com/profile.php?id=100081830936011', 'facebook_button', 'facebook');
+  addButtonListeners(elements.tiktokBtn, 'https://www.tiktok.com/@bookloft.pl', 'tiktok_button', 'tiktok');
 
   // Funkcja wyszukiwania - przekierowanie do Allegro z trackowaniem
   function performSearch() {
     const searchQuery = elements.searchInput ? elements.searchInput.value.trim() : '';
     
     if (searchQuery) {
-      // Track search event with query
-      trackEvent('search', 'book_search', searchQuery);
+      // Track search event with query - only when actually searching
+      trackEvent('wyszukiwanie', 'search', searchQuery);
       
       // Enkodowanie zapytania dla URL
       const encodedQuery = encodeURIComponent(searchQuery);
@@ -163,10 +163,8 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Otwórz w nowej karcie
       window.open(allegroSearchUrl, '_blank');
-    } else {
-      // Track empty search attempt
-      trackEvent('search_empty', 'book_search', 'empty_query');
     }
+    // Removed empty search tracking - don't track when nothing is searched
   }
 
   // Obsługa przycisku "Szukaj"
