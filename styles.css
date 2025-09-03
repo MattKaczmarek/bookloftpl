@@ -317,19 +317,46 @@ body {
   display: flex;
   gap: 1rem;
   justify-content: center;
-  margin-top: 1.5rem;
+  margin-top: 2rem;
+  align-items: center;
 }
 
 .social-button {
-  font-size: 1rem !important;
-  padding: 0.8rem 1.5rem !important;
   opacity: 0;
-  flex: 0 0 auto;
-  width: 150px;
+  width: 60px;
+  height: 60px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 0 !important;
 }
 
 .social-button i {
-  font-size: 1.1rem;
+  font-size: 1.4rem;
+}
+
+/* Instagram wyróżniony - większy i z delikatną animacją */
+.instagram-pulse {
+  width: 70px;
+  height: 70px;
+  animation: pulse 2s ease-in-out infinite;
+  transform-origin: center;
+  will-change: transform;
+}
+
+.instagram-pulse i {
+  font-size: 1.8rem;
+}
+
+/* Delikatna animacja pulsowania - GPU accelerated, zachowuje okrągły kształt */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1) translateZ(0);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05) translateZ(0);
+    opacity: 0.95;
+  }
 }
 
 /* Main buttons (Allegro, OLX) - larger and equal width with slow fade-in */
@@ -605,8 +632,21 @@ body {
   }
   
   .social-button {
-    width: 140px;
-    font-size: 0.9rem !important;
+    width: 50px;
+    height: 50px;
+  }
+  
+  .instagram-pulse {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .instagram-pulse i {
+    font-size: 1.5rem;
+  }
+  
+  .social-button i {
+    font-size: 1.2rem;
   }
   
   .tagline {
@@ -648,18 +688,10 @@ body {
   }
   
   .social-buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    width: 100%;
-    justify-items: center;
-    gap: 0.8rem;
-  }
-  
-  /* Facebook na środku pod pozostałymi */
-  #facebook-btn {
-    grid-column: 1 / -1;
-    width: 140px;
-    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
   }
   
   .info-section {
@@ -696,8 +728,21 @@ body {
   }
   
   .social-button {
-    width: 140px;
-    font-size: 0.85rem !important;
+    width: 45px;
+    height: 45px;
+  }
+  
+  .instagram-pulse {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .instagram-pulse i {
+    font-size: 1.3rem;
+  }
+  
+  .social-button i {
+    font-size: 1.1rem;
   }
   
   .tagline {

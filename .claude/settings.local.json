@@ -20,7 +20,8 @@
       "Bash(git push:*)",
       "Bash(dir:*)",
       "Bash(powershell:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git push:*)"
     ],
     "deny": []
   }
