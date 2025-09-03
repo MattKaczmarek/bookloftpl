@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BookLoft</title>
   
+  <!-- Cache control - wymusza odświeżanie -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  
   <!-- Ikona strony -->
   <link rel="icon" type="image/jpg" href="images/fav.jpg">
 
@@ -16,11 +21,13 @@
     rel="stylesheet"
   >
   
-  <!-- Styles -->
-  <link rel="stylesheet" href="styles.css">
+  <!-- Font Awesome dla ikon -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Styles z wersjonowaniem -->
+  <link rel="stylesheet" href="styles.css?v=1.16">
 </head>
 <body>
-
   <!-- Tło -->
   <div class="background"></div>
 
@@ -37,15 +44,102 @@
       Sprzedajemy używane książki, dajemy im nowe życie! Zapraszamy do naszych sklepów na Allegro i OLX.
     </p>
 
-    <!-- Przyciski -->
+    <!-- Przyciski z ikonami -->
     <div class="buttons">
-      <button class="button" id="allegro-btn">Allegro</button>
-      <button class="button" id="olx-btn">OLX</button>
+      <button class="button main-button" id="allegro-btn">
+        <i class="fas fa-shopping-cart"></i>
+        <span>Allegro</span>
+      </button>
+      <button class="button main-button" id="olx-btn">
+        <i class="fas fa-store"></i>
+        <span>OLX</span>
+      </button>
+    </div>
+    
+    <!-- Przyciski social media -->
+    <div class="social-buttons">
+      <button class="button social-button" id="instagram-btn">
+        <i class="fab fa-instagram"></i>
+        <span>Instagram</span>
+      </button>
+      <button class="button social-button" id="tiktok-btn">
+        <i class="fab fa-tiktok"></i>
+        <span>TikTok</span>
+      </button>
+      <button class="button social-button" id="facebook-btn">
+        <i class="fab fa-facebook-f"></i>
+        <span>Facebook</span>
+      </button>
+    </div>
+    
+    <!-- Sekcja z dodatkowymi informacjami -->
+    <div class="info-section">
+      <div class="info-card">
+        <i class="fas fa-book-open"></i>
+        <h3>Tysiące książek</h3>
+        <p>Szeroki wybór używanych książek</p>
+      </div>
+      <div class="info-card">
+        <i class="fas fa-recycle"></i>
+        <h3>Eco-friendly</h3>
+        <p>Dajemy książkom drugie życie</p>
+      </div>
+      <div class="info-card">
+        <i class="fas fa-truck"></i>
+        <h3>Szybka wysyłka</h3>
+        <p>Bezpieczne pakowanie i szybka dostawa</p>
+      </div>
+    </div>
+    
+    <!-- Przycisk scroll w dół -->
+    <div class="scroll-down-container">
+      <button class="scroll-down-btn" id="scroll-to-about">
+        <i class="fas fa-chevron-down"></i>
+        <span>Dowiedz się więcej</span>
+      </button>
     </div>
   </div>
 
-  <!-- jQuery + Twój skrypt -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="script.js"></script>
+  <!-- Sekcja O nas -->
+  <section class="about-section" id="about">
+    <div class="about-container">
+      <div class="about-content">
+        <h2 class="about-title">O BookLoft</h2>
+        <div class="about-text">
+          <p>
+            <strong>BookLoft</strong> to wyjątkowa przestrzeń dla miłośników literatury, gdzie każda książka ma swoją historię. 
+            Wierzymy, że książki zasługują na drugie życie i nowych czytelników, którzy odkryją w nich nowe światy i emocje.
+          </p>
+          <p>
+            Nasza misja to <span class="highlight">ratowanie książek przed zapomnieniem</span> i łączenie ich z ludźmi, 
+            którzy potrafią docenić ich wartość. W naszej ofercie znajdziesz starannie wyselekcjonowane tytuły z różnych 
+            epok i gatunków - od klasyki literatury po współczesne bestsellery.
+          </p>
+          <p>
+            Działamy z <span class="highlight">pasją i szacunkiem</span> do każdej pozycji w naszej kolekcji. 
+            Każda książka jest dokładnie sprawdzana i przygotowywana do sprzedaży, aby dotarła do Ciebie w najlepszym możliwym stanie.
+          </p>
+          <div class="about-stats">
+            <div class="stat-item">
+              <span class="stat-number">100 000+</span>
+              <span class="stat-label">Uratowanych książek</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">15 000+</span>
+              <span class="stat-label">Zadowolonych klientów</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">3</span>
+              <span class="stat-label">Lata doświadczenia</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+
+  <!-- Native JavaScript -->
+  <script src="script.js?v=1.16"></script>
 </body>
 </html>

@@ -1,4 +1,54 @@
 /* ============================= */
+/* Klasy animacji z opóźnieniami dla lepszej wydajności */
+/* ============================= */
+.fade-in-instant {
+  opacity: 1 !important;
+  transition: opacity 1s ease;
+}
+
+.fade-in-delay-200 {
+  opacity: 1 !important;
+  transition: opacity 1s ease;
+  transition-delay: 200ms;
+}
+
+.fade-in-delay-600 {
+  opacity: 1 !important;
+  transition: opacity 1s ease;
+  transition-delay: 600ms;
+}
+
+.fade-in-delay-1000 {
+  opacity: 1 !important;
+  transition: opacity 1s ease;
+  transition-delay: 1000ms;
+}
+
+.fade-in-delay-1400 {
+  opacity: 1 !important;
+  transition: opacity 1s ease;
+  transition-delay: 1400ms;
+}
+
+.fade-in-delay-1800 {
+  opacity: 1 !important;
+  transition: opacity 1s ease;
+  transition-delay: 1800ms;
+}
+
+.fade-in-delay-2200 {
+  opacity: 1 !important;
+  transition: opacity 1s ease;
+  transition-delay: 2200ms;
+}
+
+.fade-in-delay-2500 {
+  opacity: 1 !important;
+  transition: opacity 1s ease;
+  transition-delay: 2500ms;
+}
+
+/* ============================= */
 /* Zmienne - dopasuj do potrzeb */
 /* ============================= */
 :root {
@@ -9,7 +59,10 @@
   /* Kolory i nakładka tła */
   --color-primary: #f2f2f2;         /* Główny kolor tekstu */
   --color-accent: #c19a6b;          /* Kolor akcentu (np. obramowania przycisków) */
-  --color-bg-overlay: rgba(0, 0, 0, 0.6); /* Przyciemnienie tła */
+  --color-accent-light: #d4af86;    /* Jaśniejszy akcent */
+  --color-bg-overlay: rgba(0, 0, 0, 0.8); /* Przyciemnienie tła */
+  --glass-bg: rgba(40, 40, 40, 0.9); /* Solid background */
+  --glass-border: #c19a6b; /* Solid border */
 
   /* Rozmiary i proporcje (domyślne, większe na desktop) */
   --logo-width: 500px;             /* Logo większe na dużych ekranach */
@@ -36,6 +89,8 @@ body {
   background-color: #000; /* Rezerwowe tło (gdyby obraz się nie wczytał) */
   color: var(--color-primary);
   overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 }
 
 /* ============================= */
@@ -46,16 +101,35 @@ body {
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: 100vh;
   /* Nakładka przyciemniająca + obraz biblioteki */
   background: linear-gradient(
     var(--color-bg-overlay),
     var(--color-bg-overlay)
   ), 
-  url('images/bg.jpg') no-repeat center center fixed;
+  url('images/bg.jpg') no-repeat center center;
   background-size: cover;
-  opacity: 0; /* Początkowo ukryte, fade in w jQuery */
+  background-attachment: fixed;
+  opacity: 0;
   z-index: -1;
+  transition: opacity 1.5s ease;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+/* Mobile fix dla background attachment */
+@media (max-width: 768px) {
+  .background {
+    position: fixed;
+    background-attachment: scroll;
+    height: 100vh;
+    width: 100vw;
+    top: 0;
+    left: 0;
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
+  }
+  
 }
 
 /* ============================= */
@@ -68,8 +142,9 @@ body {
   justify-content: center;
   min-height: 100vh;
   text-align: center;
-  opacity: 0; /* Ukryty przed animacją (fade in w jQuery) */
+  opacity: 0;
   padding: 0 1rem;
+  transition: opacity 1.5s ease;
 }
 
 /* ============================= */
@@ -79,7 +154,8 @@ body {
   width: var(--logo-width); /* Stała szerokość kontrolowana w :root */
   height: auto;
   margin-bottom: 1rem;
-  animation: slideDown 1s ease-out;
+  opacity: 0;
+  transition: opacity 1s ease;
 }
 
 /* ============================= */
@@ -91,8 +167,11 @@ body {
   font-size: var(--subtitle-font-size);
   letter-spacing: 2px;                 /* Rozstrzelenie liter */
   margin-bottom: 2rem;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
-  opacity: 0; /* Fade in obsługiwany przez jQuery */
+  opacity: 0;
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.5),
+    0 0 10px rgba(224, 224, 224, 0.25);
+  transition: opacity 1s ease;
 }
 
 /* ============================= */
@@ -100,17 +179,33 @@ body {
 /* ============================= */
 .tagline {
   font-family: var(--font-body);
-  font-size: var(--tagline-font-size);
-  margin-bottom: 3rem;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
-  line-height: 1.4;
+  font-size: calc(var(--tagline-font-size) + 0.1rem);
+  margin-bottom: 3.5rem;
+  line-height: 1.6;
+  font-weight: 600;
+  max-width: 650px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  position: relative;
+  opacity: 0;
+  transition: opacity 1s ease;
+  
+  /* Podstawowy kolor ze stałą złotą poświatą */
+  color: var(--color-primary);
+  text-shadow: 
+    0 1px 3px rgba(0, 0, 0, 0.5),
+    0 0 8px rgba(193, 154, 107, 0.3),
+    0 0 15px rgba(193, 154, 107, 0.2),
+    0 0 25px rgba(193, 154, 107, 0.1);
 
   /* Zapobiegamy nietypowemu dzieleniu słów */
   white-space: normal;
   word-break: normal;
-  overflow-wrap: break-word; /* lub 'anywhere' */
+  overflow-wrap: break-word;
   hyphens: none;
 }
+
 
 /* ============================= */
 /* Styl słów i liter wewnątrz .tagline */
@@ -123,9 +218,9 @@ body {
 
 .letter {
   display: inline-block;   /* Umożliwia pionowe przesunięcie litery */
-  position: relative;
-  top: -10px;
-  opacity: 0;             /* Niewidoczne, fade in w script.js */
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 /* ============================= */
@@ -134,7 +229,6 @@ body {
 .buttons {
   display: flex;
   gap: 1rem;
-  flex-wrap: wrap;
   justify-content: center;
 }
 
@@ -144,47 +238,19 @@ body {
   font-size: 1.3rem;   /* Zwiększony rozmiar tekstu */
   font-weight: 600;    /* Pogrubienie tekstu */
   padding: var(--button-padding);
-  border: 1px solid var(--color-accent); 
-  background: rgba(193, 154, 107, 0.2);
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
   color: var(--color-primary);
   border-radius: 30px;
   cursor: pointer;
-  opacity: 0; /* Ukryty przed animacją, fade in z jQuery */
-  transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease;
+  opacity: 0;
   flex: 1 1 200px; /* Zapewnia równe rozmiary przycisków z minimalną szerokością */
   text-align: center;
-}
-
-/* Efekt hover – stosowany tylko na urządzeniach z precyzyjnym wskaźnikiem (PC) */
-@media (hover: hover) and (pointer: fine) {
-  .button:hover {
-    background: var(--color-accent);
-    color: #fff;
-    transform: scale(1.05);
-  }
-}
-
-/* Efekt kliknięcia (active) – działa zarówno na PC, jak i urządzeniach mobilnych */
-.button:active {
-  transform: scale(0.95);
-  background: var(--color-accent);
-  color: #fff;
+  transition: opacity 0.5s ease;
 }
 
 
-/* ============================= */
-/* Animacje                     */
-/* ============================= */
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+
 
 /* ============================= */
 /* Responsywność                */
@@ -202,5 +268,561 @@ body {
   .tagline {
     line-height: 1.3;
     margin-bottom: 2rem; /* Dopasowanie na mniejszych ekranach */
+  }
+}
+
+
+/* ============================= */
+/* Simple solid style           */
+/* ============================= */
+.glass-effect {
+  background: #2a2a2a !important;
+  border: 1px solid var(--color-accent) !important;
+}
+
+/* Simple hover effect for buttons */
+@media (hover: hover) and (pointer: fine) {
+  .button:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* ============================= */
+/* Simple Buttons               */
+/* ============================= */
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  position: relative;
+}
+
+.button i {
+  font-size: 1.3rem;
+}
+
+.button span {
+  font-weight: 600;
+}
+
+/* ============================= */
+/* Info Section                 */
+/* ============================= */
+.info-section {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 5rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+
+.info-card {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 15px;
+  padding: 1rem;
+  flex: 1 1 180px;
+  max-width: 220px;
+  text-align: center;
+  opacity: 0;
+  transform: translateX(-30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .info-card:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
+}
+
+.info-card i {
+  font-size: 2rem;
+  color: var(--color-accent);
+  margin-bottom: 0.7rem;
+}
+
+.info-card h3 {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  margin-bottom: 0.4rem;
+  color: var(--color-primary);
+}
+
+.info-card p {
+  font-size: 0.85rem;
+  color: #e0e0e0;
+  line-height: 1.3;
+}
+
+
+
+/* ============================= */
+/* Social Media Buttons         */
+/* ============================= */
+.social-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.social-button {
+  font-size: 1rem !important;
+  padding: 0.8rem 1.5rem !important;
+  opacity: 0;
+  flex: 0 0 auto;
+  width: 150px;
+}
+
+.social-button i {
+  font-size: 1.1rem;
+}
+
+/* Main buttons (Allegro, OLX) - larger and equal width with slow fade-in */
+.main-button {
+  font-size: 1.4rem !important;
+  padding: 1.2rem 3rem !important;
+  flex: 0 0 auto;
+  width: 200px;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+
+/* ============================= */
+/* Scroll Down Button           */
+/* ============================= */
+.scroll-down-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 3rem;
+}
+
+/* Version display */
+.version-display {
+  color: #666;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 400;
+  opacity: 0.7;
+}
+
+.scroll-down-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50px;
+  padding: 1rem 2rem;
+  color: var(--color-primary);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .scroll-down-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+}
+
+.scroll-down-btn i {
+  font-size: 1.2rem;
+}
+
+/* ============================= */
+/* About Section                 */
+/* ============================= */
+.about-section {
+  min-height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  padding: 80px 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.about-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+
+.about-content {
+  background: rgba(255, 255, 255, 0.05);
+  border: none;
+  border-radius: 15px;
+  padding: 3rem;
+  opacity: 0;
+  transform: scale(0.95);
+  position: relative;
+  overflow: hidden;
+  transition: opacity 1s ease, transform 0.8s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .about-content:hover {
+    }
+}
+
+/* Klasa dla animacji skalowania podczas scrollowania */
+.about-content.scale-animate {
+  transform: scale(1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .about-content:hover {
+    background: rgba(255, 255, 255, 0.07);
+  }
+}
+
+
+.about-text {
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+
+.about-text.text-animate {
+  opacity: 1;
+}
+
+.stat-item {
+  opacity: 0;
+  transform: translateX(-30px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+  cursor: default;
+  padding: 0.5rem;
+  border-radius: 10px;
+}
+
+.stat-item.stat-animate {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .stat-item:hover {
+    transform: translateY(-3px);
+  }
+}
+
+.about-title {
+  font-family: var(--font-heading);
+  font-size: 3rem;
+  color: var(--color-primary);
+  text-align: center;
+  margin-bottom: 2.5rem;
+  opacity: 0;
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.5),
+    0 0 10px rgba(224, 224, 224, 0.25);
+  transition: opacity 0.8s ease;
+  cursor: default;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .about-title:hover {
+    color: #e8e8e8;
+  }
+}
+
+.about-text p {
+  font-family: var(--font-body);
+  font-size: 1.2rem;
+  line-height: 1.8;
+  color: #e0e0e0;
+  margin-bottom: 1.5rem;
+  text-align: justify;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .about-text p:hover {
+    color: #f0f0f0;
+  }
+}
+
+.about-text .highlight {
+  color: var(--color-accent);
+  font-weight: 600;
+  text-shadow: 0 0 5px rgba(193, 154, 107, 0.3);
+  cursor: default;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .about-text .highlight:hover {
+    color: #d4af86;
+    text-shadow: 0 0 8px rgba(193, 154, 107, 0.5);
+  }
+}
+
+.about-stats {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 3rem;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.stat-item {
+  text-align: center;
+  flex: 1;
+  min-width: 150px;
+}
+
+.stat-number {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  margin-bottom: 0.5rem;
+  text-shadow: 
+    0 1px 3px rgba(0, 0, 0, 0.5),
+    0 0 8px rgba(193, 154, 107, 0.3),
+    0 0 15px rgba(193, 154, 107, 0.2);
+  cursor: default;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .stat-number:hover {
+    color: #d4af86;
+    text-shadow: 0 0 10px rgba(193, 154, 107, 0.3);
+  }
+}
+
+.stat-label {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .stat-item:hover .stat-label {
+    color: #f0f0f0;
+  }
+}
+
+
+
+/* ============================= */
+/* Responsive adjustments       */
+/* ============================= */
+@media (max-width: 768px) {
+  .info-section {
+    margin-top: 3.5rem;
+    margin-bottom: 1rem;
+    gap: 0.8rem;
+  }
+  
+  .info-card {
+    padding: 0.6rem;
+    flex: 1 1 120px;
+    max-width: 140px;
+  }
+  
+  .info-card i {
+    font-size: 1.2rem;
+    margin-bottom: 0.3rem;
+  }
+  
+  .info-card h3 {
+    font-size: 0.9rem;
+    margin-bottom: 0.4rem;
+  }
+  
+  .info-card p {
+    font-size: 0.75rem;
+    line-height: 1.3;
+  }
+  
+  .main-button {
+    width: 200px;
+    font-size: 1.3rem !important;
+    padding: 1rem 2rem !important;
+  }
+  
+  .social-button {
+    width: 140px;
+    font-size: 0.9rem !important;
+  }
+  
+  .tagline {
+    font-size: calc(var(--tagline-font-size) - 0.1rem);
+    margin-bottom: 3rem;
+    max-width: 90%;
+    line-height: 1.5;
+  }
+  
+  .about-content {
+    padding: 2rem;
+  }
+  
+  .about-title {
+    font-size: 2.5rem;
+  }
+  
+  .about-text p {
+    font-size: 1.1rem;
+    text-align: left;
+  }
+  
+  .stat-number {
+    font-size: 2rem;
+  }
+}
+
+
+@media (max-width: 480px) {
+  .version-display {
+    font-size: 0.6rem;
+  }
+  
+  .buttons {
+    flex-direction: row;
+    gap: 0.8rem;
+    justify-content: center;
+    width: 100%;
+  }
+  
+  .social-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+    justify-items: center;
+    gap: 0.8rem;
+  }
+  
+  /* Facebook na środku pod pozostałymi */
+  #facebook-btn {
+    grid-column: 1 / -1;
+    width: 140px;
+    margin: 0 auto;
+  }
+  
+  .info-section {
+    margin-top: 3rem;
+    margin-bottom: 0.8rem;
+    gap: 0.6rem;
+  }
+  
+  .info-card {
+    padding: 0.5rem;
+    flex: 1 1 100px;
+    max-width: 110px;
+  }
+  
+  .info-card i {
+    font-size: 1rem;
+    margin-bottom: 0.2rem;
+  }
+  
+  .info-card h3 {
+    font-size: 0.8rem;
+    margin-bottom: 0.3rem;
+  }
+  
+  .info-card p {
+    font-size: 0.7rem;
+    line-height: 1.25;
+  }
+  
+  .main-button {
+    width: 180px;
+    font-size: 1.2rem !important;
+    padding: 0.9rem 1.8rem !important;
+  }
+  
+  .social-button {
+    width: 140px;
+    font-size: 0.85rem !important;
+  }
+  
+  .tagline {
+    font-size: calc(var(--tagline-font-size) - 0.2rem);
+    margin-bottom: 2rem;
+    max-width: 95%;
+    line-height: 1.4;
+  }
+  
+  .about-section {
+    padding: 20px 5px;
+    min-height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .about-container {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    min-height: auto;
+  }
+  
+  .about-content {
+    padding: 1.5rem;
+    margin: 1rem;
+    width: calc(100% - 2rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    min-height: auto;
+  }
+  
+  .about-title {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .about-text p {
+    font-size: 0.9rem;
+    margin-bottom: 0.8rem;
+    line-height: 1.5;
+  }
+  
+  .about-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 0.8rem;
+    margin-top: 1.5rem;
+    justify-items: center;
+  }
+  
+  .stat-item:nth-child(1), .stat-item:nth-child(2) {
+    grid-row: 1;
+  }
+  
+  .stat-item:nth-child(3) {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  
+  .stat-number {
+    font-size: 1.4rem;
+  }
+  
+  .stat-label {
+    font-size: 0.85rem;
+  }
+  
+  .scroll-down-btn {
+    padding: 0.8rem 1.5rem;
+    font-size: 0.9rem;
   }
 }
