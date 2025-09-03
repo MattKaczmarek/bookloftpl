@@ -1,25 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
-  // Track page load time
-  const pageLoadTime = performance.now();
-  
   // Wymuszenie powrotu na górę strony po odświeżeniu
   if (history.scrollRestoration) {
     history.scrollRestoration = 'manual';
   }
   window.scrollTo(0, 0);
-  
-  // Track engagement milestones
-  const engagementTimes = [10000, 30000, 60000]; // 10s, 30s, 1min
-  let trackedTimes = [];
-  
-  engagementTimes.forEach(time => {
-    setTimeout(() => {
-      if (!trackedTimes.includes(time)) {
-        trackEvent('time_on_page', 'engagement', `${time/1000}s`);
-        trackedTimes.push(time);
-      }
-    }, time);
-  });
   
   // Cache DOM elements for better performance
   const elements = {
