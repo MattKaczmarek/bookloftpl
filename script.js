@@ -176,13 +176,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }, { passive: false });
   }
 
-  // Płynne scrollowanie do sekcji "O nas" z trackowaniem
+  // Płynne scrollowanie do sekcji "O nas" bez trackingu
   if (elements.scrollToAboutBtn) {
     elements.scrollToAboutBtn.addEventListener('click', function(e) {
       e.preventDefault();
-      
-      // Track scroll to about section
-      trackEvent('scroll_to_section', 'navigation', 'about_section');
       
       if (elements.aboutSection) {
         const targetTop = elements.aboutSection.offsetTop;
@@ -225,8 +222,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const observer = new IntersectionObserver(function(entries) {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          // Track when about section becomes visible
-          trackEvent('section_view', 'engagement', 'about_section');
+          // Track when user reaches about section
+          trackEvent('o_nas', 'section', 'about_section');
           
           // Fade-in and scale-up about content
           if (elements.aboutContent) {
