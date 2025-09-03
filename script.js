@@ -1,9 +1,25 @@
 document.addEventListener('DOMContentLoaded', function() {
+  // Track page load time
+  const pageLoadTime = performance.now();
+  
   // Wymuszenie powrotu na górę strony po odświeżeniu
   if (history.scrollRestoration) {
     history.scrollRestoration = 'manual';
   }
   window.scrollTo(0, 0);
+  
+  // Track engagement milestones
+  const engagementTimes = [10000, 30000, 60000]; // 10s, 30s, 1min
+  let trackedTimes = [];
+  
+  engagementTimes.forEach(time => {
+    setTimeout(() => {
+      if (!trackedTimes.includes(time)) {
+        trackEvent('time_on_page', 'engagement', `${time/1000}s`);
+        trackedTimes.push(time);
+      }
+    }, time);
+  });
   
   // Cache DOM elements for better performance
   const elements = {
@@ -41,17 +57,33 @@ document.addEventListener('DOMContentLoaded', function() {
     if (elements) elements.forEach(el => el.style.opacity = value);
   }
   
-  // Helper function to add button event listeners (click + middle click)
-  function addButtonListeners(element, url) {
+  // Google Analytics tracking helper
+  function trackEvent(action, category, label, value) {
+    if (typeof gtag !== 'undefined') {
+      gtag('event', action, {
+        event_category: category,
+        event_label: label,
+        value: value
+      });
+    }
+  }
+
+  // Helper function to add button event listeners (click + middle click) with tracking
+  function addButtonListeners(element, url, trackingLabel) {
     if (!element) return;
     
-    const openUrl = () => window.open(url, '_blank');
+    const openUrl = () => {
+      // Track the button click
+      trackEvent('click', 'button', trackingLabel);
+      window.open(url, '_blank');
+    };
     
     element.addEventListener('click', openUrl, { passive: true });
     element.addEventListener('mousedown', function(e) {
       if (e.button === 1) { // Middle mouse button
         e.preventDefault();
-        openUrl();
+        trackEvent('middle_click', 'button', trackingLabel);
+        window.open(url, '_blank');
       }
     }, { passive: false });
   }
@@ -110,24 +142,30 @@ document.addEventListener('DOMContentLoaded', function() {
   
   requestAnimationFrame(runAnimationSequence);
   
-  // Obsługa kliknięć przycisków (otwarcie nowych kart) - using helper function
-  addButtonListeners(elements.allegroBtn, 'https://allegro.pl/uzytkownik/BookLoft/sklep');
-  addButtonListeners(elements.olxBtn, 'https://www.olx.pl/oferty/uzytkownik/1kqSz0/');
-  addButtonListeners(elements.instagramBtn, 'https://www.instagram.com/bookloft.pl?igsh=dmg0ZTRra3BoaGh0');
-  addButtonListeners(elements.facebookBtn, 'https://www.facebook.com/profile.php?id=100081830936011');
-  addButtonListeners(elements.tiktokBtn, 'https://www.tiktok.com/@bookloft.pl');
+  // Obsługa kliknięć przycisków (otwarcie nowych kart) - with tracking
+  addButtonListeners(elements.allegroBtn, 'https://allegro.pl/uzytkownik/BookLoft/sklep', 'allegro_button');
+  addButtonListeners(elements.olxBtn, 'https://www.olx.pl/oferty/uzytkownik/1kqSz0/', 'olx_button');
+  addButtonListeners(elements.instagramBtn, 'https://www.instagram.com/bookloft.pl?igsh=dmg0ZTRra3BoaGh0', 'instagram_button');
+  addButtonListeners(elements.facebookBtn, 'https://www.facebook.com/profile.php?id=100081830936011', 'facebook_button');
+  addButtonListeners(elements.tiktokBtn, 'https://www.tiktok.com/@bookloft.pl', 'tiktok_button');
 
-  // Funkcja wyszukiwania - przekierowanie do Allegro
+  // Funkcja wyszukiwania - przekierowanie do Allegro z trackowaniem
   function performSearch() {
     const searchQuery = elements.searchInput ? elements.searchInput.value.trim() : '';
     
     if (searchQuery) {
+      // Track search event with query
+      trackEvent('search', 'book_search', searchQuery);
+      
       // Enkodowanie zapytania dla URL
       const encodedQuery = encodeURIComponent(searchQuery);
       const allegroSearchUrl = `https://allegro.pl/uzytkownik/BookLoft?string=${encodedQuery}`;
       
       // Otwórz w nowej karcie
       window.open(allegroSearchUrl, '_blank');
+    } else {
+      // Track empty search attempt
+      trackEvent('search_empty', 'book_search', 'empty_query');
     }
   }
 
@@ -156,10 +194,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }, { passive: false });
   }
 
-  // Płynne scrollowanie do sekcji "O nas"
+  // Płynne scrollowanie do sekcji "O nas" z trackowaniem
   if (elements.scrollToAboutBtn) {
     elements.scrollToAboutBtn.addEventListener('click', function(e) {
       e.preventDefault();
+      
+      // Track scroll to about section
+      trackEvent('scroll_to_section', 'navigation', 'about_section');
       
       if (elements.aboutSection) {
         const targetTop = elements.aboutSection.offsetTop;
@@ -202,6 +243,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const observer = new IntersectionObserver(function(entries) {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
+          // Track when about section becomes visible
+          trackEvent('section_view', 'engagement', 'about_section');
+          
           // Fade-in and scale-up about content
           if (elements.aboutContent) {
             elements.aboutContent.style.opacity = '1';

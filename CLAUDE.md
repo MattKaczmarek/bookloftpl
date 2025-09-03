@@ -20,13 +20,15 @@ BookLoft to landing page dla sklepu z używanymi książkami. Strona została za
 - **Vanilla JavaScript** - zero dependencji, natywne API
 - **Font Awesome** - ikony społecznościowe
 - **Google Fonts** - Playfair Display, Open Sans, Marcellus SC
+- **Google Analytics 4** - trackowanie interakcji i zachowań użytkowników
 
 ### Brak frameworków
-Celowo nie używamy żadnych frameworków ani bibliotek (poza fontami i ikonami):
+Celowo nie używamy żadnych frameworków ani bibliotek (poza fontami i ikonami oraz Google Analytics):
 - ❌ jQuery - zastąpione natywnym JavaScript
 - ❌ React/Vue/Angular - nie potrzebne dla prostej landing page
 - ❌ Bootstrap - własne CSS
 - ❌ Biblioteki animacji - własne implementacje
+- ✅ Google Analytics 4 - jedyne zewnętrzne API do trackowania
 
 ## Optymalizacje wydajności
 
@@ -85,7 +87,7 @@ requestAnimationFrame(runAnimationSequence);
 #### 5. **Reduced bundle size**
 - **-85KB**: Usunięto jQuery
 - **Minifikacja**: Czyste CSS bez zbędnych deklaracji
-- **Zero external dependencies**: Oprócz Google Fonts i Font Awesome
+- **Minimalne external dependencies**: Google Fonts, Font Awesome, Google Analytics 4
 
 ## Struktura animacji
 
@@ -102,6 +104,7 @@ requestAnimationFrame(runAnimationSequence);
 - **Intersection Observer** - animacje sekcji "O nas"
 - **Statystyki** - pojawianie od lewej do prawej (300ms delay)
 - **Smooth scroll** - natywne `scroll-behavior` z fallbackiem
+- **Analytics tracking** - trackowanie scroll events i page engagement
 
 ## Responsywność
 
@@ -188,6 +191,77 @@ git checkout -b 18    # Kolejne zmiany (następny numer)
 - **Merge do main** - po zakończeniu prac nad daną funkcją
 - **Synchronizacja wersji** - numer brancha = wersja plików (v=1.16, v=1.17...)
 
+## Google Analytics 4 - Tracking użytkowników
+
+### Implementacja
+Dodano kompletne śledzenie zachowań użytkowników za pomocą Google Analytics 4:
+
+```html
+<!-- Google Analytics w <head> -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NQH5FFJ8Y4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-NQH5FFJ8Y4');
+</script>
+```
+
+### Trackowane eventy
+
+#### 1. **Kliknięcia przycisków**
+```javascript
+// Każdy przycisk trackowany z unikalną nazwą
+trackEvent('click', 'button', 'allegro_button');
+trackEvent('middle_click', 'button', 'instagram_button');
+```
+
+#### 2. **Wyszukiwarka książek**
+```javascript
+// Trackowanie wyszukiwań z frazami
+trackEvent('search', 'book_search', searchQuery);
+trackEvent('search_empty', 'book_search', 'empty_query');
+```
+
+#### 3. **Nawigacja i scrollowanie**
+```javascript
+// Śledzenie nawigacji między sekcjami
+trackEvent('scroll_to_section', 'navigation', 'about_section');
+trackEvent('section_view', 'engagement', 'about_section');
+```
+
+#### 4. **Engagement milestones**
+```javascript
+// Automatyczne trackowanie czasu spędzonego na stronie
+engagementTimes = [10000, 30000, 60000]; // 10s, 30s, 1min
+trackEvent('time_on_page', 'engagement', '30s');
+```
+
+### Funkcje pomocnicze
+```javascript
+// Uniwersalna funkcja trackująca
+function trackEvent(action, category, label, value) {
+  if (typeof gtag !== 'undefined') {
+    gtag('event', action, {
+      event_category: category,
+      event_label: label,
+      value: value
+    });
+  }
+}
+
+// Enhanced button listeners z trackowaniem
+function addButtonListeners(element, url, trackingLabel) {
+  // Obsługa click + middle-click z automatycznym trackowaniem
+}
+```
+
+### Optymalizacja wydajności
+- **Async loading** - Google Analytics ładuje się asynchronicznie
+- **Graceful degradation** - sprawdzanie `typeof gtag` przed użyciem
+- **Zero impact** - tracking nie wpływa na animacje ani UX
+- **Privacy compliant** - tylko podstawowe eventy, brak PII
+
 ## Przyszłe usprawnienia
 
 ### Potencjalne optymalizacje:
@@ -200,6 +274,7 @@ git checkout -b 18    # Kolejne zmiany (następny numer)
 - **Core Web Vitals** - LCP, FID, CLS
 - **Mobile PageSpeed** - Google PageSpeed Insights  
 - **Real User Monitoring** - rzeczywiste metryki użytkowników
+- **Google Analytics 4** - kompletne śledzenie zachowań użytkowników
 
 ---
 
@@ -208,5 +283,5 @@ git checkout -b 18    # Kolejne zmiany (następny numer)
 Aplikacja została zoptymalizowana przez Claude AI w współpracy z deweloperem.  
 Wszelkie problemy techniczne można zgłaszać przez GitHub Issues.
 
-**Ostatnia aktualizacja**: Branch 16 - Performance optimizations
-**Wersja**: 1.16
+**Ostatnia aktualizacja**: Branch 19 - Google Analytics 4 implementation
+**Wersja**: 1.41
