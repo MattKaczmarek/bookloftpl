@@ -311,6 +311,74 @@ body {
 
 
 /* ============================= */
+/* Search Input Field           */
+/* ============================= */
+.search-container {
+  margin: 2rem 0 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.search-label {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 400;
+  color: rgba(242, 242, 242, 0.7);
+  text-align: center;
+  margin: 0 0 0.8rem 0;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  font-style: italic;
+}
+
+.search-input {
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  font-weight: 400;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-primary);
+  border-radius: 25px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.5s ease, background 0.3s ease;
+}
+
+.search-input::placeholder {
+  color: rgba(242, 242, 242, 0.7);
+  font-style: italic;
+}
+
+.search-input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.search-button {
+  font-size: 0.9rem !important;
+  padding: 0.4rem 0.9rem !important;
+  margin-top: 0.8rem;
+  opacity: 0;
+  width: auto !important;
+  min-width: auto !important;
+  height: auto !important;
+  line-height: 1 !important;
+  border-radius: 15px !important;
+  flex: none !important;
+  display: inline-block !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .search-input:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+}
+
+/* ============================= */
 /* Social Media Buttons         */
 /* ============================= */
 .social-buttons {
@@ -338,7 +406,7 @@ body {
 .instagram-pulse {
   width: 70px;
   height: 70px;
-  animation: pulse 2s ease-in-out infinite;
+  animation: none;
   transform-origin: center;
   will-change: transform;
 }
@@ -351,11 +419,11 @@ body {
 @keyframes pulse {
   0%, 100% {
     transform: scale(1) translateZ(0);
-    opacity: 1;
+    opacity: inherit;
   }
   50% {
     transform: scale(1.05) translateZ(0);
-    opacity: 0.95;
+    opacity: inherit;
   }
 }
 
@@ -656,6 +724,22 @@ body {
     line-height: 1.5;
   }
   
+  .search-label {
+    font-size: 0.9rem;
+  }
+  
+  .search-button {
+    font-size: 0.8rem !important;
+    padding: 0.3rem 0.7rem !important;
+    min-width: auto;
+  }
+  
+  .search-input {
+    font-size: 1rem;
+    padding: 0.7rem 1.2rem;
+    max-width: 350px;
+  }
+  
   .about-content {
     padding: 2rem;
   }
@@ -750,6 +834,22 @@ body {
     margin-bottom: 2rem;
     max-width: 95%;
     line-height: 1.4;
+  }
+  
+  .search-label {
+    font-size: 0.8rem;
+  }
+  
+  .search-button {
+    font-size: 0.75rem !important;
+    padding: 0.25rem 0.6rem !important;
+    min-width: auto;
+  }
+  
+  .search-input {
+    font-size: 0.9rem;
+    padding: 0.6rem 1rem;
+    max-width: 300px;
   }
   
   .about-section {

@@ -14,6 +14,9 @@ document.addEventListener('DOMContentLoaded', function() {
     tagline: document.querySelector('.tagline'),
     allegroBtn: document.getElementById('allegro-btn'),
     olxBtn: document.getElementById('olx-btn'),
+    searchLabel: document.querySelector('.search-label'),
+    searchInput: document.querySelector('.search-input'),
+    searchBtn: document.getElementById('search-btn'),
     socialButtons: document.querySelectorAll('.social-button'),
     infoSection: document.querySelector('.info-section'),
     infoCards: document.querySelectorAll('.info-card'),
@@ -38,6 +41,21 @@ document.addEventListener('DOMContentLoaded', function() {
     if (elements) elements.forEach(el => el.style.opacity = value);
   }
   
+  // Helper function to add button event listeners (click + middle click)
+  function addButtonListeners(element, url) {
+    if (!element) return;
+    
+    const openUrl = () => window.open(url, '_blank');
+    
+    element.addEventListener('click', openUrl, { passive: true });
+    element.addEventListener('mousedown', function(e) {
+      if (e.button === 1) { // Middle mouse button
+        e.preventDefault();
+        openUrl();
+      }
+    }, { passive: false });
+  }
+  
   // Animacja sekwencyjna z jednym requestAnimationFrame
   const animationSequence = [
     { time: 0, action: () => {
@@ -49,7 +67,19 @@ document.addEventListener('DOMContentLoaded', function() {
       setElementOpacity(elements.olxBtn, '1');
     }},
     { time: 200, action: () => setElementOpacity(elements.container, '1') },
-    { time: 900, action: () => setElementsOpacity(elements.socialButtons, '1') },
+    { time: 600, action: () => {
+      setElementOpacity(elements.searchLabel, '1');
+      setElementOpacity(elements.searchInput, '1');
+      setElementOpacity(elements.searchBtn, '1');
+    }},
+    { time: 900, action: () => {
+      setElementOpacity(elements.tiktokBtn, '1');
+      setElementOpacity(elements.facebookBtn, '1');
+      setElementOpacity(elements.instagramBtn, '1');
+      if (elements.instagramBtn) {
+        elements.instagramBtn.style.animation = 'pulse 2s ease-in-out infinite';
+      }
+    }},
     { time: 1300, action: () => {
       setElementOpacity(elements.infoSection, '1');
       elements.infoCards.forEach(function(card, index) {
@@ -80,35 +110,50 @@ document.addEventListener('DOMContentLoaded', function() {
   
   requestAnimationFrame(runAnimationSequence);
   
-  // Obsługa kliknięć przycisków (otwarcie nowych kart) - using cached elements
-  if (elements.allegroBtn) {
-    elements.allegroBtn.addEventListener('click', function() {
-      window.open('https://allegro.pl/uzytkownik/BookLoft/sklep', '_blank');
-    }, { passive: true });
-  }
-  
-  if (elements.olxBtn) {
-    elements.olxBtn.addEventListener('click', function() {
-      window.open('https://www.olx.pl/oferty/uzytkownik/1kqSz0/', '_blank');
-    }, { passive: true });
+  // Obsługa kliknięć przycisków (otwarcie nowych kart) - using helper function
+  addButtonListeners(elements.allegroBtn, 'https://allegro.pl/uzytkownik/BookLoft/sklep');
+  addButtonListeners(elements.olxBtn, 'https://www.olx.pl/oferty/uzytkownik/1kqSz0/');
+  addButtonListeners(elements.instagramBtn, 'https://www.instagram.com/bookloft.pl?igsh=dmg0ZTRra3BoaGh0');
+  addButtonListeners(elements.facebookBtn, 'https://www.facebook.com/profile.php?id=100081830936011');
+  addButtonListeners(elements.tiktokBtn, 'https://www.tiktok.com/@bookloft.pl');
+
+  // Funkcja wyszukiwania - przekierowanie do Allegro
+  function performSearch() {
+    const searchQuery = elements.searchInput ? elements.searchInput.value.trim() : '';
+    
+    if (searchQuery) {
+      // Enkodowanie zapytania dla URL
+      const encodedQuery = encodeURIComponent(searchQuery);
+      const allegroSearchUrl = `https://allegro.pl/uzytkownik/BookLoft?string=${encodedQuery}`;
+      
+      // Otwórz w nowej karcie
+      window.open(allegroSearchUrl, '_blank');
+    }
   }
 
-  if (elements.instagramBtn) {
-    elements.instagramBtn.addEventListener('click', function() {
-      window.open('https://www.instagram.com/bookloft.pl?igsh=dmg0ZTRra3BoaGh0', '_blank');
-    }, { passive: true });
+  // Obsługa przycisku "Szukaj"
+  if (elements.searchBtn) {
+    elements.searchBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      performSearch();
+    }, { passive: false });
+    
+    elements.searchBtn.addEventListener('mousedown', function(e) {
+      if (e.button === 1) { // Middle mouse button
+        e.preventDefault();
+        performSearch();
+      }
+    }, { passive: false });
   }
 
-  if (elements.facebookBtn) {
-    elements.facebookBtn.addEventListener('click', function() {
-      window.open('https://www.facebook.com/profile.php?id=100081830936011', '_blank');
-    }, { passive: true });
-  }
-
-  if (elements.tiktokBtn) {
-    elements.tiktokBtn.addEventListener('click', function() {
-      window.open('https://www.tiktok.com/@bookloft.pl', '_blank');
-    }, { passive: true });
+  // Obsługa klawisza Enter w polu wyszukiwania
+  if (elements.searchInput) {
+    elements.searchInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        performSearch();
+      }
+    }, { passive: false });
   }
 
   // Płynne scrollowanie do sekcji "O nas"
