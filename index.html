@@ -13,6 +13,10 @@
   <!-- Ikona strony -->
   <link rel="icon" type="image/jpg" href="images/fav.jpg">
 
+  <!-- Preload krytycznych obrazów -->
+  <link rel="preload" href="images/bg.jpg" as="image">
+  <link rel="preload" href="images/logo.png" as="image">
+
   <!-- Wczytanie fontów (opcjonalnie) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,8 +28,17 @@
   <!-- Font Awesome dla ikon -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NQH5FFJ8Y4"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-NQH5FFJ8Y4');
+  </script>
+
   <!-- Styles z wersjonowaniem -->
-  <link rel="stylesheet" href="styles.css?v=1.16">
+  <link rel="stylesheet" href="styles.css?v=1.44">
 </head>
 <body>
   <!-- Tło -->
@@ -56,19 +69,25 @@
       </button>
     </div>
     
+    <!-- Pole wyszukiwania -->
+    <div class="search-container">
+      <p class="search-label">Sprawdź, czy mamy to czego szukasz</p>
+      <input type="text" class="search-input" placeholder="Wpisz tytuł książki..." id="search-input">
+      <button class="button search-button" id="search-btn">
+        <span>Szukaj</span>
+      </button>
+    </div>
+    
     <!-- Przyciski social media -->
     <div class="social-buttons">
-      <button class="button social-button" id="instagram-btn">
-        <i class="fab fa-instagram"></i>
-        <span>Instagram</span>
-      </button>
-      <button class="button social-button" id="tiktok-btn">
+      <button class="button social-button" id="tiktok-btn" aria-label="TikTok">
         <i class="fab fa-tiktok"></i>
-        <span>TikTok</span>
       </button>
-      <button class="button social-button" id="facebook-btn">
+      <button class="button social-button instagram-pulse" id="instagram-btn" aria-label="Instagram">
+        <i class="fab fa-instagram"></i>
+      </button>
+      <button class="button social-button" id="facebook-btn" aria-label="Facebook">
         <i class="fab fa-facebook-f"></i>
-        <span>Facebook</span>
       </button>
     </div>
     
@@ -140,6 +159,6 @@
   
 
   <!-- Native JavaScript -->
-  <script src="script.js?v=1.16"></script>
+  <script src="script.js?v=1.44"></script>
 </body>
 </html>

@@ -1,54 +1,4 @@
 /* ============================= */
-/* Klasy animacji z opóźnieniami dla lepszej wydajności */
-/* ============================= */
-.fade-in-instant {
-  opacity: 1 !important;
-  transition: opacity 1s ease;
-}
-
-.fade-in-delay-200 {
-  opacity: 1 !important;
-  transition: opacity 1s ease;
-  transition-delay: 200ms;
-}
-
-.fade-in-delay-600 {
-  opacity: 1 !important;
-  transition: opacity 1s ease;
-  transition-delay: 600ms;
-}
-
-.fade-in-delay-1000 {
-  opacity: 1 !important;
-  transition: opacity 1s ease;
-  transition-delay: 1000ms;
-}
-
-.fade-in-delay-1400 {
-  opacity: 1 !important;
-  transition: opacity 1s ease;
-  transition-delay: 1400ms;
-}
-
-.fade-in-delay-1800 {
-  opacity: 1 !important;
-  transition: opacity 1s ease;
-  transition-delay: 1800ms;
-}
-
-.fade-in-delay-2200 {
-  opacity: 1 !important;
-  transition: opacity 1s ease;
-  transition-delay: 2200ms;
-}
-
-.fade-in-delay-2500 {
-  opacity: 1 !important;
-  transition: opacity 1s ease;
-  transition-delay: 2500ms;
-}
-
-/* ============================= */
 /* Zmienne - dopasuj do potrzeb */
 /* ============================= */
 :root {
@@ -361,25 +311,120 @@ body {
 
 
 /* ============================= */
+/* Search Input Field           */
+/* ============================= */
+.search-container {
+  margin: 2rem 0 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.search-label {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 400;
+  color: rgba(242, 242, 242, 0.7);
+  text-align: center;
+  margin: 0 0 0.8rem 0;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  font-style: italic;
+}
+
+.search-input {
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  font-weight: 400;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-primary);
+  border-radius: 25px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.5s ease, background 0.3s ease;
+}
+
+.search-input::placeholder {
+  color: rgba(242, 242, 242, 0.7);
+  font-style: italic;
+}
+
+.search-input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.search-button {
+  font-size: 0.9rem !important;
+  padding: 0.4rem 0.9rem !important;
+  margin-top: 0.8rem;
+  opacity: 0;
+  width: auto !important;
+  min-width: auto !important;
+  height: auto !important;
+  line-height: 1 !important;
+  border-radius: 15px !important;
+  flex: none !important;
+  display: inline-block !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .search-input:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+}
+
+/* ============================= */
 /* Social Media Buttons         */
 /* ============================= */
 .social-buttons {
   display: flex;
   gap: 1rem;
   justify-content: center;
-  margin-top: 1.5rem;
+  margin-top: 2rem;
+  align-items: center;
 }
 
 .social-button {
-  font-size: 1rem !important;
-  padding: 0.8rem 1.5rem !important;
   opacity: 0;
-  flex: 0 0 auto;
-  width: 150px;
+  width: 60px;
+  height: 60px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 0 !important;
 }
 
 .social-button i {
-  font-size: 1.1rem;
+  font-size: 1.4rem;
+}
+
+/* Instagram wyróżniony - większy i z delikatną animacją */
+.instagram-pulse {
+  width: 70px;
+  height: 70px;
+  animation: none;
+  transform-origin: center;
+  will-change: transform;
+}
+
+.instagram-pulse i {
+  font-size: 1.8rem;
+}
+
+/* Delikatna animacja pulsowania - GPU accelerated, zachowuje okrągły kształt */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1) translateZ(0);
+    opacity: inherit;
+  }
+  50% {
+    transform: scale(1.05) translateZ(0);
+    opacity: inherit;
+  }
 }
 
 /* Main buttons (Allegro, OLX) - larger and equal width with slow fade-in */
@@ -655,8 +700,21 @@ body {
   }
   
   .social-button {
-    width: 140px;
-    font-size: 0.9rem !important;
+    width: 50px;
+    height: 50px;
+  }
+  
+  .instagram-pulse {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .instagram-pulse i {
+    font-size: 1.5rem;
+  }
+  
+  .social-button i {
+    font-size: 1.2rem;
   }
   
   .tagline {
@@ -664,6 +722,22 @@ body {
     margin-bottom: 3rem;
     max-width: 90%;
     line-height: 1.5;
+  }
+  
+  .search-label {
+    font-size: 0.9rem;
+  }
+  
+  .search-button {
+    font-size: 0.8rem !important;
+    padding: 0.3rem 0.7rem !important;
+    min-width: auto;
+  }
+  
+  .search-input {
+    font-size: 1rem;
+    padding: 0.7rem 1.2rem;
+    max-width: 350px;
   }
   
   .about-content {
@@ -698,18 +772,10 @@ body {
   }
   
   .social-buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    width: 100%;
-    justify-items: center;
-    gap: 0.8rem;
-  }
-  
-  /* Facebook na środku pod pozostałymi */
-  #facebook-btn {
-    grid-column: 1 / -1;
-    width: 140px;
-    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
   }
   
   .info-section {
@@ -746,8 +812,21 @@ body {
   }
   
   .social-button {
-    width: 140px;
-    font-size: 0.85rem !important;
+    width: 45px;
+    height: 45px;
+  }
+  
+  .instagram-pulse {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .instagram-pulse i {
+    font-size: 1.3rem;
+  }
+  
+  .social-button i {
+    font-size: 1.1rem;
   }
   
   .tagline {
@@ -755,6 +834,22 @@ body {
     margin-bottom: 2rem;
     max-width: 95%;
     line-height: 1.4;
+  }
+  
+  .search-label {
+    font-size: 0.8rem;
+  }
+  
+  .search-button {
+    font-size: 0.75rem !important;
+    padding: 0.25rem 0.6rem !important;
+    min-width: auto;
+  }
+  
+  .search-input {
+    font-size: 0.9rem;
+    padding: 0.6rem 1rem;
+    max-width: 300px;
   }
   
   .about-section {

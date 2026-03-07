@@ -5,47 +5,107 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   window.scrollTo(0, 0);
   
-  // Helper functions for native JS
-  function setOpacity(selector, value) {
-    const element = document.querySelector(selector);
+  // Cache DOM elements for better performance
+  const elements = {
+    background: document.querySelector('.background'),
+    logo: document.querySelector('.logo'),
+    subtitle: document.querySelector('.subtitle'),
+    container: document.querySelector('.container'),
+    tagline: document.querySelector('.tagline'),
+    allegroBtn: document.getElementById('allegro-btn'),
+    olxBtn: document.getElementById('olx-btn'),
+    searchLabel: document.querySelector('.search-label'),
+    searchInput: document.querySelector('.search-input'),
+    searchBtn: document.getElementById('search-btn'),
+    socialButtons: document.querySelectorAll('.social-button'),
+    infoSection: document.querySelector('.info-section'),
+    infoCards: document.querySelectorAll('.info-card'),
+    scrollBtn: document.querySelector('.scroll-down-btn'),
+    instagramBtn: document.getElementById('instagram-btn'),
+    facebookBtn: document.getElementById('facebook-btn'),
+    tiktokBtn: document.getElementById('tiktok-btn'),
+    scrollToAboutBtn: document.getElementById('scroll-to-about'),
+    aboutSection: document.getElementById('about'),
+    aboutContent: document.querySelector('.about-content'),
+    aboutTitle: document.querySelector('.about-title'),
+    aboutText: document.querySelector('.about-text'),
+    statItems: document.querySelectorAll('.stat-item')
+  };
+  
+  // Helper functions using cached elements
+  function setElementOpacity(element, value) {
     if (element) element.style.opacity = value;
   }
   
-  function setOpacityAll(selector, value) {
-    const elements = document.querySelectorAll(selector);
-    elements.forEach(el => el.style.opacity = value);
+  function setElementsOpacity(elements, value) {
+    if (elements) elements.forEach(el => el.style.opacity = value);
   }
   
-  function addClass(selector, className) {
-    const element = document.querySelector(selector);
-    if (element) element.classList.add(className);
+  // Google Analytics tracking helper
+  function trackEvent(action, category, label, value) {
+    if (typeof gtag !== 'undefined') {
+      gtag('event', action, {
+        event_category: category,
+        event_label: label,
+        value: value
+      });
+    }
+  }
+
+  // Helper function to add button event listeners (click + middle click) with tracking
+  function addButtonListeners(element, url, trackingLabel, eventName) {
+    if (!element) return;
+    
+    const openUrl = () => {
+      // Track the button click with platform name as event
+      trackEvent(eventName, 'button', trackingLabel);
+      window.open(url, '_blank');
+    };
+    
+    element.addEventListener('click', openUrl, { passive: true });
+    element.addEventListener('mousedown', function(e) {
+      if (e.button === 1) { // Middle mouse button
+        e.preventDefault();
+        trackEvent(eventName, 'button', trackingLabel);
+        window.open(url, '_blank');
+      }
+    }, { passive: false });
   }
   
   // Animacja sekwencyjna z jednym requestAnimationFrame
   const animationSequence = [
     { time: 0, action: () => {
-      setOpacity('.background', '1');
-      setOpacity('.logo', '1');
-      setOpacity('.subtitle', '1');
+      setElementOpacity(elements.background, '1');
+      setElementOpacity(elements.logo, '1');
+      setElementOpacity(elements.subtitle, '1');
+      setElementOpacity(elements.tagline, '1');
+      setElementOpacity(elements.allegroBtn, '1');
+      setElementOpacity(elements.olxBtn, '1');
     }},
-    { time: 200, action: () => setOpacity('.container', '1') },
-    { time: 1000, action: () => setOpacity('.tagline', '1') },
-    { time: 1400, action: () => {
-      setOpacity('#allegro-btn', '1');
-      setOpacity('#olx-btn', '1');
+    { time: 200, action: () => setElementOpacity(elements.container, '1') },
+    { time: 600, action: () => {
+      setElementOpacity(elements.searchLabel, '1');
+      setElementOpacity(elements.searchInput, '1');
+      setElementOpacity(elements.searchBtn, '1');
     }},
-    { time: 1800, action: () => setOpacityAll('.social-button', '1') },
-    { time: 2200, action: () => {
-      setOpacity('.info-section', '1');
-      const infoCards = document.querySelectorAll('.info-card');
-      infoCards.forEach(function(card, index) {
+    { time: 900, action: () => {
+      setElementOpacity(elements.tiktokBtn, '1');
+      setElementOpacity(elements.facebookBtn, '1');
+      setElementOpacity(elements.instagramBtn, '1');
+      if (elements.instagramBtn) {
+        elements.instagramBtn.style.animation = 'pulse 2s ease-in-out infinite';
+      }
+    }},
+    { time: 1300, action: () => {
+      setElementOpacity(elements.infoSection, '1');
+      elements.infoCards.forEach(function(card, index) {
         setTimeout(function() {
           card.style.opacity = '1';
           card.style.transform = 'translateX(0)';
         }, index * 150);
       });
     }},
-    { time: 2500, action: () => setOpacity('.scroll-down-btn', '1') }
+    { time: 1600, action: () => setElementOpacity(elements.scrollBtn, '1') }
   ];
   
   const startTime = performance.now();
@@ -66,51 +126,63 @@ document.addEventListener('DOMContentLoaded', function() {
   
   requestAnimationFrame(runAnimationSequence);
   
-  // Obsługa kliknięć przycisków (otwarcie nowych kart)
-  const allegroBtn = document.getElementById('allegro-btn');
-  if (allegroBtn) {
-    allegroBtn.addEventListener('click', function() {
-      window.open('https://allegro.pl/uzytkownik/BookLoft/sklep', '_blank');
-    });
-  }
-  
-  const olxBtn = document.getElementById('olx-btn');
-  if (olxBtn) {
-    olxBtn.addEventListener('click', function() {
-      window.open('https://www.olx.pl/oferty/uzytkownik/1kqSz0/', '_blank');
-    });
+  // Obsługa kliknięć przycisków (otwarcie nowych kart) - with tracking
+  addButtonListeners(elements.allegroBtn, 'https://allegro.pl/uzytkownik/BookLoft/sklep', 'allegro_button', 'allegro');
+  addButtonListeners(elements.olxBtn, 'https://www.olx.pl/oferty/uzytkownik/1kqSz0/', 'olx_button', 'olx');
+  addButtonListeners(elements.instagramBtn, 'https://www.instagram.com/bookloft.pl?igsh=dmg0ZTRra3BoaGh0', 'instagram_button', 'instagram');
+  addButtonListeners(elements.facebookBtn, 'https://www.facebook.com/profile.php?id=100081830936011', 'facebook_button', 'facebook');
+  addButtonListeners(elements.tiktokBtn, 'https://www.tiktok.com/@bookloft.pl', 'tiktok_button', 'tiktok');
+
+  // Funkcja wyszukiwania - przekierowanie do Allegro z trackowaniem
+  function performSearch() {
+    const searchQuery = elements.searchInput ? elements.searchInput.value.trim() : '';
+    
+    if (searchQuery) {
+      // Track search event with query - only when actually searching
+      trackEvent('wyszukiwanie', 'search', searchQuery);
+      
+      // Enkodowanie zapytania dla URL
+      const encodedQuery = encodeURIComponent(searchQuery);
+      const allegroSearchUrl = `https://allegro.pl/uzytkownik/BookLoft?string=${encodedQuery}`;
+      
+      // Otwórz w nowej karcie
+      window.open(allegroSearchUrl, '_blank');
+    }
+    // Removed empty search tracking - don't track when nothing is searched
   }
 
-  const instagramBtn = document.getElementById('instagram-btn');
-  if (instagramBtn) {
-    instagramBtn.addEventListener('click', function() {
-      window.open('https://www.instagram.com/bookloft.pl?igsh=dmg0ZTRra3BoaGh0', '_blank');
-    });
+  // Obsługa przycisku "Szukaj"
+  if (elements.searchBtn) {
+    elements.searchBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      performSearch();
+    }, { passive: false });
+    
+    elements.searchBtn.addEventListener('mousedown', function(e) {
+      if (e.button === 1) { // Middle mouse button
+        e.preventDefault();
+        performSearch();
+      }
+    }, { passive: false });
   }
 
-  const facebookBtn = document.getElementById('facebook-btn');
-  if (facebookBtn) {
-    facebookBtn.addEventListener('click', function() {
-      window.open('https://www.facebook.com/profile.php?id=100081830936011', '_blank');
-    });
+  // Obsługa klawisza Enter w polu wyszukiwania
+  if (elements.searchInput) {
+    elements.searchInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        performSearch();
+      }
+    }, { passive: false });
   }
 
-  const tiktokBtn = document.getElementById('tiktok-btn');
-  if (tiktokBtn) {
-    tiktokBtn.addEventListener('click', function() {
-      window.open('https://www.tiktok.com/@bookloft.pl', '_blank');
-    });
-  }
-
-  // Płynne scrollowanie do sekcji "O nas"
-  const scrollToAboutBtn = document.getElementById('scroll-to-about');
-  if (scrollToAboutBtn) {
-    scrollToAboutBtn.addEventListener('click', function(e) {
+  // Płynne scrollowanie do sekcji "O nas" bez trackingu
+  if (elements.scrollToAboutBtn) {
+    elements.scrollToAboutBtn.addEventListener('click', function(e) {
       e.preventDefault();
       
-      const aboutSection = document.getElementById('about');
-      if (aboutSection) {
-        const targetTop = aboutSection.offsetTop;
+      if (elements.aboutSection) {
+        const targetTop = elements.aboutSection.offsetTop;
         
         // Używaj native smooth scroll jeśli dostępne
         if ('scrollBehavior' in document.documentElement.style) {
@@ -150,28 +222,28 @@ document.addEventListener('DOMContentLoaded', function() {
     const observer = new IntersectionObserver(function(entries) {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
+          // Track when user reaches about section
+          trackEvent('o_nas', 'section', 'about_section');
+          
           // Fade-in and scale-up about content
-          const aboutContent = document.querySelector('.about-content');
-          if (aboutContent) {
-            aboutContent.style.opacity = '1';
-            aboutContent.classList.add('scale-animate');
+          if (elements.aboutContent) {
+            elements.aboutContent.style.opacity = '1';
+            elements.aboutContent.classList.add('scale-animate');
           }
           
           setTimeout(function() {
-            setOpacity('.about-title', '1');
+            setElementOpacity(elements.aboutTitle, '1');
           }, 200);
           
           setTimeout(function() {
-            const aboutText = document.querySelector('.about-text');
-            if (aboutText) {
-              aboutText.classList.add('text-animate');
+            if (elements.aboutText) {
+              elements.aboutText.classList.add('text-animate');
             }
           }, 600);
           
           // Animacja statystyk od lewej do prawej - wcześniej ale wolniej
           setTimeout(function() {
-            const statItems = document.querySelectorAll('.stat-item');
-            statItems.forEach(function(stat, index) {
+            elements.statItems.forEach(function(stat, index) {
               setTimeout(function() {
                 stat.style.opacity = '1';
                 stat.style.transform = 'translateX(0)';
@@ -180,35 +252,30 @@ document.addEventListener('DOMContentLoaded', function() {
           }, 800);
         } else {
           // Scale down when leaving viewport
-          const aboutContent = document.querySelector('.about-content');
-          if (aboutContent) {
-            aboutContent.classList.remove('scale-animate');
+          if (elements.aboutContent) {
+            elements.aboutContent.classList.remove('scale-animate');
           }
         }
       });
     }, observerOptions);
     
-    const aboutContent = document.querySelector('.about-content');
-    if (aboutContent) {
-      observer.observe(aboutContent);
+    if (elements.aboutContent) {
+      observer.observe(elements.aboutContent);
     }
   } else {
     // Fallback - pokazuj od razu jeśli brak Intersection Observer
-    const aboutContent = document.querySelector('.about-content');
-    if (aboutContent) {
-      aboutContent.style.opacity = '1';
-      aboutContent.classList.add('scale-animate');
+    if (elements.aboutContent) {
+      elements.aboutContent.style.opacity = '1';
+      elements.aboutContent.classList.add('scale-animate');
     }
     
-    setOpacity('.about-title', '1');
+    setElementOpacity(elements.aboutTitle, '1');
     
-    const aboutText = document.querySelector('.about-text');
-    if (aboutText) {
-      aboutText.classList.add('text-animate');
+    if (elements.aboutText) {
+      elements.aboutText.classList.add('text-animate');
     }
     
-    const statItems = document.querySelectorAll('.stat-item');
-    statItems.forEach(function(stat) {
+    elements.statItems.forEach(function(stat) {
       stat.style.opacity = '1';
       stat.style.transform = 'translateX(0)';
     });
