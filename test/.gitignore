@@ -1,0 +1,5 @@
+storage/
+storage-local-test/
+.env
+*.log
+node_modules/

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BookLoft sklep testowy</title>
+  <link rel="stylesheet" href="/test/assets/css/styles.css?v=1.00">
+  <script defer src="/test/assets/js/store.js?v=1.00"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/test" aria-label="BookLoft sklep">
+      <span class="brand-mark"><img src="/test/assets/img/logo.png?v=1.00" alt=""></span>
+      <span>
+        <strong>Sklep testowy</strong>
+        <small>PRZESTRZEŃ PEŁNA KSIĄŻEK</small>
+      </span>
+    </a>
+    <nav class="top-actions" aria-label="Nawigacja">
+      <a href="/test/panel" class="ghost-action">Panel</a>
+      <form method="post" action="/test/logout">
+        <button type="submit" class="ghost-action">Wyloguj</button>
+      </form>
+    </nav>
+  </header>
+
+  <main class="shop-layout">
+    <aside class="category-rail" aria-label="Kategorie">
+      <div class="rail-head">
+        <span>Kategorie</span>
+        <button class="icon-action" id="clear-category" type="button" title="Wszystkie produkty" aria-label="Wszystkie produkty">×</button>
+      </div>
+      <div id="category-tree" class="category-tree"></div>
+    </aside>
+
+    <section class="shop-surface" aria-live="polite">
+      <div class="shop-toolbar">
+        <div>
+          <p class="eyebrow">BookLoft / Base.com</p>
+          <h1>Dostępne książki</h1>
+        </div>
+        <div class="search-box">
+          <label for="product-search">Szukaj</label>
+          <input id="product-search" type="search" placeholder="Tytuł, SKU, EAN">
+        </div>
+      </div>
+
+      <div class="mobile-categories">
+        <label for="category-select">Kategoria</label>
+        <select id="category-select">
+          <option value="">Wszystkie</option>
+        </select>
+      </div>
+
+      <div class="status-strip" id="status-strip">
+        <span>Ładowanie sklepu...</span>
+      </div>
+
+      <div class="product-grid" id="product-grid"></div>
+      <div class="empty-state" id="empty-state" hidden>
+        <h2>Brak produktów do pokazania</h2>
+        <p>Sklep pokazuje tylko produkty dodane w panelu i mające stan magazynowy większy od zera.</p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
