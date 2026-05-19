@@ -9,7 +9,7 @@
     "healthcheck": "node scripts/healthcheck.js"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=18.19"
   },
   "dependencies": {
     "express": "^4.19.2",
