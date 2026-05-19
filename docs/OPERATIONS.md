@@ -57,7 +57,7 @@ git fetch
 git switch ver-1.00
 git pull --ff-only
 cd test
-npm install --omit=dev
+npm ci --omit=dev
 systemctl restart bookloft-test-shop.service
 systemctl reload nginx.service
 ```
