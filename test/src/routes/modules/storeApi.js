@@ -9,7 +9,19 @@ export function createStoreApiRouter(config, storeCache) {
   router.get(
     "/storefront",
     asyncHandler(async (_req, res) => {
-      res.json(await storeCache.getStorefront());
+      res.json(await storeCache.getStorefrontList());
+    })
+  );
+
+  router.get(
+    "/products/:productId",
+    asyncHandler(async (req, res) => {
+      const product = await storeCache.getProduct(req.params.productId);
+      if (!product) {
+        res.status(404).json({ status: "not_found" });
+        return;
+      }
+      res.json(product);
     })
   );
 

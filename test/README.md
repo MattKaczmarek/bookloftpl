@@ -1,6 +1,6 @@
 # BookLoft sklep testowy
 
-Wersja sklepu: `1.00`.
+Wersja sklepu: `1.01`.
 
 Ten katalog zawiera izolowana aplikacje sklepu pod adresem `/test`. Glowna wizytowka `bookloft.pl` pozostaje poza tym katalogiem i nie jest zaleznoscia sklepu.
 
@@ -8,11 +8,21 @@ Ten katalog zawiera izolowana aplikacje sklepu pod adresem `/test`. Glowna wizyt
 
 - sklep pod `https://bookloft.pl/test`,
 - panel administratora pod `https://bookloft.pl/test/panel`,
+- osobne strony produktow pod `/test/product/:id/:slug`,
 - logowanie loginem z ENV i haslem z ENV,
 - integracja z Base.com przez `BASE_COM_TOKEN`,
 - ceny z grupy cenowej Base o nazwie `Sklep`,
 - cache danych, zeby frontend nie odpytywal Base przy wejsciach uzytkownikow,
 - reczne dodawanie nowych produktow przyciskiem `Dodaj nowe`.
+
+## Zmiany w 1.01
+
+- Glowny listing renderuje tylko 20 produktow na start.
+- Dalsze produkty pokazuja sie dopiero po wyszukiwaniu albo wyborze kategorii, z porcjowaniem wynikow po 48 kart.
+- Karta produktu prowadzi do wlasnego adresu produktu.
+- Pelny opis HTML nie jest juz wysylany do kart listingu; trafia dopiero na strone produktu.
+- Kategorie na kartach i w szybkich filtrach sa skracane do ostatniego segmentu, np. `Fantasy`.
+- Motyw sklepu jest bialy, a logo z repo jest renderowane jako czarny znak na bialym tle.
 
 ## Struktura
 
@@ -30,6 +40,7 @@ test/
     assets/
       css/styles.css
       js/store.js
+      js/product.js
       js/panel.js
       img/logo.png
   deploy/                     # przyklady systemd i Nginx

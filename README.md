@@ -5,8 +5,8 @@ Publiczny statyczny landing page BookLoft oraz izolowany testowy sklep pod `/tes
 Aktywny branch produkcyjnej wizytowki na DO: `main`.
 Repo na DO: `/home/bookloftpl`.
 Serwowanie wizytowki: Nginx jako statyczne pliki.
-Branch testowego sklepu: `ver-1.00`.
-Wersja testowego sklepu: `1.00`.
+Branch testowego sklepu: `ver-1.01`.
+Wersja testowego sklepu: `1.01`.
 
 ## Zakres
 

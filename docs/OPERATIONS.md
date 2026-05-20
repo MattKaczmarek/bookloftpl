@@ -8,7 +8,7 @@ Usluga: brak procesu aplikacyjnego, statyczne pliki serwuje `nginx.service`.
 
 `bookloftpl` to publiczny landing page. Nie jest czescia runtime Asystenta i nie przechowuje danych operacyjnych Asystenta.
 
-Od brancha `ver-1.00` repo zawiera tez izolowany sklep testowy w katalogu `test/`, serwowany pod `/test`. Glowna wizytowka pod `/` pozostaje statyczna i nie powinna byc zmieniana przy pracach nad sklepem.
+Od brancha `ver-1.00` repo zawiera tez izolowany sklep testowy w katalogu `test/`, serwowany pod `/test`. Aktualna linia prac nad sklepem to `ver-1.01`. Glowna wizytowka pod `/` pozostaje statyczna i nie powinna byc zmieniana przy pracach nad sklepem.
 
 Nie dotyczy:
 
@@ -46,15 +46,15 @@ Reload Nginx jest potrzebny tylko po zmianie konfiguracji serwera, nie po zwykly
 
 ### Sklep testowy `/test`
 
-Branch sklepu: `ver-1.00`.
-Wersja sklepu: `1.00`.
+Branch sklepu: `ver-1.01`.
+Wersja sklepu: `1.01`.
 
 Minimalny deploy sklepu:
 
 ```bash
 cd /home/bookloftpl
 git fetch
-git switch ver-1.00
+git switch ver-1.01
 git pull --ff-only
 cd test
 npm ci --omit=dev
@@ -82,6 +82,13 @@ Cache sklepu:
 - automatyczny refresh nie dodaje nowych produktow,
 - produkt ze stanem `0` wypada ze sklepu i wraca tylko po akcji `Dodaj nowe` w panelu,
 - puste kategorie sa usuwane z drzewa kategorii sklepu.
+
+Frontend sklepu od `1.01`:
+
+- `/test` renderuje tylko 20 produktow na start,
+- wyszukiwanie i kategorie laduja wyniki porcjami,
+- karta produktu ma wlasny URL `/test/product/:id/:slug`,
+- pelny HTML opisu jest pobierany dopiero dla strony produktu.
 
 ## Weryfikacja
 

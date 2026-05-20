@@ -14,5 +14,9 @@ export function createPageRouter(config) {
     res.sendFile(path.join(config.publicDir, "panel.html"));
   });
 
+  router.get("/product/:productId/:slug?", auth, (_req, res) => {
+    res.sendFile(path.join(config.publicDir, "product.html"));
+  });
+
   return router;
 }

@@ -110,6 +110,28 @@ export class StoreCache {
     return readJson(this.files.storefront, emptyStorefront(this.config.version));
   }
 
+  async getStorefrontList() {
+    const storefront = await this.getStorefront();
+    return {
+      ...storefront,
+      products: storefront.products.map(toListProduct)
+    };
+  }
+
+  async getProduct(productId) {
+    const storefront = await this.getStorefront();
+    const product = storefront.products.find((item) => String(item.id) === String(productId));
+    if (!product) return null;
+    const related = storefront.products
+      .filter((item) => item.id !== product.id && item.categoryId && item.categoryId === product.categoryId)
+      .slice(0, 8)
+      .map(toListProduct);
+    return {
+      ...product,
+      related
+    };
+  }
+
   async getStatus() {
     const [published, storefront, meta, catalog, stock] = await Promise.all([
       this.readPublished(),
@@ -421,13 +443,14 @@ function normalizeProduct(productId, record, context) {
   const language = context.defaultLanguage || "";
   const localizedName = language ? fields[`name|${language}`] : "";
   const localizedDescription = language ? fields[`description|${language}`] : "";
-  const name = String(localizedName || fields.name || record.name || record.sku || `Produkt ${productId}`).trim();
+    const name = String(localizedName || fields.name || record.name || record.sku || `Produkt ${productId}`).trim();
   const descriptionHtml = sanitizeDescription(localizedDescription || fields.description || "");
   const priceRaw = record.prices ? record.prices[String(context.priceGroupId)] : null;
   const price = priceRaw === undefined || priceRaw === null || priceRaw === "" ? null : Number(priceRaw);
 
   return {
     id: String(productId),
+    slug: slugify(name),
     sku: record.sku || "",
     ean: record.ean || "",
     name,
@@ -519,6 +542,7 @@ function buildCategoryTree(categories, products) {
     nodes.set(id, {
       id,
       name: category.name || "Kategoria",
+      displayName: shortCategoryName(category.name || "Kategoria"),
       parentId: category.parent_id ? String(category.parent_id) : "",
       productCount: productCounts[id] || 0,
       children: []
@@ -546,7 +570,8 @@ function getCategoryPath(categories, categoryId) {
   const path = [];
   let current = categoryById.get(String(categoryId));
   while (current) {
-    path.unshift({ id: String(current.category_id), name: current.name || "Kategoria" });
+    const name = current.name || "Kategoria";
+    path.unshift({ id: String(current.category_id), name, displayName: shortCategoryName(name) });
     current = current.parent_id ? categoryById.get(String(current.parent_id)) : null;
   }
   return path;
@@ -554,4 +579,45 @@ function getCategoryPath(categories, categoryId) {
 
 function countCategories(categories) {
   return categories.reduce((sum, category) => sum + 1 + countCategories(category.children || []), 0);
+}
+
+function toListProduct(product) {
+  const categoryLeaf = product.categoryPath?.length
+    ? product.categoryPath[product.categoryPath.length - 1].displayName || product.categoryPath[product.categoryPath.length - 1].name
+    : "";
+  const descriptionText = stripHtml(product.descriptionHtml || "");
+  return {
+    id: product.id,
+    slug: product.slug || slugify(product.name),
+    sku: product.sku,
+    ean: product.ean,
+    name: product.name,
+    searchText: product.searchText,
+    price: product.price,
+    currency: product.currency,
+    categoryId: product.categoryId,
+    categoryName: categoryLeaf,
+    categoryPath: product.categoryPath,
+    images: product.images,
+    stock: product.stock,
+    descriptionText: descriptionText.length > 180 ? `${descriptionText.slice(0, 177).trim()}...` : descriptionText
+  };
+}
+
+function shortCategoryName(name) {
+  const parts = String(name || "")
+    .split("/")
+    .map((part) => part.trim())
+    .filter(Boolean);
+  return parts.length ? parts[parts.length - 1] : String(name || "Kategoria");
+}
+
+function slugify(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80) || "produkt";
 }

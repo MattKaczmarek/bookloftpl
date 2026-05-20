@@ -32,7 +32,7 @@ function basePath(value) {
 }
 
 export const config = {
-  version: "1.00",
+  version: "1.01",
   appRoot,
   publicDir: path.join(appRoot, "public"),
   port: intEnv("BOOKLOFT_TEST_PORT", 3205),
