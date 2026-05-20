@@ -3,18 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>BookLoft sklep testowy</title>
+  <title>BookLoft</title>
   <link rel="stylesheet" href="/test/assets/css/styles.css?v=1.01">
   <script defer src="/test/assets/js/store.js?v=1.01"></script>
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="/test" aria-label="BookLoft sklep">
-      <span class="brand-mark"><img src="/test/assets/img/logo.png?v=1.01" alt=""></span>
-      <span>
-        <strong>Sklep testowy</strong>
-        <small>PRZESTRZEN PELNA KSIAZEK</small>
-      </span>
+      <span class="brand-mark"><img src="/test/assets/img/logo-mark.png?v=1.01" alt=""></span>
+      <span class="brand-word">BookLoft</span>
     </a>
     <nav class="top-actions" aria-label="Nawigacja">
       <a href="/test/panel" class="ghost-action">Panel</a>
@@ -36,12 +33,12 @@
     <section class="shop-surface" aria-live="polite">
       <div class="shop-toolbar">
         <div>
-          <p class="eyebrow">BookLoft / Base.com</p>
-          <h1>Dostepne ksiazki</h1>
+          <p class="eyebrow">Używane książki</p>
+          <h1>Znajdź kolejną historię</h1>
         </div>
         <div class="search-box">
           <label for="product-search">Szukaj</label>
-          <input id="product-search" type="search" placeholder="Tytul, SKU, EAN">
+          <input id="product-search" type="search" placeholder="Tytuł, autor, seria">
         </div>
       </div>
 
@@ -55,14 +52,14 @@
       <div class="category-chips" id="category-chips" aria-label="Szybkie kategorie"></div>
 
       <div class="status-strip" id="status-strip">
-        <span>Ladowanie sklepu...</span>
+        <span>Ładowanie sklepu...</span>
       </div>
 
       <div class="product-grid" id="product-grid"></div>
-      <button class="load-more" id="load-more" type="button" hidden>Pokaz wiecej</button>
+      <button class="load-more" id="load-more" type="button" hidden>Pokaż więcej</button>
       <div class="empty-state" id="empty-state" hidden>
-        <h2>Brak produktow do pokazania</h2>
-        <p>Sklep pokazuje tylko produkty dodane w panelu i majace stan magazynowy wiekszy od zera.</p>
+        <h2>Brak produktów do pokazania</h2>
+        <p>Sklep pokazuje tylko produkty dodane w panelu i mające stan magazynowy większy od zera.</p>
       </div>
     </section>
   </main>

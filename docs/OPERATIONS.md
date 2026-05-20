@@ -88,6 +88,8 @@ Frontend sklepu od `1.01`:
 - `/test` renderuje tylko 20 produktow na start,
 - wyszukiwanie i kategorie laduja wyniki porcjami,
 - karta produktu ma wlasny URL `/test/product/:id/:slug`,
+- karta listingu nie pokazuje opisu, SKU, stanu magazynowego ani przyciskow `Kup`/`Koszyk`; ma jeden link `Szczegoly`,
+- kategorie sa sortowane od najwiekszej liczby widocznych ofert, a szybkie filtry uzywaja skroconych, deduplikowanych nazw,
 - pelny HTML opisu jest pobierany dopiero dla strony produktu.
 
 ## Weryfikacja

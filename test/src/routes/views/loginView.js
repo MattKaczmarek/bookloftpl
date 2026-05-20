@@ -4,14 +4,17 @@ export function renderLogin(config, error) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>BookLoft sklep testowy</title>
+  <title>BookLoft</title>
   <link rel="stylesheet" href="${config.basePath}/assets/css/styles.css?v=${config.version}">
 </head>
 <body class="login-page">
   <main class="login-shell">
     <section class="login-panel" aria-labelledby="login-title">
-      <p class="eyebrow">BookLoft / test</p>
-      <h1 id="login-title">Sklep testowy</h1>
+      <div class="login-brand" aria-label="BookLoft">
+        <span class="brand-mark"><img src="${config.basePath}/assets/img/logo-mark.png?v=${config.version}" alt=""></span>
+        <span class="brand-word">BookLoft</span>
+      </div>
+      <h1 id="login-title">Zaloguj się</h1>
       <form method="post" action="${config.basePath}/login" class="login-form">
         <input type="hidden" name="next" value="${config.basePath}">
         <label>

@@ -24,7 +24,7 @@ const els = {
 };
 
 init().catch((error) => {
-  els.status.textContent = `Nie udalo sie zaladowac sklepu: ${error.message}`;
+  els.status.textContent = `Nie udało się załadować sklepu: ${error.message}`;
 });
 
 async function init() {
@@ -82,9 +82,19 @@ function renderCategories() {
     els.categorySelect.appendChild(option);
   }
 
+  const seenChipLabels = new Set();
   const chipCategories = flat
-    .filter((category) => category.productCount > 0)
-    .sort((a, b) => b.productCount - a.productCount)
+    .filter((category) => (category.totalProductCount || category.productCount || 0) > 0)
+    .sort((a, b) => {
+      const countDiff = (b.totalProductCount || b.productCount || 0) - (a.totalProductCount || a.productCount || 0);
+      return countDiff || String(a.displayName || a.name).localeCompare(String(b.displayName || b.name), "pl-PL");
+    })
+    .filter((category) => {
+      const key = String(category.displayName || category.name || "").toLowerCase();
+      if (seenChipLabels.has(key)) return false;
+      seenChipLabels.add(key);
+      return true;
+    })
     .slice(0, 12);
 
   for (const category of chipCategories) {
@@ -112,7 +122,7 @@ function categoryList(categories) {
     button.type = "button";
     button.className = "category-button";
     button.dataset.categoryId = category.id;
-    button.innerHTML = `<span>${escapeHtml(category.displayName || category.name)}</span><small>${category.productCount || ""}</small>`;
+    button.innerHTML = `<span>${escapeHtml(category.displayName || category.name)}</span><small>${category.totalProductCount || category.productCount || ""}</small>`;
     button.addEventListener("click", () => {
       state.categoryId = category.id;
       els.categorySelect.value = category.id;
@@ -140,8 +150,8 @@ function renderProducts() {
   const next = products.slice(state.rendered, state.modeLimit);
   const fragment = document.createDocumentFragment();
 
-  for (const product of next) {
-    fragment.appendChild(renderProduct(product));
+  for (const [index, product] of next.entries()) {
+    fragment.appendChild(renderProduct(product, state.rendered + index));
   }
 
   els.grid.appendChild(fragment);
@@ -149,9 +159,8 @@ function renderProducts() {
   els.empty.hidden = products.length > 0;
   els.loadMore.hidden = !filteredMode || state.rendered >= products.length;
 
-  const filteredLabel = filteredMode ? `${products.length} wynikow` : `${Math.min(INITIAL_LIMIT, products.length)} na start`;
-  const updated = state.meta.priceGroupName ? `Ceny: ${state.meta.priceGroupName}` : "Ceny: Sklep";
-  els.status.innerHTML = `<span>${filteredLabel} z ${state.products.length} produktow</span><span>${updated}</span>`;
+  const filteredLabel = filteredMode ? `${products.length} wyników` : `${Math.min(INITIAL_LIMIT, products.length)} propozycji na start`;
+  els.status.innerHTML = `<span>${filteredLabel} z ${state.products.length} produktów</span><span>Używane książki dostępne w magazynie</span>`;
 }
 
 function filteredProducts() {
@@ -163,33 +172,27 @@ function filteredProducts() {
   });
 }
 
-function renderProduct(product) {
+function renderProduct(product, index = 0) {
   const link = productUrl(product);
   const card = document.createElement("article");
   card.className = "product-card";
 
   const image = product.images && product.images.length ? product.images[0] : "";
   const price = product.price === null ? "Cena do ustalenia" : formatPrice(product.price, product.currency);
+  const imagePriority = index < 6 ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"';
 
   card.innerHTML = `
     <a class="product-media" href="${link}" aria-label="${escapeAttribute(product.name)}">
-      ${image ? `<img src="${escapeAttribute(image)}" loading="lazy" alt="${escapeAttribute(product.name)}">` : '<div class="image-fallback">BookLoft</div>'}
+      ${image ? `<img src="${escapeAttribute(image)}" ${imagePriority} decoding="async" alt="${escapeAttribute(product.name)}">` : '<div class="image-fallback">BookLoft</div>'}
     </a>
     <div class="product-body">
-      <div class="product-meta">
-        <span>${escapeHtml(product.categoryName || "Bez kategorii")}</span>
-        <strong>${Number(product.stock || 0)} szt.</strong>
-      </div>
+      <span class="product-category">${escapeHtml(product.categoryName || "Książka")}</span>
       <h2><a href="${link}">${escapeHtml(product.name)}</a></h2>
       <div class="price-row">
         <strong>${price}</strong>
-        ${product.sku ? `<small>SKU ${escapeHtml(product.sku)}</small>` : ""}
+        <span>Używana książka</span>
       </div>
-      <p class="description-teaser">${escapeHtml(product.descriptionText || "Opis produktu dostepny po wejsciu w szczegoly.")}</p>
-      <div class="product-actions">
-        <button type="button" class="primary-action">Kup</button>
-        <button type="button" class="secondary-action">Koszyk</button>
-      </div>
+      <a class="details-action" href="${link}">Szczegóły</a>
     </div>
   `;
 

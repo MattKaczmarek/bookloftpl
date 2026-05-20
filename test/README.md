@@ -20,9 +20,11 @@ Ten katalog zawiera izolowana aplikacje sklepu pod adresem `/test`. Glowna wizyt
 - Glowny listing renderuje tylko 20 produktow na start.
 - Dalsze produkty pokazuja sie dopiero po wyszukiwaniu albo wyborze kategorii, z porcjowaniem wynikow po 48 kart.
 - Karta produktu prowadzi do wlasnego adresu produktu.
+- Karta listingu pokazuje tylko zdjecie, skrocona kategorie, tytul, cene i przycisk `Szczegoly`; nie pokazuje opisu, SKU, stanu magazynowego, `Kup` ani `Koszyk`.
 - Pelny opis HTML nie jest juz wysylany do kart listingu; trafia dopiero na strone produktu.
-- Kategorie na kartach i w szybkich filtrach sa skracane do ostatniego segmentu, np. `Fantasy`.
-- Motyw sklepu jest bialy, a logo z repo jest renderowane jako czarny znak na bialym tle.
+- Kategorie sa sortowane malejaco po liczbie widocznych ofert.
+- Kategorie na kartach i w szybkich filtrach sa skracane do nazw sprzedazowych, np. `Fantasy`, `Kryminal`, `Mlodziezowe`; szybkie filtry deduplikuja powtorzone nazwy.
+- Motyw sklepu jest bialy, a logo z repo jest renderowane jako czarny znak na bialym tle przez osobny plik `logo-mark.png`.
 
 ## Struktura
 
@@ -43,6 +45,7 @@ test/
       js/product.js
       js/panel.js
       img/logo.png
+      img/logo-mark.png
   deploy/                     # przyklady systemd i Nginx
   scripts/                    # healthcheck
 ```

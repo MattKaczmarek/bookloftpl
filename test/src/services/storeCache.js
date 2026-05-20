@@ -557,8 +557,15 @@ function buildCategoryTree(categories, products) {
   }
 
   const sortTree = (items) => {
-    items.sort((a, b) => a.name.localeCompare(b.name, "pl-PL"));
-    for (const item of items) sortTree(item.children);
+    for (const item of items) {
+      sortTree(item.children);
+      item.totalProductCount =
+        (item.productCount || 0) + item.children.reduce((sum, child) => sum + (child.totalProductCount || 0), 0);
+    }
+    items.sort((a, b) => {
+      const countDiff = (b.totalProductCount || 0) - (a.totalProductCount || 0);
+      return countDiff || a.displayName.localeCompare(b.displayName, "pl-PL");
+    });
   };
   sortTree(roots);
   return roots;
@@ -585,22 +592,21 @@ function toListProduct(product) {
   const categoryLeaf = product.categoryPath?.length
     ? product.categoryPath[product.categoryPath.length - 1].displayName || product.categoryPath[product.categoryPath.length - 1].name
     : "";
-  const descriptionText = stripHtml(product.descriptionHtml || "");
+  const categorySearch = (product.categoryPath || [])
+    .map((category) => category.displayName || category.name || "")
+    .filter(Boolean)
+    .join(" ");
   return {
     id: product.id,
     slug: product.slug || slugify(product.name),
-    sku: product.sku,
-    ean: product.ean,
     name: product.name,
-    searchText: product.searchText,
+    searchText: stripHtml(`${product.name} ${categoryLeaf} ${categorySearch}`).toLowerCase(),
     price: product.price,
     currency: product.currency,
     categoryId: product.categoryId,
     categoryName: categoryLeaf,
     categoryPath: product.categoryPath,
-    images: product.images,
-    stock: product.stock,
-    descriptionText: descriptionText.length > 180 ? `${descriptionText.slice(0, 177).trim()}...` : descriptionText
+    images: product.images
   };
 }
 
@@ -609,7 +615,34 @@ function shortCategoryName(name) {
     .split("/")
     .map((part) => part.trim())
     .filter(Boolean);
-  return parts.length ? parts[parts.length - 1] : String(name || "Kategoria");
+  const leaf = parts.length ? parts[parts.length - 1] : String(name || "Kategoria").trim();
+  const aliases = [
+    [/fantasy.*science fiction.*horror/i, "Fantasy"],
+    [/krymina.*sensacja.*thriller/i, "Kryminał"],
+    [/literatura obyczajowa.*erotyczna/i, "Obyczajowe"],
+    [/ksi[aą]żki dla m[lł]odzieży/i, "Młodzieżowe"],
+    [/ksi[aą]żki dla dzieci/i, "Dziecięce"],
+    [/dla dzieci/i, "Dziecięce"],
+    [/ksi[aą]żki naukowe.*popularnonaukowe/i, "Naukowe"],
+    [/naukowe.*popularnonaukowe/i, "Naukowe"],
+    [/poradniki.*albumy/i, "Poradniki"],
+    [/literatura pi[eę]kna/i, "Literatura piękna"],
+    [/biografie.*wspomnienia/i, "Biografie"],
+    [/historia/i, "Historia"],
+    [/komiksy/i, "Komiksy"],
+    [/filmy/i, "Filmy"],
+    [/muzyka/i, "Muzyka"],
+    [/podr[eę]czniki/i, "Podręczniki"]
+  ];
+
+  for (const [pattern, label] of aliases) {
+    if (pattern.test(leaf)) return label;
+  }
+
+  return leaf
+    .replace(/\s*-\s*.*$/, "")
+    .replace(/\s*,\s*.*$/, "")
+    .trim() || "Kategoria";
 }
 
 function slugify(value) {
