@@ -45,7 +45,7 @@ Rekordy produkcyjne:
 - `A @ -> 178.105.196.178`
 - `CNAME www -> bookloft.pl.`
 
-DigitalOcean `165.22.82.115` po cutoverze z 2026-05-20 jest wylaczony uslugowo. Nie uruchamia sie tam procesu tej strony ani mostu Nginx.
+DigitalOcean `165.22.82.115` po cutoverze z 2026-05-20 dziala tylko jako tymczasowy Nginx-most dla klientow ze starym cache DNS. Nie uruchamia sie tam procesu tej strony.
 
 ## Deploy
 
