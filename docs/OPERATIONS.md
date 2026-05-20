@@ -1,8 +1,9 @@
 # Operacje BookLoftPL
 
-Stan dokumentu: `2026-05-10`.
-Aktywny branch na DO: `main`.
+Stan dokumentu: `2026-05-20`.
+Aktywny branch na Hetznerze: `main`.
 Usluga: brak procesu aplikacyjnego, statyczne pliki serwuje `nginx.service`.
+Repo na Hetznerze: `/home/bookloftpl`.
 
 ## Granice projektu
 
@@ -39,6 +40,21 @@ systemctl reload nginx.service
 ```
 
 Reload Nginx jest potrzebny tylko po zmianie konfiguracji serwera, nie po zwyklym pullu statycznych plikow albo dokumentacji.
+
+## DNS i cutover
+
+Produkcja jest na Hetznerze (`178.105.196.178`). Domena `bookloft.pl` jest delegowana do Hetzner DNS:
+
+- `hydrogen.ns.hetzner.com`
+- `oxygen.ns.hetzner.com`
+- `helium.ns.hetzner.de`
+
+W strefie Hetznera powinny byc rekordy:
+
+- `A @ 178.105.196.178`
+- `CNAME www bookloft.pl.`
+
+DigitalOcean `165.22.82.115` nie jest juz serwerem aplikacji. Po migracji zostal wylaczony uslugowo: Nginx, Asystent i boty maja pozostac zatrzymane i wylaczone z autostartu. Jesli jakis klient nadal trafia na DO, to znaczy, ze trzyma stare cache A-recordow i moze widziec blad do wygasniecia TTL.
 
 ## Weryfikacja
 

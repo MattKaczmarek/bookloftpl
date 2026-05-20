@@ -2,8 +2,8 @@
 
 Publiczny statyczny landing page BookLoft.
 
-Aktywny branch na DO: `main`.
-Repo na DO: `/home/bookloftpl`.
+Aktywny branch produkcyjny na Hetznerze: `main`.
+Repo na Hetznerze: `/home/bookloftpl`.
 Serwowanie: Nginx jako statyczne pliki.
 
 ## Zakres
@@ -28,11 +28,24 @@ Zmiany w tym repo nie powinny dotykac storage Asystenta, konfiguracji botow ani 
 
 ## Produkcja
 
-Na DO:
+Na Hetznerze:
 
 - repo: `/home/bookloftpl`
-- domena: `bookloft.pl` oraz `www.bookloft.pl`, jesli tak wskazuje Nginx/DNS
+- domena: `bookloft.pl` oraz `www.bookloft.pl`
 - proces: brak procesu aplikacyjnego; statyczne pliki czyta `nginx.service`
+
+DNS jest zarzadzany w Hetzner DNS. Delegacja domeny u rejestratora ma wskazywac:
+
+- `hydrogen.ns.hetzner.com`
+- `oxygen.ns.hetzner.com`
+- `helium.ns.hetzner.de`
+
+Rekordy produkcyjne:
+
+- `A @ -> 178.105.196.178`
+- `CNAME www -> bookloft.pl.`
+
+DigitalOcean `165.22.82.115` po cutoverze z 2026-05-20 jest wylaczony uslugowo. Nie uruchamia sie tam procesu tej strony ani mostu Nginx.
 
 ## Deploy
 
@@ -40,7 +53,7 @@ Standard:
 
 1. zmiana lokalna,
 2. `git push`,
-3. na DO: `cd /home/bookloftpl && git fetch && git switch main && git pull`,
+3. na Hetznerze: `cd /home/bookloftpl && git fetch && git switch main && git pull`,
 4. reload Nginx tylko jesli zmieniala sie konfiguracja Nginx,
 5. smoke test publicznej strony.
 
