@@ -15,17 +15,16 @@ const state = {
 const els = {
   grid: document.querySelector("#product-grid"),
   empty: document.querySelector("#empty-state"),
-  status: document.querySelector("#status-strip"),
+  listingTitle: document.querySelector("#listing-title"),
   search: document.querySelector("#product-search"),
   categoryTree: document.querySelector("#category-tree"),
-  categoryChips: document.querySelector("#category-chips"),
   categorySelect: document.querySelector("#category-select"),
   clearCategory: document.querySelector("#clear-category"),
   loadMore: document.querySelector("#load-more")
 };
 
 init().catch((error) => {
-  els.status.textContent = `Nie udało się załadować sklepu: ${error.message}`;
+  els.listingTitle.textContent = `Nie udało się załadować sklepu: ${error.message}`;
 });
 
 async function init() {
@@ -41,9 +40,12 @@ async function init() {
   state.newestProducts = Array.isArray(newestData.products) ? newestData.products : [];
   state.categories = Array.isArray(data.categories) ? data.categories : [];
   state.meta = data.meta || {};
+  state.categoryId = categoryIdFromUrl();
 
   bindEvents();
   renderCategories();
+  els.categorySelect.value = state.categoryId;
+  syncCategoryButtons();
   resetAndRender();
 }
 
@@ -55,19 +57,10 @@ function bindEvents() {
   }, 120));
 
   els.categorySelect.addEventListener("change", () => {
-    state.categoryId = els.categorySelect.value;
-    state.modeLimit = state.query || state.categoryId ? PAGE_SIZE : INITIAL_LIMIT;
-    syncCategoryButtons();
-    resetAndRender();
+    selectCategory(els.categorySelect.value, { scroll: true });
   });
 
-  els.clearCategory.addEventListener("click", () => {
-    state.categoryId = "";
-    els.categorySelect.value = "";
-    state.modeLimit = state.query ? PAGE_SIZE : INITIAL_LIMIT;
-    syncCategoryButtons();
-    resetAndRender();
-  });
+  els.clearCategory?.addEventListener("click", () => selectCategory("", { scroll: true }));
 
   els.loadMore.addEventListener("click", () => {
     state.modeLimit += PAGE_SIZE;
@@ -77,35 +70,22 @@ function bindEvents() {
 
 function renderCategories() {
   els.categoryTree.innerHTML = "";
-  els.categoryChips.innerHTML = "";
 
   const flat = visibleCategories(state.categories);
-  els.categoryTree.appendChild(categoryList(flat.slice(0, 36)));
+  els.categoryTree.appendChild(categoryList([
+    {
+      id: "",
+      displayName: "Wszystkie oferty",
+      totalProductCount: state.products.length
+    },
+    ...flat.slice(0, 36)
+  ]));
 
   for (const category of flat.slice(0, 80)) {
     const option = document.createElement("option");
     option.value = category.id;
     option.textContent = category.displayName || category.name;
     els.categorySelect.appendChild(option);
-  }
-
-  const chipCategories = flat
-    .slice(0, 12);
-
-  for (const category of chipCategories) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "category-chip";
-    button.dataset.categoryId = category.id;
-    button.textContent = category.displayName || category.name;
-    button.addEventListener("click", () => {
-      state.categoryId = category.id;
-      els.categorySelect.value = category.id;
-      state.modeLimit = PAGE_SIZE;
-      syncCategoryButtons();
-      resetAndRender();
-    });
-    els.categoryChips.appendChild(button);
   }
 }
 
@@ -119,11 +99,7 @@ function categoryList(categories) {
     button.dataset.categoryId = category.id;
     button.innerHTML = `<span>${escapeHtml(category.displayName || category.name)}</span><small>${category.totalProductCount || category.productCount || ""}</small>`;
     button.addEventListener("click", () => {
-      state.categoryId = category.id;
-      els.categorySelect.value = category.id;
-      state.modeLimit = PAGE_SIZE;
-      syncCategoryButtons();
-      resetAndRender();
+      selectCategory(category.id, { scroll: true });
     });
     item.appendChild(button);
     list.appendChild(item);
@@ -135,6 +111,16 @@ function resetAndRender() {
   state.rendered = 0;
   els.grid.innerHTML = "";
   renderProducts();
+}
+
+function selectCategory(categoryId, { scroll = false } = {}) {
+  state.categoryId = categoryId || "";
+  els.categorySelect.value = state.categoryId;
+  state.modeLimit = state.query || state.categoryId ? PAGE_SIZE : INITIAL_LIMIT;
+  updateCategoryUrl();
+  syncCategoryButtons();
+  resetAndRender();
+  if (scroll) scrollToTop();
 }
 
 function renderProducts() {
@@ -152,11 +138,7 @@ function renderProducts() {
   state.rendered += next.length;
   els.empty.hidden = products.length > 0;
   els.loadMore.hidden = !filteredMode || state.rendered >= products.length;
-
-  const filteredLabel = filteredMode
-    ? `${products.length} wyników`
-    : `Nowości: ${Math.min(INITIAL_LIMIT, products.length)} najświeższych ofert`;
-  els.status.innerHTML = `<span>${filteredLabel}</span><span>${state.products.length} książek w katalogu</span>`;
+  els.listingTitle.textContent = "Nowości";
 }
 
 function filteredProducts() {
@@ -197,7 +179,11 @@ function renderProduct(product, index = 0) {
         <link itemprop="availability" href="https://schema.org/InStock">
         <link itemprop="itemCondition" href="https://schema.org/UsedCondition">
       </div>
-      <a class="details-action" href="${link}" aria-label="Zobacz ${escapeAttribute(product.name)}">Zobacz</a>
+      <div class="product-actions">
+        <a class="details-action action-full" href="${link}" aria-label="Zobacz ${escapeAttribute(product.name)}">Zobacz</a>
+        <a class="buy-action" href="${link}" aria-label="Kup ${escapeAttribute(product.name)}">Kup</a>
+        <a class="cart-action icon-action" href="${link}" aria-label="Dodaj do koszyka ${escapeAttribute(product.name)}">${cartIconSvg()}</a>
+      </div>
     </div>
   `;
 
@@ -220,8 +206,22 @@ function syncCategoryButtons() {
   document.querySelectorAll(".category-button").forEach((button) => {
     button.classList.toggle("active", button.dataset.categoryId === state.categoryId);
   });
-  document.querySelectorAll(".category-chip").forEach((button) => {
-    button.classList.toggle("active", button.dataset.categoryId === state.categoryId);
+}
+
+function categoryIdFromUrl() {
+  return new URLSearchParams(window.location.search).get("category") || "";
+}
+
+function updateCategoryUrl() {
+  const url = new URL(window.location.href);
+  if (state.categoryId) url.searchParams.set("category", state.categoryId);
+  else url.searchParams.delete("category");
+  window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+}
+
+function scrollToTop() {
+  window.requestAnimationFrame(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
   });
 }
 
@@ -278,4 +278,8 @@ function escapeHtml(value) {
 
 function escapeAttribute(value) {
   return escapeHtml(value).replaceAll("`", "&#096;");
+}
+
+function cartIconSvg() {
+  return `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 6h16l-2 8H7L5 6Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M5 6 4.4 3H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="8" cy="19" r="1.7" fill="currentColor"/><circle cx="18" cy="19" r="1.7" fill="currentColor"/></svg>`;
 }

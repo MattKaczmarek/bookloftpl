@@ -1,8 +1,8 @@
 # Operacje BookLoft sklep
 
 Stan dokumentu: `2026-05-21`.
-Wersja sklepu: `1.02`.
-Branch produkcyjny: `ver-1.02`.
+Wersja sklepu: `1.03`.
+Branch wersji: `ver-1.03`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usługa aplikacji: `bookloft-shop.service`.
 
@@ -53,7 +53,7 @@ BASE_COM_WAREHOUSE_ID=...
 ```bash
 cd /home/bookloftpl
 git fetch
-git switch ver-1.02
+git switch ver-1.03
 git pull --ff-only
 npm ci --omit=dev
 systemctl restart bookloft-shop.service
@@ -102,6 +102,7 @@ Prawidłowe branche repo:
 - `main`,
 - `ver-1.00`,
 - `ver-1.01`,
-- `ver-1.02`.
+- `ver-1.02`,
+- `ver-1.03`.
 
-Robocze branche z prefiksem `codex/` nie są linią wersji sklepu i po przeniesieniu zmian do `ver-1.02` powinny być usunięte lokalnie oraz z GitHuba.
+Robocze branche z prefiksem `codex/` nie są linią wersji sklepu i po przeniesieniu zmian do aktualnego brancha `ver-*` powinny być usunięte lokalnie oraz z GitHuba.

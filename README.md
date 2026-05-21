@@ -1,7 +1,7 @@
 # BookLoft sklep
 
-Wersja sklepu: `1.02`.
-Branch produkcyjny tej wersji: `ver-1.02`.
+Wersja sklepu: `1.03`.
+Branch tej wersji: `ver-1.03`.
 
 Repo zawiera docelową aplikację sklepu BookLoft serwowaną z root domeny `https://bookloft.pl/`. Stara statyczna wizytówka została usunięta z tej linii kodu.
 
@@ -110,7 +110,7 @@ Standard:
 
 1. zmiana lokalna,
 2. `git push`,
-3. na Hetznerze: `cd /home/bookloftpl && git fetch && git switch ver-1.02 && git pull --ff-only`,
+3. na Hetznerze: `cd /home/bookloftpl && git fetch && git switch ver-1.03 && git pull --ff-only`,
 4. `npm ci --omit=dev`,
 5. restart usługi sklepu,
 6. reload Nginx tylko po zmianie konfiguracji Nginx,

@@ -87,17 +87,6 @@ function renderProductPage(config, product) {
   <script defer src="${appPath(config.basePath, `/assets/js/product.js?v=${config.version}`)}"></script>
 </head>
 <body>
-  <header class="topbar">
-    <a class="brand" href="${appPath(config.basePath)}" aria-label="BookLoft sklep">
-      <img class="brand-logo" src="${appPath(config.basePath, `/assets/img/logo.png?v=${config.version}`)}" alt="BookLoft">
-    </a>
-    <nav class="top-actions" aria-label="Nawigacja">
-      <form method="post" action="${appPath(config.basePath, "/logout")}">
-        <button type="submit" class="ghost-action">Wyloguj</button>
-      </form>
-    </nav>
-  </header>
-
   <main class="product-page" id="product-page">
     <div class="status-strip"><span>Ładowanie produktu...</span></div>
   </main>
