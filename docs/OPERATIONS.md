@@ -54,8 +54,6 @@ W strefie Hetznera powinny byc rekordy:
 - `A @ 178.105.196.178`
 - `CNAME www bookloft.pl.`
 
-DigitalOcean `165.22.82.115` nie jest juz serwerem aplikacji. Po migracji jest wylaczony uslugowo: Nginx, Asystent i boty maja pozostac zatrzymane i wylaczone z autostartu na DO.
-
 ## Weryfikacja
 
 ```bash
