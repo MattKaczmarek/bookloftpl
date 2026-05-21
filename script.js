@@ -29,9 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
     aboutContent: document.querySelector('.about-content'),
     aboutTitle: document.querySelector('.about-title'),
     aboutText: document.querySelector('.about-text'),
-    statItems: document.querySelectorAll('.stat-item'),
-    newestGrid: document.getElementById('newest-grid'),
-    newestStatus: document.getElementById('newest-status')
+    statItems: document.querySelectorAll('.stat-item')
   };
   
   // Helper functions using cached elements
@@ -103,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
       elements.infoCards.forEach(function(card, index) {
         setTimeout(function() {
           card.style.opacity = '1';
-          card.style.transform = 'translateY(0)';
+          card.style.transform = 'translateX(0)';
         }, index * 150);
       });
     }},
@@ -134,8 +132,6 @@ document.addEventListener('DOMContentLoaded', function() {
   addButtonListeners(elements.instagramBtn, 'https://www.instagram.com/bookloft.pl?igsh=dmg0ZTRra3BoaGh0', 'instagram_button', 'instagram');
   addButtonListeners(elements.facebookBtn, 'https://www.facebook.com/profile.php?id=100081830936011', 'facebook_button', 'facebook');
   addButtonListeners(elements.tiktokBtn, 'https://www.tiktok.com/@bookloft.pl', 'tiktok_button', 'tiktok');
-
-  loadNewestProducts();
 
   // Funkcja wyszukiwania - przekierowanie do Allegro z trackowaniem
   function performSearch() {
@@ -284,77 +280,5 @@ document.addEventListener('DOMContentLoaded', function() {
       stat.style.transform = 'translateX(0)';
     });
   }
-
-  async function loadNewestProducts() {
-    if (!elements.newestGrid || !elements.newestStatus) return;
-
-    try {
-      const response = await fetch('/test/api/newest?limit=50', { credentials: 'same-origin' });
-      if (response.redirected || response.status === 401 || response.status === 403 || response.url.includes('/test/login')) {
-        renderNewestLogin();
-        return;
-      }
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-      const data = await response.json();
-      const products = Array.isArray(data.products) ? data.products.slice(0, 50) : [];
-      if (!products.length) {
-        elements.newestStatus.textContent = 'Brak nowości do pokazania.';
-        return;
-      }
-
-      elements.newestStatus.textContent = `${products.length} najnowszych ofert`;
-      elements.newestGrid.innerHTML = products.map(renderNewestCard).join('');
-    } catch (_error) {
-      renderNewestLogin();
-    }
-  }
-
-  function renderNewestLogin() {
-    elements.newestStatus.textContent = 'Sekcja testowa jest ukryta za hasłem.';
-    elements.newestGrid.innerHTML = `
-      <div class="newest-login">
-        <p>Zaloguj się do sklepu testowego, żeby podejrzeć 50 najświeższych ofert na głównej stronie.</p>
-        <a href="/test/login?next=%2F">Zaloguj do podglądu</a>
-      </div>
-    `;
-  }
-
-  function renderNewestCard(product) {
-    const image = product.images && product.images.length ? product.images[0] : '';
-    const href = `/test/product/${encodeURIComponent(product.id)}/${encodeURIComponent(product.slug || 'produkt')}`;
-    const price = product.price === null ? 'Cena do ustalenia' : formatPrice(product.price, product.currency);
-    return `
-      <a class="newest-card" href="${href}">
-        <span class="newest-cover">
-          ${image ? `<img src="${escapeAttribute(image)}" loading="lazy" decoding="async" alt="${escapeAttribute(product.name)}">` : '<span>BookLoft</span>'}
-        </span>
-        <span class="newest-copy">
-          <strong>${escapeHtml(product.name)}</strong>
-          <span>${price}</span>
-        </span>
-      </a>
-    `;
-  }
-
-  function formatPrice(value, currency) {
-    return new Intl.NumberFormat('pl-PL', {
-      style: 'currency',
-      currency: currency || 'PLN'
-    }).format(value);
-  }
-
-  function escapeHtml(value) {
-    return String(value || '')
-      .replaceAll('&', '&amp;')
-      .replaceAll('<', '&lt;')
-      .replaceAll('>', '&gt;')
-      .replaceAll('"', '&quot;')
-      .replaceAll("'", '&#039;');
-  }
-
-  function escapeAttribute(value) {
-    return escapeHtml(value).replaceAll('`', '&#096;');
-  }
-
+  
 });

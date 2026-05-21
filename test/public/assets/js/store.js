@@ -1,8 +1,9 @@
-const INITIAL_LIMIT = 20;
+const INITIAL_LIMIT = 50;
 const PAGE_SIZE = 48;
 
 const state = {
   products: [],
+  newestProducts: [],
   categories: [],
   query: "",
   categoryId: "",
@@ -28,11 +29,16 @@ init().catch((error) => {
 });
 
 async function init() {
-  const response = await fetch("/test/api/storefront", { credentials: "same-origin" });
+  const [response, newestResponse] = await Promise.all([
+    fetch("/test/api/storefront", { credentials: "same-origin" }),
+    fetch("/test/api/newest?limit=50", { credentials: "same-origin" })
+  ]);
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   const data = await response.json();
+  const newestData = newestResponse.ok ? await newestResponse.json() : { products: [] };
 
   state.products = Array.isArray(data.products) ? data.products : [];
+  state.newestProducts = Array.isArray(newestData.products) ? newestData.products : [];
   state.categories = Array.isArray(data.categories) ? data.categories : [];
   state.meta = data.meta || {};
 
@@ -132,8 +138,8 @@ function resetAndRender() {
 }
 
 function renderProducts() {
-  const products = filteredProducts();
   const filteredMode = Boolean(state.query || state.categoryId);
+  const products = filteredMode ? filteredProducts() : newestProducts();
   if (!filteredMode) state.modeLimit = INITIAL_LIMIT;
   const next = products.slice(state.rendered, state.modeLimit);
   const fragment = document.createDocumentFragment();
@@ -147,8 +153,10 @@ function renderProducts() {
   els.empty.hidden = products.length > 0;
   els.loadMore.hidden = !filteredMode || state.rendered >= products.length;
 
-  const filteredLabel = filteredMode ? `${products.length} wyników` : `${Math.min(INITIAL_LIMIT, products.length)} propozycji`;
-  els.status.innerHTML = `<span>${filteredLabel} z ${state.products.length} książek</span>`;
+  const filteredLabel = filteredMode
+    ? `${products.length} wyników`
+    : `Nowości: ${Math.min(INITIAL_LIMIT, products.length)} najświeższych ofert`;
+  els.status.innerHTML = `<span>${filteredLabel}</span><span>${state.products.length} książek w katalogu</span>`;
 }
 
 function filteredProducts() {
@@ -158,6 +166,10 @@ function filteredProducts() {
       !state.categoryId || (product.categoryPath || []).some((category) => String(category.id) === state.categoryId);
     return matchesQuery && matchesCategory;
   });
+}
+
+function newestProducts() {
+  return state.newestProducts.length ? state.newestProducts.slice(0, INITIAL_LIMIT) : state.products.slice(0, INITIAL_LIMIT);
 }
 
 function renderProduct(product, index = 0) {

@@ -20,8 +20,8 @@
   <!-- Wczytanie fontów (opcjonalnie) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&family=Marcellus+SC&display=swap"
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Open+Sans:wght@400;600&family=Marcellus+SC&display=swap" 
     rel="stylesheet"
   >
   
@@ -38,18 +38,11 @@
   </script>
 
   <!-- Styles z wersjonowaniem -->
-  <link rel="stylesheet" href="styles.css?v=1.45">
+  <link rel="stylesheet" href="styles.css?v=1.44">
 </head>
 <body>
   <!-- Tło -->
   <div class="background"></div>
-  <div class="ambient-library" aria-hidden="true">
-    <span class="ambient-page page-one"></span>
-    <span class="ambient-page page-two"></span>
-    <span class="ambient-page page-three"></span>
-    <span class="ambient-shelf shelf-one"></span>
-    <span class="ambient-shelf shelf-two"></span>
-  </div>
 
   <!-- Główny kontener -->
   <div class="container">
@@ -61,7 +54,7 @@
 
     <!-- Tekst przewodni -->
     <p class="tagline">
-      Używane książki z drugiego obiegu, gotowe na kolejny wieczór i kolejną historię. Zajrzyj do naszych sklepów na Allegro i OLX.
+      Sprzedajemy używane książki, dajemy im nowe życie! Zapraszamy do naszych sklepów na Allegro i OLX.
     </p>
 
     <!-- Przyciski z ikonami -->
@@ -102,13 +95,13 @@
     <div class="info-section">
       <div class="info-card">
         <i class="fas fa-book-open"></i>
-        <h3>Wybrane tytuły</h3>
-        <p>Książki sprawdzone przed wysyłką</p>
+        <h3>Tysiące książek</h3>
+        <p>Szeroki wybór używanych książek</p>
       </div>
       <div class="info-card">
         <i class="fas fa-recycle"></i>
-        <h3>Drugie życie</h3>
-        <p>Mniej marnowania, więcej historii</p>
+        <h3>Eco-friendly</h3>
+        <p>Dajemy książkom drugie życie</p>
       </div>
       <div class="info-card">
         <i class="fas fa-truck"></i>
@@ -121,24 +114,10 @@
     <div class="scroll-down-container">
       <button class="scroll-down-btn" id="scroll-to-about">
         <i class="fas fa-chevron-down"></i>
-        <span>Nowości i o nas</span>
+        <span>Dowiedz się więcej</span>
       </button>
     </div>
   </div>
-
-  <section class="newest-section" id="nowosci">
-    <div class="section-shell">
-      <div class="section-heading">
-        <p class="section-kicker">Nowości z regału</p>
-        <h2>50 najświeższych ofert</h2>
-        <p>
-          Najnowsze książki dodane do testowego sklepu BookLoft. W czasie testów sekcja działa po zalogowaniu do sklepu.
-        </p>
-      </div>
-      <div class="newest-status" id="newest-status">Ładowanie nowości...</div>
-      <div class="newest-grid" id="newest-grid" aria-live="polite"></div>
-    </div>
-  </section>
 
   <!-- Sekcja O nas -->
   <section class="about-section" id="about">
@@ -169,7 +148,7 @@
               <span class="stat-label">Zadowolonych klientów</span>
             </div>
             <div class="stat-item">
-              <span class="stat-number">4</span>
+              <span class="stat-number">3</span>
               <span class="stat-label">Lata doświadczenia</span>
             </div>
           </div>
@@ -180,6 +159,6 @@
   
 
   <!-- Native JavaScript -->
-  <script src="script.js?v=1.45"></script>
+  <script src="script.js?v=1.44"></script>
 </body>
 </html>

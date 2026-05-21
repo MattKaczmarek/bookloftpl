@@ -20,7 +20,7 @@ Ten katalog zawiera izolowana aplikacje sklepu pod adresem `/test`. Glowna wizyt
 - Sklep testowy pozostaje za haslem i wysyla `X-Robots-Tag: noindex, nofollow, noarchive`.
 - Kod kart produktow, listingu, sitemap i danych strukturalnych jest przygotowany pod przyszle SEO, ale nie powinien byc indeksowany dopoki testowy sklep jest za haslem.
 - Endpoint `/test/api/newest?limit=50` zwraca 50 najnowszych aktywnych ofert po zalogowaniu. Sortowanie uzywa daty pierwszego dodania do sklepu (`addedAtByProductId`), opcjonalnych dat z Base, a ID produktu tylko jako tie-breakera.
-- Landing `bookloft.pl` moze w lokalnym trybie pokazywac sekcje `Nowosci` z tego endpointu po zalogowaniu do `/test`.
+- Glowna strona `/test` pokazuje domyslnie sekcje `Nowosci`, czyli 50 najnowszych aktywnych ofert.
 - Sklep dostal sekcje `O BookLoft` z aktualnym stazem 4 lata.
 - Glowny listing renderuje tylko 20 produktow na start.
 - Dalsze produkty pokazuja sie dopiero po wyszukiwaniu albo wyborze kategorii, z porcjowaniem wynikow po 48 kart.
