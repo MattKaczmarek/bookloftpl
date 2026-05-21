@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&display=swap");
+
 :root {
   --bg: #fbf6ed;
   --bg-soft: #f4faf2;
@@ -18,8 +20,10 @@
   --shadow: 0 18px 42px rgba(33, 42, 34, 0.11);
   --shadow-soft: 0 10px 24px rgba(33, 42, 34, 0.08);
   --radius: 8px;
+  --font-heading: "Fraunces", Georgia, serif;
+  --font-body: "Nunito Sans", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color-scheme: light;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-body);
 }
 
 * {
@@ -96,7 +100,7 @@ a {
 .brand-word {
   display: block;
   color: var(--ink);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-heading);
   font-size: clamp(2rem, 3vw, 2.55rem);
   font-weight: 500;
   letter-spacing: 0;
@@ -321,7 +325,7 @@ h2 {
 .shop-toolbar h1,
 .panel-hero h1 {
   max-width: 790px;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-heading);
   font-size: clamp(2.3rem, 5.4vw, 4.9rem);
   font-weight: 650;
   letter-spacing: 0;
@@ -683,7 +687,8 @@ h2 {
 .admin-log,
 .panel-hero,
 .metric,
-.login-panel {
+.login-panel,
+.shop-about {
   border: 1px solid rgba(31, 71, 55, 0.12);
   border-radius: var(--radius);
   background: rgba(255, 253, 248, 0.94);
@@ -719,7 +724,7 @@ h2 {
 }
 
 .login-panel h1 {
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-heading);
   font-size: 2.2rem;
   letter-spacing: 0;
 }
@@ -843,8 +848,12 @@ h2 {
   aspect-ratio: 1;
   border: 1px solid var(--line);
   border-radius: 6px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(244, 250, 242, 0.86)),
+    #f7f6ef;
   cursor: pointer;
-  object-fit: cover;
+  object-fit: contain;
+  padding: 3px;
   transition: border-color 160ms ease, filter 160ms ease;
 }
 
@@ -860,7 +869,7 @@ h2 {
 }
 
 .detail-info h1 {
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-heading);
   font-size: clamp(2rem, 3.3vw, 3.35rem);
   font-weight: 650;
   letter-spacing: 0;
@@ -893,22 +902,22 @@ h2 {
 .detail-description h2,
 .related-products h2 {
   margin-bottom: 12px;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-heading);
   font-size: clamp(1.5rem, 2.3vw, 2rem);
   letter-spacing: 0;
 }
 
 .related-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(245px, 1fr));
+  gap: 12px;
 }
 
 .related-card {
   display: grid;
-  grid-template-columns: 62px minmax(0, 1fr);
-  gap: 10px;
-  min-height: 92px;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 12px;
+  min-height: 112px;
   align-items: center;
   padding: 12px;
   border: 1px solid var(--line);
@@ -925,10 +934,11 @@ h2 {
 
 .related-thumb {
   display: grid;
-  width: 62px;
-  aspect-ratio: 1;
+  width: 76px;
+  height: 96px;
   place-items: center;
   overflow: hidden;
+  padding: 5px;
   border-radius: 6px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(244, 250, 242, 0.86)),
@@ -942,6 +952,7 @@ h2 {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  display: block;
 }
 
 .related-copy {
@@ -961,6 +972,62 @@ h2 {
 
 .related-copy strong {
   color: var(--berry);
+}
+
+.shop-about {
+  margin-top: 30px;
+  padding: clamp(22px, 4vw, 36px);
+}
+
+.shop-about h2 {
+  max-width: 760px;
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 4.2vw, 3.7rem);
+  font-weight: 650;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.shop-about-copy {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(16px, 4vw, 32px);
+  margin-top: 18px;
+}
+
+.shop-about-copy p {
+  margin: 0;
+  color: #47564e;
+  font-size: 1.02rem;
+  line-height: 1.65;
+}
+
+.shop-about-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.shop-about-stats span {
+  display: grid;
+  gap: 4px;
+  min-height: 92px;
+  align-content: center;
+  padding: 14px;
+  border: 1px solid rgba(31, 71, 55, 0.1);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #ffffff, var(--paper));
+  color: var(--muted);
+  font-weight: 750;
+}
+
+.shop-about-stats strong {
+  color: var(--forest-strong);
+  font-family: var(--font-heading);
+  font-size: 1.85rem;
+  line-height: 1;
 }
 
 .panel-hero {
@@ -1082,6 +1149,11 @@ h2 {
 
   .metrics-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .shop-about-copy,
+  .shop-about-stats {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -1218,6 +1290,20 @@ h2 {
 
   .thumb-strip {
     grid-template-columns: repeat(4, 1fr);
+  }
+
+  .related-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .related-card {
+    grid-template-columns: 68px minmax(0, 1fr);
+    min-height: 102px;
+  }
+
+  .related-thumb {
+    width: 68px;
+    height: 88px;
   }
 }
 

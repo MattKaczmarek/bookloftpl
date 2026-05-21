@@ -38,6 +38,7 @@ export const config = {
   port: intEnv("BOOKLOFT_TEST_PORT", 3205),
   host: process.env.BOOKLOFT_TEST_HOST || "127.0.0.1",
   basePath: basePath(process.env.BOOKLOFT_TEST_BASE_PATH || "/test"),
+  publicOrigin: (process.env.BOOKLOFT_PUBLIC_ORIGIN || "https://bookloft.pl").replace(/\/+$/, ""),
   dataDir: path.resolve(process.env.BOOKLOFT_TEST_DATA_DIR || path.join(appRoot, "storage")),
   adminUser: process.env.BOOKLOFT_TEST_ADMIN_USER || "admin",
   adminPassword: process.env.BOOKLOFT_TEST_ADMIN_PASSWORD || "",

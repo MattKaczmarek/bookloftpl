@@ -7,6 +7,17 @@ export function createStoreApiRouter(config, storeCache) {
   router.use(requireAuth(config));
 
   router.get(
+    "/newest",
+    asyncHandler(async (req, res) => {
+      res.setHeader("Cache-Control", "private, max-age=60");
+      res.json({
+        products: await storeCache.getNewestProducts(req.query.limit),
+        generatedAt: new Date().toISOString()
+      });
+    })
+  );
+
+  router.get(
     "/storefront",
     asyncHandler(async (_req, res) => {
       res.json(await storeCache.getStorefrontList());

@@ -17,6 +17,11 @@ Ten katalog zawiera izolowana aplikacje sklepu pod adresem `/test`. Glowna wizyt
 
 ## Zmiany w 1.01
 
+- Sklep testowy pozostaje za haslem i wysyla `X-Robots-Tag: noindex, nofollow, noarchive`.
+- Kod kart produktow, listingu, sitemap i danych strukturalnych jest przygotowany pod przyszle SEO, ale nie powinien byc indeksowany dopoki testowy sklep jest za haslem.
+- Endpoint `/test/api/newest?limit=50` zwraca 50 najnowszych aktywnych ofert po zalogowaniu. Sortowanie uzywa daty pierwszego dodania do sklepu (`addedAtByProductId`), opcjonalnych dat z Base, a ID produktu tylko jako tie-breakera.
+- Landing `bookloft.pl` moze w lokalnym trybie pokazywac sekcje `Nowosci` z tego endpointu po zalogowaniu do `/test`.
+- Sklep dostal sekcje `O BookLoft` z aktualnym stazem 4 lata.
 - Glowny listing renderuje tylko 20 produktow na start.
 - Dalsze produkty pokazuja sie dopiero po wyszukiwaniu albo wyborze kategorii, z porcjowaniem wynikow po 48 kart.
 - Karta produktu prowadzi do wlasnego adresu produktu.
@@ -74,6 +79,7 @@ BOOKLOFT_TEST_PORT=3205
 BOOKLOFT_TEST_BASE_PATH=/test
 BOOKLOFT_TEST_COOKIE_SECURE=true
 BOOKLOFT_TEST_DATA_DIR=/var/lib/bookloft-test-shop
+BOOKLOFT_PUBLIC_ORIGIN=https://bookloft.pl
 BASE_COM_PRICE_GROUP_NAME=Sklep
 ```
 
@@ -85,6 +91,7 @@ BASE_COM_PRICE_GROUP_ID=49399
 BASE_COM_WAREHOUSE_ID=bl_35569
 BOOKLOFT_TEST_STOCK_REFRESH_MS=1800000
 BOOKLOFT_TEST_CATALOG_REFRESH_MS=10800000
+BOOKLOFT_SERVE_LANDING=1
 ```
 
 Jesli `BASE_COM_PRICE_GROUP_ID` nie jest podane, aplikacja szuka grupy cenowej po nazwie `Sklep`.
@@ -138,6 +145,21 @@ npm start
 Adres lokalny:
 
 ```text
+http://127.0.0.1:3205/test
+```
+
+Jesli chcesz lokalnie testowac landing i sklep na jednym porcie:
+
+```powershell
+$env:BOOKLOFT_SERVE_LANDING="1"
+$env:BOOKLOFT_PUBLIC_ORIGIN="http://127.0.0.1:3205"
+npm start
+```
+
+Wtedy:
+
+```text
+http://127.0.0.1:3205/
 http://127.0.0.1:3205/test
 ```
 

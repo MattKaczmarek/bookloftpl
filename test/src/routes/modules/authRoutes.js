@@ -31,6 +31,7 @@ function safeNextUrl(value, basePath) {
   if (!value || typeof value !== "string") return basePath;
   try {
     const decoded = decodeURIComponent(value);
+    if (decoded === "/") return decoded;
     return decoded.startsWith(basePath) ? decoded : basePath;
   } catch {
     return basePath;

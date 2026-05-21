@@ -164,6 +164,8 @@ function renderProduct(product, index = 0) {
   const link = productUrl(product);
   const card = document.createElement("article");
   card.className = "product-card";
+  card.setAttribute("itemscope", "");
+  card.setAttribute("itemtype", "https://schema.org/Product");
   card.style.setProperty("--card-delay", `${Math.min(index, 16) * 28}ms`);
 
   const image = product.images && product.images.length ? product.images[0] : "";
@@ -171,14 +173,17 @@ function renderProduct(product, index = 0) {
   const imagePriority = index < 6 ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"';
 
   card.innerHTML = `
-    <a class="product-media${image ? "" : " is-loaded"}" href="${link}" aria-label="${escapeAttribute(product.name)}">
-      ${image ? `<img src="${escapeAttribute(image)}" ${imagePriority} decoding="async" alt="${escapeAttribute(product.name)}">` : '<div class="image-fallback">BookLoft</div>'}
+    <a class="product-media${image ? "" : " is-loaded"}" href="${link}" aria-label="${escapeAttribute(product.name)}" itemprop="url">
+      ${image ? `<img src="${escapeAttribute(image)}" ${imagePriority} decoding="async" alt="${escapeAttribute(product.name)}" itemprop="image">` : '<div class="image-fallback">BookLoft</div>'}
     </a>
     <div class="product-body">
       <span class="product-category">${escapeHtml(product.categoryName || "Książka")}</span>
-      <h2><a href="${link}">${escapeHtml(product.name)}</a></h2>
-      <div class="price-row">
+      <h2><a href="${link}" itemprop="name">${escapeHtml(product.name)}</a></h2>
+      <div class="price-row" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
         <strong>${price}</strong>
+        ${product.price === null ? "" : `<meta itemprop="price" content="${escapeAttribute(product.price)}"><meta itemprop="priceCurrency" content="${escapeAttribute(product.currency || "PLN")}">`}
+        <link itemprop="availability" href="https://schema.org/InStock">
+        <link itemprop="itemCondition" href="https://schema.org/UsedCondition">
       </div>
       <a class="details-action" href="${link}" aria-label="Zobacz ${escapeAttribute(product.name)}">Zobacz</a>
     </div>

@@ -118,6 +118,24 @@ export class StoreCache {
     };
   }
 
+  async getNewestProducts(limit = 50) {
+    const [storefront, published] = await Promise.all([this.getStorefront(), this.readPublished()]);
+    const addedAtByProductId = published.addedAtByProductId || {};
+
+    return storefront.products
+      .map((product) => ({
+        ...product,
+        addedAt: addedAtByProductId[String(product.id)] || null
+      }))
+      .sort((a, b) => {
+        const dateDiff = productFreshnessTime(b) - productFreshnessTime(a);
+        if (dateDiff) return dateDiff;
+        return Number(b.id) - Number(a.id);
+      })
+      .slice(0, Math.max(1, Math.min(Number(limit) || 50, 50)))
+      .map(toListProduct);
+  }
+
   async getProduct(productId) {
     const storefront = await this.getStorefront();
     const product = storefront.products.find((item) => String(item.id) === String(productId));
@@ -443,7 +461,7 @@ function normalizeProduct(productId, record, context) {
   const language = context.defaultLanguage || "";
   const localizedName = language ? fields[`name|${language}`] : "";
   const localizedDescription = language ? fields[`description|${language}`] : "";
-    const name = String(localizedName || fields.name || record.name || record.sku || `Produkt ${productId}`).trim();
+  const name = String(localizedName || fields.name || record.name || record.sku || `Produkt ${productId}`).trim();
   const descriptionHtml = sanitizeDescription(localizedDescription || fields.description || "");
   const priceRaw = record.prices ? record.prices[String(context.priceGroupId)] : null;
   const price = priceRaw === undefined || priceRaw === null || priceRaw === "" ? null : Number(priceRaw);
@@ -459,9 +477,34 @@ function normalizeProduct(productId, record, context) {
     currency: context.currency || "PLN",
     categoryId: record.category_id ? String(record.category_id) : "",
     images: normalizeImages(record.images),
+    baseAddedAt: normalizeBaseTimestamp(record.date_add || record.created_at || record.createdAt || record.added_at),
+    baseUpdatedAt: normalizeBaseTimestamp(record.date_update || record.updated_at || record.updatedAt),
     descriptionHtml,
     features: normalizeFeatures(fields.features)
   };
+}
+
+function productFreshnessTime(product) {
+  return Math.max(
+    Date.parse(product.addedAt || 0) || 0,
+    Date.parse(product.baseAddedAt || 0) || 0,
+    Date.parse(product.baseUpdatedAt || 0) || 0
+  );
+}
+
+function normalizeBaseTimestamp(value) {
+  if (!value) return null;
+  if (typeof value === "number") {
+    const millis = value > 1_000_000_000_000 ? value : value * 1000;
+    return new Date(millis).toISOString();
+  }
+  const numeric = Number(value);
+  if (Number.isFinite(numeric) && numeric > 0) {
+    const millis = numeric > 1_000_000_000_000 ? numeric : numeric * 1000;
+    return new Date(millis).toISOString();
+  }
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? new Date(parsed).toISOString() : null;
 }
 
 function normalizeImages(images) {
@@ -606,7 +649,8 @@ function toListProduct(product) {
     categoryId: product.categoryId,
     categoryName: categoryLeaf,
     categoryPath: product.categoryPath,
-    images: product.images
+    images: product.images,
+    addedAt: product.addedAt || null
   };
 }
 

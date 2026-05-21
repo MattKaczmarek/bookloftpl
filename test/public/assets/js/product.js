@@ -8,16 +8,21 @@ async function init() {
   const productId = location.pathname.split("/")[3];
   if (!productId) throw new Error("Brak identyfikatora produktu");
 
+  const product = window.__BOOKLOFT_PRODUCT__ || await fetchProduct(productId);
+  if (!product) return;
+  document.title = `${product.name} | BookLoft`;
+  updateMeta(product);
+  renderProduct(product);
+}
+
+async function fetchProduct(productId) {
   const response = await fetch(`/test/api/products/${encodeURIComponent(productId)}`, { credentials: "same-origin" });
   if (response.status === 404) {
     page.innerHTML = '<div class="empty-state"><h1>Produkt niedostępny</h1><p>Ten tytuł nie jest teraz na regale.</p></div>';
-    return;
+    return null;
   }
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-  const product = await response.json();
-  document.title = `${product.name} | BookLoft`;
-  renderProduct(product);
+  return response.json();
 }
 
 function renderProduct(product) {
@@ -34,18 +39,21 @@ function renderProduct(product) {
       <a href="/test">Sklep</a>
       <span>${escapeHtml(category)}</span>
     </nav>
-    <article class="product-detail">
+    <article class="product-detail" itemscope itemtype="https://schema.org/Product">
       <section class="detail-gallery">
-        ${image ? `<img class="detail-main-image" src="${escapeAttribute(image)}" alt="${escapeAttribute(product.name)}">` : '<div class="image-fallback">BookLoft</div>'}
+        ${image ? `<img class="detail-main-image" src="${escapeAttribute(image)}" alt="${escapeAttribute(product.name)}" itemprop="image">` : '<div class="image-fallback">BookLoft</div>'}
         <div class="thumb-strip">
           ${(product.images || []).slice(0, 6).map((src) => `<img src="${escapeAttribute(src)}" alt="">`).join("")}
         </div>
       </section>
       <section class="detail-info">
         <p class="eyebrow">${escapeHtml(category)}</p>
-        <h1>${escapeHtml(product.name)}</h1>
-        <div class="detail-purchase">
+        <h1 itemprop="name">${escapeHtml(product.name)}</h1>
+        <div class="detail-purchase" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
           <strong>${price}</strong>
+          ${product.price === null ? "" : `<meta itemprop="price" content="${escapeAttribute(product.price)}"><meta itemprop="priceCurrency" content="${escapeAttribute(product.currency || "PLN")}">`}
+          <link itemprop="availability" href="${stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"}">
+          <link itemprop="itemCondition" href="https://schema.org/UsedCondition">
           <span>${stockLabel}</span>
         </div>
       </section>
@@ -79,16 +87,40 @@ function renderRelated(products) {
 function renderRelatedCard(product) {
   const image = product.images && product.images.length ? product.images[0] : "";
   return `
-    <a class="related-card" href="/test/product/${encodeURIComponent(product.id)}/${encodeURIComponent(product.slug || "produkt")}">
+    <a class="related-card" href="/test/product/${encodeURIComponent(product.id)}/${encodeURIComponent(product.slug || "produkt")}" itemscope itemtype="https://schema.org/Product">
       <span class="related-thumb">
-        ${image ? `<img src="${escapeAttribute(image)}" loading="lazy" decoding="async" alt="">` : "<span>BookLoft</span>"}
+        ${image ? `<img src="${escapeAttribute(image)}" loading="lazy" decoding="async" alt="" itemprop="image">` : "<span>BookLoft</span>"}
       </span>
       <span class="related-copy">
-        <span>${escapeHtml(product.name)}</span>
-        <strong>${product.price === null ? "Cena do ustalenia" : formatPrice(product.price, product.currency)}</strong>
+        <span itemprop="name">${escapeHtml(product.name)}</span>
+        <strong itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+          ${product.price === null ? "Cena do ustalenia" : formatPrice(product.price, product.currency)}
+          ${product.price === null ? "" : `<meta itemprop="price" content="${escapeAttribute(product.price)}"><meta itemprop="priceCurrency" content="${escapeAttribute(product.currency || "PLN")}">`}
+          <link itemprop="availability" href="https://schema.org/InStock">
+          <link itemprop="itemCondition" href="https://schema.org/UsedCondition">
+        </strong>
       </span>
     </a>
   `;
+}
+
+function updateMeta(product) {
+  if (!product) return;
+  const description = `${product.name}. Używana książka dostępna w BookLoft, sprawdzona i gotowa na kolejną historię.`;
+  setMeta("description", description);
+  setMeta("og:title", product.name, "property");
+  setMeta("og:description", description, "property");
+  if (product.images && product.images.length) setMeta("og:image", product.images[0], "property");
+}
+
+function setMeta(name, content, attribute = "name") {
+  let tag = document.head.querySelector(`meta[${attribute}="${name}"]`);
+  if (!tag) {
+    tag = document.createElement("meta");
+    tag.setAttribute(attribute, name);
+    document.head.appendChild(tag);
+  }
+  tag.setAttribute("content", content);
 }
 
 function formatPrice(value, currency) {

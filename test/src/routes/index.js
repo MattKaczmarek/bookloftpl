@@ -8,10 +8,15 @@ import { createStoreApiRouter } from "./modules/storeApi.js";
 export function createRouter(config, storeCache) {
   const router = express.Router();
 
+  router.use((_req, res, next) => {
+    res.setHeader("X-Robots-Tag", "noindex, nofollow, noarchive");
+    next();
+  });
+
   router.use("/assets", express.static(`${config.publicDir}/assets`, { maxAge: "10m", etag: true }));
   router.use(createHealthRouter(config, storeCache));
   router.use(createAuthRouter(config));
-  router.use(createPageRouter(config));
+  router.use(createPageRouter(config, storeCache));
   router.use("/api", createStoreApiRouter(config, storeCache));
   router.use("/api/admin", createAdminApiRouter(config, storeCache));
 
