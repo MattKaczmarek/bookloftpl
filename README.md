@@ -1,51 +1,108 @@
-# BookLoftPL
+# BookLoft sklep
 
-Publiczny statyczny landing page BookLoft oraz izolowany testowy sklep pod `/test`.
+Wersja sklepu: `1.02`.
+Branch produkcyjny tej wersji: `ver-1.02`.
 
-Aktywny branch produkcyjnej wizytowki na DO: `main`.
-Repo na DO: `/home/bookloftpl`.
-Serwowanie wizytowki: Nginx jako statyczne pliki.
-Branch testowego sklepu: `ver-1.01`.
-Wersja testowego sklepu: `1.01`.
+Repo zawiera docelową aplikację sklepu BookLoft serwowaną z root domeny `https://bookloft.pl/`. Stara statyczna wizytówka została usunięta z tej linii kodu.
 
 ## Zakres
 
-Repo zawiera tylko publiczna strone firmowa:
+- sklep pod `/`,
+- panel administratora pod `/panel`,
+- strony produktów pod `/product/:id/:slug`,
+- API sklepu pod `/api`,
+- logowanie administracyjne na podstawie zmiennych ENV,
+- integracja z Base.com po stronie backendu,
+- cache katalogu, cen, zdjęć, opisów i kategorii,
+- przygotowane meta tagi, canonicale, dane strukturalne Product/Offer i sitemap pod przyszłe SEO.
 
-- `index.html`
-- `styles.css`
-- `script.js`
-- `images/`
+Sklep jest obecnie celowo schowany za logowaniem i wysyła `X-Robots-Tag: noindex, nofollow, noarchive`. Po zdjęciu hasła kod jest przygotowany do indeksowania wszystkich aktywnych ofert, nie tylko nowości.
 
-Nowy sklep testowy jest calkowicie wydzielony w katalogu `test/` i ma dzialac pod `https://bookloft.pl/test`. Glowny landing `https://bookloft.pl/` pozostaje bez zmian.
+## Sekrety
 
-Ta aplikacja nie jest `bookloft-asystent` i nie ma bezposredniej integracji z botami.
+W repo nie ma realnych tokenów, haseł ani kluczy. Wartości muszą być podawane wyłącznie przez ENV serwera albo lokalną powłokę.
 
-## Relacja do pozostalych repo
+Wymagane:
 
-- `bookloft-asystent` - wewnetrzna aplikacja operacyjna pod `asystent.bookloft.pl` oraz webowy Andrzej pod `andrzej.bookloft.pl`.
-- `bot-andrzej` - skaner Vinted/OLX, wysyla oferty do Asystenta.
-- `bot-jaroslaw` - Telegram/API Jarka dla historii cen i czatu w Asystencie.
-- `bookloftpl` - publiczna wizytowka, niezalezna od powyzszych runtime danych.
+```bash
+BASE_COM_TOKEN=...
+BOOKLOFT_ADMIN_USER=...
+BOOKLOFT_ADMIN_PASSWORD=...
+BOOKLOFT_SESSION_SECRET=...
+```
 
-Zmiany w tym repo nie powinny dotykac storage Asystenta, konfiguracji botow ani uslug `bot-andrzej.service` / `bot-jarek.service`.
+Zalecane produkcyjnie:
 
-## Produkcja
+```bash
+NODE_ENV=production
+BOOKLOFT_HOST=127.0.0.1
+BOOKLOFT_PORT=3205
+BOOKLOFT_BASE_PATH=/
+BOOKLOFT_COOKIE_SECURE=true
+BOOKLOFT_DATA_DIR=/var/lib/bookloft-shop
+BOOKLOFT_PUBLIC_ORIGIN=https://bookloft.pl
+BASE_COM_PRICE_GROUP_NAME=Sklep
+```
 
-Na DO dla wizytowki:
+Opcjonalne:
 
-- repo: `/home/bookloftpl`
-- domena: `bookloft.pl` oraz `www.bookloft.pl`, jesli tak wskazuje Nginx/DNS
-- proces: brak procesu aplikacyjnego; statyczne pliki czyta `nginx.service`
+```bash
+BASE_COM_INVENTORY_ID=...
+BASE_COM_PRICE_GROUP_ID=...
+BASE_COM_WAREHOUSE_ID=...
+BOOKLOFT_STOCK_REFRESH_MS=1800000
+BOOKLOFT_CATALOG_REFRESH_MS=10800000
+BASE_COM_REQUEST_TIMEOUT_MS=30000
+BASE_COM_PRODUCTS_DATA_CHUNK_SIZE=100
+```
 
-Sklep testowy `/test`:
+## Cache
 
-- katalog aplikacji: `/home/bookloftpl/test`
-- proces: `bookloft-test-shop.service`
-- reverse proxy: Nginx location `/test/` do lokalnego procesu Node
-- cache runtime: `BOOKLOFT_TEST_DATA_DIR`, produkcyjnie `/var/lib/bookloft-test-shop`
-- integracja Base.com: backend przez `BASE_COM_TOKEN`, ceny z grupy cenowej `Sklep`
-- dokumentacja szczegolowa: `test/README.md`
+Cache jest trzymany w `BOOKLOFT_DATA_DIR`.
+
+- `published-products.json` - aktywne produkty dopuszczone do sklepu,
+- `stock-cache.json` - ostatnie stany z Base,
+- `catalog-cache.json` - tytuły, opisy HTML, zdjęcia, ceny i kategorie aktywnych produktów,
+- `storefront-cache.json` - gotowe dane dla frontendu,
+- `cache-meta.json` - status ostatnich aktualizacji i błędów.
+
+Zasady:
+
+- stany magazynowe odświeżają się co 30 minut,
+- katalog, ceny, opisy, zdjęcia i kategorie odświeżają się co 3 godziny,
+- automatyczny refresh nie dodaje nowych produktów do sklepu,
+- produkt ze stanem `0` znika ze sklepu,
+- produkt, który wróci na stan `>= 1`, wraca po akcji `Dodaj nowe` w panelu.
+
+## Frontend
+
+- strona główna pokazuje 50 najnowszych aktywnych ofert,
+- pełny katalog można przeszukiwać po tytule, autorze i kategorii,
+- karty listingu pokazują zdjęcie, kategorię, tytuł, cenę i link do szczegółów,
+- opisy HTML są ładowane dopiero na stronie produktu,
+- sekcja `O BookLoft` opisuje sklep jako markę z 4-letnim doświadczeniem,
+- układ jest responsywny dla desktopu, telefonu i webview w aplikacjach społecznościowych.
+
+## Uruchomienie lokalne
+
+```powershell
+cd C:\Users\Właściciel\OneDrive\Pulpit\CODEX\bookloftpl-home-visual
+$env:BASE_COM_TOKEN="..."
+$env:BOOKLOFT_ADMIN_USER="..."
+$env:BOOKLOFT_ADMIN_PASSWORD="..."
+$env:BOOKLOFT_SESSION_SECRET="..."
+$env:BOOKLOFT_COOKIE_SECURE="false"
+$env:BOOKLOFT_PUBLIC_ORIGIN="http://127.0.0.1:3225"
+$env:BOOKLOFT_PORT="3225"
+npm install
+npm start
+```
+
+Adres lokalny:
+
+```text
+http://127.0.0.1:3225/
+```
 
 ## Deploy
 
@@ -53,15 +110,10 @@ Standard:
 
 1. zmiana lokalna,
 2. `git push`,
-3. na DO: `cd /home/bookloftpl && git fetch && git switch main && git pull`,
-4. reload Nginx tylko jesli zmieniala sie konfiguracja Nginx,
-5. smoke test publicznej strony.
+3. na Hetznerze: `cd /home/bookloftpl && git fetch && git switch ver-1.02 && git pull --ff-only`,
+4. `npm ci --omit=dev`,
+5. restart usługi sklepu,
+6. reload Nginx tylko po zmianie konfiguracji Nginx,
+7. smoke test domeny i lokalnego healthchecka.
 
-Zmiany dokumentacyjne nie wymagaja reloadu.
-
-## Smoke test
-
-```bash
-curl -I https://bookloft.pl/
-curl -I https://www.bookloft.pl/
-```
+Szczegóły operacyjne są w `docs/OPERATIONS.md`.

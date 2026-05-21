@@ -1,0 +1,51 @@
+import { appPath } from "../../config.js";
+
+export function renderLogin(config, error, next = config.basePath) {
+  const loginPath = appPath(config.basePath, "/login");
+  const stylesheetPath = appPath(config.basePath, `/assets/css/styles.css?v=${config.version}`);
+  const logoPath = appPath(config.basePath, `/assets/img/logo.png?v=${config.version}`);
+
+  return `<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BookLoft</title>
+  <link rel="stylesheet" href="${stylesheetPath}">
+</head>
+<body class="login-page">
+  <main class="login-shell">
+    <section class="login-panel" aria-labelledby="login-title">
+      <div class="login-brand" aria-label="BookLoft">
+        <img class="login-logo" src="${logoPath}" alt="BookLoft">
+      </div>
+      <h1 id="login-title">Strona w renowacji</h1>
+      <p class="login-note">Zapraszamy później. Sklep jest teraz dopracowywany i pozostaje dostępny tylko dla zespołu BookLoft.</p>
+      <form method="post" action="${loginPath}" class="login-form">
+        <input type="hidden" name="next" value="${escapeAttribute(next)}">
+        <label>
+          <span>Login</span>
+          <input name="username" autocomplete="username" required autofocus>
+        </label>
+        <label>
+          <span>Hasło</span>
+          <input name="password" type="password" autocomplete="current-password" required>
+        </label>
+        ${error ? '<p class="form-error">Nieprawidłowy login albo hasło.</p>' : ""}
+        ${config.adminUser && config.adminPassword ? "" : '<p class="form-error">Brak danych logowania w ENV serwera.</p>'}
+        <button type="submit" class="primary-action">Wejdź</button>
+      </form>
+    </section>
+  </main>
+</body>
+</html>`;
+}
+
+function escapeAttribute(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
