@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>BookLoft</title>
-  <link rel="stylesheet" href="/test/assets/css/styles.css?v=1.01">
-  <script defer src="/test/assets/js/store.js?v=1.01"></script>
+  <link rel="stylesheet" href="/test/assets/css/styles.css?v=1.01-cozy">
+  <script defer src="/test/assets/js/store.js?v=1.01-cozy"></script>
 </head>
 <body>
   <header class="topbar">
@@ -32,13 +32,26 @@
 
     <section class="shop-surface" aria-live="polite">
       <div class="shop-toolbar">
-        <div>
-          <p class="eyebrow">Używane książki</p>
+        <div class="shop-intro">
+          <p class="eyebrow">BookLoftowy regał</p>
           <h1>Znajdź kolejną historię</h1>
+          <p class="hero-copy">Książki z drugiego obiegu do herbaty, świecy i wieczoru z dobrym rozdziałem.</p>
         </div>
-        <div class="search-box">
-          <label for="product-search">Szukaj</label>
-          <input id="product-search" type="search" placeholder="Tytuł, autor, seria">
+        <div class="shop-hero-side">
+          <div class="hero-scene" aria-hidden="true">
+            <span class="scene-book scene-book-a"></span>
+            <span class="scene-book scene-book-b"></span>
+            <span class="scene-book scene-book-c"></span>
+            <span class="scene-cup"></span>
+            <span class="scene-steam scene-steam-a"></span>
+            <span class="scene-steam scene-steam-b"></span>
+            <span class="scene-candle"></span>
+            <span class="scene-flame"></span>
+          </div>
+          <div class="search-box">
+            <label for="product-search">Szukaj</label>
+            <input id="product-search" type="search" placeholder="Tytuł, autor, seria">
+          </div>
         </div>
       </div>
 
@@ -52,14 +65,14 @@
       <div class="category-chips" id="category-chips" aria-label="Szybkie kategorie"></div>
 
       <div class="status-strip" id="status-strip">
-        <span>Ładowanie sklepu...</span>
+        <span>Ładowanie regału...</span>
       </div>
 
       <div class="product-grid" id="product-grid"></div>
       <button class="load-more" id="load-more" type="button" hidden>Pokaż więcej</button>
       <div class="empty-state" id="empty-state" hidden>
-        <h2>Brak produktów do pokazania</h2>
-        <p>Sklep pokazuje tylko produkty dodane w panelu i mające stan magazynowy większy od zera.</p>
+        <h2>Na tym regale nic nie ma</h2>
+        <p>Spróbuj innej kategorii albo krótszego wyszukiwania.</p>
       </div>
     </section>
   </main>

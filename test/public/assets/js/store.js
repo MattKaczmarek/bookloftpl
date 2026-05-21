@@ -159,8 +159,8 @@ function renderProducts() {
   els.empty.hidden = products.length > 0;
   els.loadMore.hidden = !filteredMode || state.rendered >= products.length;
 
-  const filteredLabel = filteredMode ? `${products.length} wyników` : `${Math.min(INITIAL_LIMIT, products.length)} propozycji na start`;
-  els.status.innerHTML = `<span>${filteredLabel} z ${state.products.length} produktów</span><span>Używane książki dostępne w magazynie</span>`;
+  const filteredLabel = filteredMode ? `${products.length} wyników` : `${Math.min(INITIAL_LIMIT, products.length)} propozycji`;
+  els.status.innerHTML = `<span>${filteredLabel} z ${state.products.length} książek</span>`;
 }
 
 function filteredProducts() {
@@ -176,6 +176,7 @@ function renderProduct(product, index = 0) {
   const link = productUrl(product);
   const card = document.createElement("article");
   card.className = "product-card";
+  card.style.setProperty("--card-delay", `${Math.min(index, 16) * 28}ms`);
 
   const image = product.images && product.images.length ? product.images[0] : "";
   const price = product.price === null ? "Cena do ustalenia" : formatPrice(product.price, product.currency);
@@ -190,9 +191,8 @@ function renderProduct(product, index = 0) {
       <h2><a href="${link}">${escapeHtml(product.name)}</a></h2>
       <div class="price-row">
         <strong>${price}</strong>
-        <span>Używana książka</span>
       </div>
-      <a class="details-action" href="${link}">Szczegóły</a>
+      <a class="details-action" href="${link}" aria-label="Zobacz ${escapeAttribute(product.name)}">Zobacz</a>
     </div>
   `;
 

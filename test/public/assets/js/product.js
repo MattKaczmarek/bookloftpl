@@ -1,7 +1,7 @@
 const page = document.querySelector("#product-page");
 
 init().catch((error) => {
-  page.innerHTML = `<div class="empty-state"><h1>Nie udalo sie zaladowac produktu</h1><p>${escapeHtml(error.message)}</p></div>`;
+  page.innerHTML = `<div class="empty-state"><h1>Nie udało się załadować produktu</h1><p>${escapeHtml(error.message)}</p></div>`;
 });
 
 async function init() {
@@ -10,7 +10,7 @@ async function init() {
 
   const response = await fetch(`/test/api/products/${encodeURIComponent(productId)}`, { credentials: "same-origin" });
   if (response.status === 404) {
-    page.innerHTML = '<div class="empty-state"><h1>Produkt niedostepny</h1><p>Ten produkt nie jest obecnie widoczny w sklepie.</p></div>';
+    page.innerHTML = '<div class="empty-state"><h1>Produkt niedostępny</h1><p>Ten tytuł nie jest teraz na regale.</p></div>';
     return;
   }
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -26,6 +26,8 @@ function renderProduct(product) {
   const category = product.categoryPath && product.categoryPath.length
     ? product.categoryPath.map((item) => item.displayName || item.name).join(" / ")
     : "Bez kategorii";
+  const stock = Number(product.stock || 0);
+  const stockLabel = stock > 1 ? `${stock} szt. na półce` : "Dostępna na półce";
 
   page.innerHTML = `
     <nav class="breadcrumbs" aria-label="Sciezka">
@@ -44,13 +46,8 @@ function renderProduct(product) {
         <h1>${escapeHtml(product.name)}</h1>
         <div class="detail-purchase">
           <strong>${price}</strong>
-          <span>${Number(product.stock || 0)} szt. dostepne</span>
+          <span>${stockLabel}</span>
         </div>
-        <div class="product-actions">
-          <button type="button" class="primary-action">Kup</button>
-          <button type="button" class="secondary-action">Koszyk</button>
-        </div>
-        ${product.sku ? `<p class="sku-line">SKU ${escapeHtml(product.sku)}</p>` : ""}
       </section>
     </article>
     <section class="detail-description">
@@ -72,7 +69,7 @@ function renderRelated(products) {
   if (!products.length) return "";
   return `
     <section class="related-products">
-      <h2>Podobne w tej kategorii</h2>
+      <h2>Z tego samego regału</h2>
       <div class="related-grid">
         ${products.map((product) => `
           <a href="/test/product/${encodeURIComponent(product.id)}/${encodeURIComponent(product.slug || "produkt")}">
