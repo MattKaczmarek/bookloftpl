@@ -72,29 +72,18 @@ function bindEvents() {
 function renderCategories() {
   els.categoryTree.innerHTML = "";
   els.categoryChips.innerHTML = "";
-  els.categoryTree.appendChild(categoryList(state.categories));
 
-  const flat = flattenCategories(state.categories);
-  for (const category of flat) {
+  const flat = visibleCategories(state.categories);
+  els.categoryTree.appendChild(categoryList(flat.slice(0, 36)));
+
+  for (const category of flat.slice(0, 80)) {
     const option = document.createElement("option");
     option.value = category.id;
-    option.textContent = `${"  ".repeat(category.depth)}${category.displayName || category.name}`;
+    option.textContent = category.displayName || category.name;
     els.categorySelect.appendChild(option);
   }
 
-  const seenChipLabels = new Set();
   const chipCategories = flat
-    .filter((category) => (category.totalProductCount || category.productCount || 0) > 0)
-    .sort((a, b) => {
-      const countDiff = (b.totalProductCount || b.productCount || 0) - (a.totalProductCount || a.productCount || 0);
-      return countDiff || String(a.displayName || a.name).localeCompare(String(b.displayName || b.name), "pl-PL");
-    })
-    .filter((category) => {
-      const key = String(category.displayName || category.name || "").toLowerCase();
-      if (seenChipLabels.has(key)) return false;
-      seenChipLabels.add(key);
-      return true;
-    })
     .slice(0, 12);
 
   for (const category of chipCategories) {
@@ -131,7 +120,6 @@ function categoryList(categories) {
       resetAndRender();
     });
     item.appendChild(button);
-    if (category.children && category.children.length) item.appendChild(categoryList(category.children));
     list.appendChild(item);
   }
   return list;
@@ -183,7 +171,7 @@ function renderProduct(product, index = 0) {
   const imagePriority = index < 6 ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"';
 
   card.innerHTML = `
-    <a class="product-media" href="${link}" aria-label="${escapeAttribute(product.name)}">
+    <a class="product-media${image ? "" : " is-loaded"}" href="${link}" aria-label="${escapeAttribute(product.name)}">
       ${image ? `<img src="${escapeAttribute(image)}" ${imagePriority} decoding="async" alt="${escapeAttribute(product.name)}">` : '<div class="image-fallback">BookLoft</div>'}
     </a>
     <div class="product-body">
@@ -198,8 +186,13 @@ function renderProduct(product, index = 0) {
 
   const img = card.querySelector("img");
   if (img) {
+    const media = card.querySelector(".product-media");
+    const markLoaded = () => media.classList.add("is-loaded");
+    if (img.complete) markLoaded();
+    else img.addEventListener("load", markLoaded, { once: true });
     img.addEventListener("error", () => {
       img.replaceWith(Object.assign(document.createElement("div"), { className: "image-fallback", textContent: "BookLoft" }));
+      media.classList.add("is-loaded");
     });
   }
 
@@ -220,6 +213,22 @@ function flattenCategories(categories, depth = 0) {
     { ...category, depth },
     ...flattenCategories(category.children || [], depth + 1)
   ]);
+}
+
+function visibleCategories(categories) {
+  const seen = new Set();
+  return flattenCategories(categories)
+    .filter((category) => (category.totalProductCount || category.productCount || 0) > 0)
+    .sort((a, b) => {
+      const countDiff = (b.totalProductCount || b.productCount || 0) - (a.totalProductCount || a.productCount || 0);
+      return countDiff || String(a.displayName || a.name).localeCompare(String(b.displayName || b.name), "pl-PL");
+    })
+    .filter((category) => {
+      const key = String(category.displayName || category.name || "").trim().toLowerCase();
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
 }
 
 function productUrl(product) {

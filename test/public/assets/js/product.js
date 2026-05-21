@@ -71,14 +71,24 @@ function renderRelated(products) {
     <section class="related-products">
       <h2>Z tego samego regału</h2>
       <div class="related-grid">
-        ${products.map((product) => `
-          <a href="/test/product/${encodeURIComponent(product.id)}/${encodeURIComponent(product.slug || "produkt")}">
-            <span>${escapeHtml(product.name)}</span>
-            <strong>${product.price === null ? "Cena do ustalenia" : formatPrice(product.price, product.currency)}</strong>
-          </a>
-        `).join("")}
+        ${products.map(renderRelatedCard).join("")}
       </div>
     </section>`;
+}
+
+function renderRelatedCard(product) {
+  const image = product.images && product.images.length ? product.images[0] : "";
+  return `
+    <a class="related-card" href="/test/product/${encodeURIComponent(product.id)}/${encodeURIComponent(product.slug || "produkt")}">
+      <span class="related-thumb">
+        ${image ? `<img src="${escapeAttribute(image)}" loading="lazy" decoding="async" alt="">` : "<span>BookLoft</span>"}
+      </span>
+      <span class="related-copy">
+        <span>${escapeHtml(product.name)}</span>
+        <strong>${product.price === null ? "Cena do ustalenia" : formatPrice(product.price, product.currency)}</strong>
+      </span>
+    </a>
+  `;
 }
 
 function formatPrice(value, currency) {
