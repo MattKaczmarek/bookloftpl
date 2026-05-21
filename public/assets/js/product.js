@@ -36,7 +36,6 @@ function renderProduct(product) {
 
   page.innerHTML = `
     <nav class="breadcrumbs" aria-label="Sciezka">
-      <a href="/">Sklep</a>
       <span>${escapeHtml(category)}</span>
     </nav>
     <article class="product-detail" itemscope itemtype="https://schema.org/Product">

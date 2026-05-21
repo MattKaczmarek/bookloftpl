@@ -92,8 +92,9 @@ function renderProductPage(config, product) {
       <img class="brand-logo" src="${appPath(config.basePath, `/assets/img/logo.png?v=${config.version}`)}" alt="BookLoft">
     </a>
     <nav class="top-actions" aria-label="Nawigacja">
-      <a href="${appPath(config.basePath)}" class="ghost-action">Sklep</a>
-      <a href="${appPath(config.basePath, "/panel")}" class="ghost-action">Panel</a>
+      <form method="post" action="${appPath(config.basePath, "/logout")}">
+        <button type="submit" class="ghost-action">Wyloguj</button>
+      </form>
     </nav>
   </header>
 
