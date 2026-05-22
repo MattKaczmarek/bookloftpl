@@ -1,6 +1,6 @@
 # BookLoft sklep
 
-Wersja sklepu: `1.04.3`.
+Wersja sklepu: `1.04.4`.
 Branch tej wersji: `ver-1.04`.
 
 Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://bookloft.pl/`. Katalog jest oparty bezposrednio o aktywne oferty Allegro konta BookLoft.
@@ -98,8 +98,8 @@ Zasady:
 
 - Dane firmy na stronie: `BookLoft Mateusz Kaczmarek`, 334c, 33-152 Pogorska Wola, NIP `9930688202`, REGON `522042224`, `bookloft.store@gmail.com`, `518 104 941`.
 - `/informacje-prawne` nie jest pelnym regulaminem samodzielnego sklepu, bo aplikacja nie ma koszyka ani platnosci.
-- Google Analytics uzywa `BOOKLOFT_GA_ID`; domyslnie jest to identyfikator z dotychczasowego landingu.
-- Skrypt `public/assets/js/analytics.js` startuje GA dopiero po akceptacji cookies analitycznych i wysyla event klikniecia w oferte Allegro.
+- Google Analytics używa `BOOKLOFT_GA_ID`; domyślnie jest to identyfikator z dotychczasowego landingu.
+- Skrypt `public/assets/js/analytics.js` startuje GA dopiero po akceptacji cookies analitycznych, obsługuje cofnięcie zgody, czyści cookies GA i wysyła event kliknięcia w ofertę Allegro tylko po zgodzie.
 
 ## Uruchomienie lokalne
 

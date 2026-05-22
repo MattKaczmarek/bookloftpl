@@ -11,6 +11,7 @@ export function renderLogin(config, error, next = config.basePath) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
   <title>BookLoft</title>
   <link rel="stylesheet" href="${stylesheetPath}">
   <script>window.BOOKLOFT_ANALYTICS_ID=${JSON.stringify(config.googleAnalyticsId || "")};</script>

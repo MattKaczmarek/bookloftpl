@@ -1,7 +1,7 @@
 # Operacje BookLoft sklep
 
 Stan dokumentu: `2026-05-22`.
-Wersja sklepu: `1.04.3`.
+Wersja sklepu: `1.04.4`.
 Branch wersji: `ver-1.04`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
@@ -67,7 +67,7 @@ Jesli token wygasnie albo zostanie cofniety, w panelu pojawi sie blad i trzeba p
 - `/informacje-prawne` jest strona informacyjna dla katalogu prowadzacego do Allegro.
 - Dane firmy: BookLoft Mateusz Kaczmarek, 334c, 33-152 Pogorska Wola, NIP 9930688202, REGON 522042224, bookloft.store@gmail.com, 518 104 941.
 - BookLoft.pl nie ma koszyka ani platnosci; zakup, dostawa, zwroty i reklamacje odbywaja sie w Allegro.
-- Google Analytics jest osadzony przez `public/assets/js/analytics.js` i wlacza sie dopiero po zgodzie na cookies analityczne.
+- Google Analytics jest osadzony przez `public/assets/js/analytics.js` i włącza się dopiero po zgodzie na cookies analityczne; cofnięcie zgody wysyła `analytics_storage=denied` i usuwa cookies GA.
 - Identyfikator GA jest domyslnie taki jak na dotychczasowym landingu (`G-NQH5FFJ8Y4`), ale moze byc nadpisany przez `BOOKLOFT_GA_ID`.
 
 ## Deploy
