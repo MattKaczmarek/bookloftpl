@@ -1,4 +1,5 @@
 import express from "express";
+import { createAllegroOAuthRouter } from "./modules/allegroOAuthRoutes.js";
 import { createAdminApiRouter } from "./modules/adminApi.js";
 import { createAuthRouter } from "./modules/authRoutes.js";
 import { createHealthRouter } from "./modules/healthRoutes.js";
@@ -17,6 +18,7 @@ export function createRouter(config, storeCache) {
   router.use(createHealthRouter(config, storeCache));
   router.use(createAuthRouter(config));
   router.use(createPageRouter(config, storeCache));
+  router.use("/api/allegro", createAllegroOAuthRouter(config, storeCache));
   router.use("/api", createStoreApiRouter(config, storeCache));
   router.use("/api/admin", createAdminApiRouter(config, storeCache));
 

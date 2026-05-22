@@ -1,24 +1,33 @@
+import crypto from "node:crypto";
 import path from "node:path";
-import { BaseClient } from "../lib/baseClient.js";
+import { AllegroClient } from "../lib/allegroClient.js";
 import { sanitizeDescription, stripHtml } from "../lib/html.js";
 import { ensureDir, readJson, writeJson } from "../lib/jsonStore.js";
 
-const PUBLISHED_FILE = "published-products.json";
-const CATALOG_FILE = "catalog-cache.json";
-const STOCK_FILE = "stock-cache.json";
+const AUTH_FILE = "allegro-auth.json";
+const PUBLISHED_FILE = "published-offers.json";
+const CATALOG_FILE = "allegro-offers-cache.json";
 const STOREFRONT_FILE = "storefront-cache.json";
 const META_FILE = "cache-meta.json";
+const AUTH_STATE_TTL_MS = 15 * 60 * 1000;
 
 function nowIso() {
   return new Date().toISOString();
 }
 
+function emptyAuth() {
+  return {
+    token: null,
+    pendingStates: {}
+  };
+}
+
 function emptyPublished() {
   return {
-    version: 1,
-    activeProductIds: [],
-    addedAtByProductId: {},
-    removedByZero: {}
+    version: 2,
+    activeOfferIds: [],
+    addedAtByOfferId: {},
+    removedByUnavailable: {}
   };
 }
 
@@ -28,14 +37,7 @@ function emptyCatalog(version) {
     updatedAt: null,
     context: null,
     categories: [],
-    products: {}
-  };
-}
-
-function emptyStock() {
-  return {
-    updatedAt: null,
-    products: {}
+    offers: {}
   };
 }
 
@@ -51,7 +53,8 @@ function emptyStorefront(version) {
       productCount: 0,
       categoryCount: 0,
       hiddenByStockCount: 0,
-      currency: "PLN"
+      currency: "PLN",
+      source: "Allegro"
     }
   };
 }
@@ -62,6 +65,7 @@ function emptyMeta(version) {
     lastStockRefreshAt: null,
     lastCatalogRefreshAt: null,
     lastAddNewAt: null,
+    lastOAuthAt: null,
     lastErrorAt: null,
     lastError: null,
     runningAction: null
@@ -71,11 +75,11 @@ function emptyMeta(version) {
 export class StoreCache {
   constructor(config) {
     this.config = config;
-    this.baseClient = new BaseClient(config);
+    this.allegroClient = new AllegroClient(config);
     this.files = {
+      auth: path.join(config.dataDir, AUTH_FILE),
       published: path.join(config.dataDir, PUBLISHED_FILE),
       catalog: path.join(config.dataDir, CATALOG_FILE),
-      stock: path.join(config.dataDir, STOCK_FILE),
       storefront: path.join(config.dataDir, STOREFRONT_FILE),
       meta: path.join(config.dataDir, META_FILE)
     };
@@ -84,9 +88,9 @@ export class StoreCache {
 
   async init() {
     await ensureDir(this.config.dataDir);
+    await this.ensureFile(this.files.auth, emptyAuth());
     await this.ensureFile(this.files.published, emptyPublished());
     await this.ensureFile(this.files.catalog, emptyCatalog(this.config.version));
-    await this.ensureFile(this.files.stock, emptyStock());
     await this.ensureFile(this.files.storefront, emptyStorefront(this.config.version));
     await this.ensureFile(this.files.meta, emptyMeta(this.config.version));
     await this.rebuildStorefront();
@@ -120,26 +124,33 @@ export class StoreCache {
 
   async getNewestProducts(limit = 50) {
     const [storefront, published] = await Promise.all([this.getStorefront(), this.readPublished()]);
-    const addedAtByProductId = published.addedAtByProductId || {};
+    const addedAtByOfferId = published.addedAtByOfferId || {};
 
     return storefront.products
       .map((product) => ({
         ...product,
-        addedAt: addedAtByProductId[String(product.id)] || null
+        addedAt: addedAtByOfferId[String(product.id)] || product.addedAt || null
       }))
       .sort((a, b) => {
         const dateDiff = productFreshnessTime(b) - productFreshnessTime(a);
         if (dateDiff) return dateDiff;
-        return Number(b.id) - Number(a.id);
+        return sortIdsDesc(a.id, b.id);
       })
       .slice(0, Math.max(1, Math.min(Number(limit) || 50, 50)))
       .map(toListProduct);
   }
 
   async getProduct(productId) {
-    const storefront = await this.getStorefront();
-    const product = storefront.products.find((item) => String(item.id) === String(productId));
+    let storefront = await this.getStorefront();
+    let product = storefront.products.find((item) => String(item.id) === String(productId));
     if (!product) return null;
+
+    if (!product.descriptionFetchedAt) {
+      await this.hydrateOfferDetail(product.id).catch((error) => this.rememberError(error));
+      storefront = await this.getStorefront();
+      product = storefront.products.find((item) => String(item.id) === String(productId)) || product;
+    }
+
     const related = storefront.products
       .filter((item) => item.id !== product.id && item.categoryId && item.categoryId === product.categoryId)
       .slice(0, 8)
@@ -151,77 +162,107 @@ export class StoreCache {
   }
 
   async getStatus() {
-    const [published, storefront, meta, catalog, stock] = await Promise.all([
+    const [published, storefront, meta, catalog, auth] = await Promise.all([
       this.readPublished(),
       this.getStorefront(),
       this.readMeta(),
       this.readCatalog(),
-      this.readStock()
+      this.readAuth()
     ]);
 
     return {
       version: this.config.version,
-      activeProductCount: published.activeProductIds.length,
+      activeProductCount: published.activeOfferIds.length,
       visibleProductCount: storefront.products.length,
       visibleCategoryCount: storefront.meta.categoryCount,
       hiddenByStockCount: storefront.meta.hiddenByStockCount,
-      stockUpdatedAt: stock.updatedAt,
+      stockUpdatedAt: catalog.updatedAt,
       catalogUpdatedAt: catalog.updatedAt,
       storefrontUpdatedAt: storefront.updatedAt,
-      context: catalog.context,
+      context: catalog.context || this.publicContext(auth),
+      allegro: this.publicAllegroStatus(auth),
       lastError: meta.lastError,
       lastErrorAt: meta.lastErrorAt,
       runningAction: meta.runningAction
     };
   }
 
+  async createAllegroConnectUrl() {
+    const auth = await this.readAuth();
+    const state = crypto.randomUUID();
+    auth.pendingStates = cleanPendingStates(auth.pendingStates || {});
+    auth.pendingStates[state] = { createdAt: Date.now() };
+    await writeJson(this.files.auth, auth);
+    return this.allegroClient.createAuthorizationUrl(state);
+  }
+
+  async handleAllegroCallback({ code, state }) {
+    if (!code || !state) {
+      throw new Error("Brak kodu lub state z Allegro OAuth");
+    }
+    const auth = await this.readAuth();
+    auth.pendingStates = cleanPendingStates(auth.pendingStates || {});
+    if (!auth.pendingStates[state]) {
+      throw new Error("Nieprawidlowy albo wygasly state Allegro OAuth");
+    }
+
+    const token = await this.allegroClient.exchangeCode(code);
+    auth.token = normalizeToken(token);
+    delete auth.pendingStates[state];
+    await writeJson(this.files.auth, auth);
+
+    const meta = await this.readMeta();
+    meta.lastOAuthAt = nowIso();
+    meta.lastError = null;
+    meta.lastErrorAt = null;
+    await writeJson(this.files.meta, meta);
+
+    return this.publicAllegroStatus(auth);
+  }
+
   async addNewProducts() {
-    return this.runExclusive("add-new-products", async () => {
-      await this.markRunning("add-new-products");
+    return this.runExclusive("add-new-offers", async () => {
+      await this.markRunning("add-new-offers");
       const startedAt = nowIso();
 
       try {
-        const context = await this.baseClient.resolveContext();
-        const stockMap = await this.fetchStockMap(context);
-        const availableIds = Object.entries(stockMap)
-          .filter(([, value]) => value.available > 0)
-          .map(([productId]) => productId);
-
+        const listingMap = await this.fetchActiveOfferMap();
         const published = await this.readPublished();
-        const activeSet = new Set();
+        const previousActive = new Set(published.activeOfferIds.map(String));
+        const nextActive = new Set();
+        const addedIds = [];
 
-        for (const productId of published.activeProductIds.map(String)) {
-          if ((stockMap[productId]?.available || 0) > 0) {
-            activeSet.add(productId);
-          } else {
-            published.removedByZero[productId] = startedAt;
+        for (const offerId of Object.keys(listingMap)) {
+          nextActive.add(offerId);
+          if (!previousActive.has(offerId)) {
+            addedIds.push(offerId);
+            published.addedAtByOfferId[offerId] = startedAt;
+          }
+          delete published.removedByUnavailable[offerId];
+        }
+
+        for (const offerId of previousActive) {
+          if (!nextActive.has(offerId)) {
+            published.removedByUnavailable[offerId] = startedAt;
           }
         }
 
-        const newIds = availableIds.filter((productId) => !activeSet.has(String(productId)));
-
-        for (const productId of newIds) {
-          activeSet.add(String(productId));
-          published.addedAtByProductId[String(productId)] = startedAt;
-          delete published.removedByZero[String(productId)];
-        }
-
-        published.activeProductIds = [...activeSet].sort(sortIds);
+        published.activeOfferIds = [...nextActive].sort(sortIds);
         await writeJson(this.files.published, published);
-        await this.writeStockFromMap(stockMap, startedAt);
-        await this.refreshCatalogLocked("add-new-products", context);
+        await this.refreshOfferCacheLocked("add-new-offers", listingMap);
 
         const meta = await this.readMeta();
         meta.lastAddNewAt = startedAt;
+        meta.lastStockRefreshAt = startedAt;
         meta.lastError = null;
         meta.lastErrorAt = null;
         await writeJson(this.files.meta, meta);
 
         return {
-          addedCount: newIds.length,
-          addedProductIds: newIds,
-          availableInBaseCount: availableIds.length,
-          activeProductCount: published.activeProductIds.length
+          addedCount: addedIds.length,
+          addedOfferIds: addedIds,
+          availableOfferCount: Object.keys(listingMap).length,
+          activeProductCount: published.activeOfferIds.length
         };
       } catch (error) {
         await this.rememberError(error);
@@ -236,8 +277,8 @@ export class StoreCache {
     return this.runExclusive(`refresh-stock:${reason}`, async () => {
       await this.markRunning("refresh-stock");
       try {
-        const context = await this.baseClient.resolveContext();
-        await this.refreshStockLocked(reason, context);
+        const listingMap = await this.fetchActiveOfferMap();
+        await this.refreshAvailabilityLocked(reason, listingMap);
       } catch (error) {
         await this.rememberError(error);
         throw error;
@@ -251,9 +292,8 @@ export class StoreCache {
     return this.runExclusive(`refresh-catalog:${reason}`, async () => {
       await this.markRunning("refresh-catalog");
       try {
-        const context = await this.baseClient.resolveContext();
-        await this.refreshStockLocked(reason, context);
-        await this.refreshCatalogLocked(reason, context);
+        const listingMap = await this.fetchActiveOfferMap();
+        await this.refreshAvailabilityLocked(reason, listingMap);
       } catch (error) {
         await this.rememberError(error);
         throw error;
@@ -263,81 +303,79 @@ export class StoreCache {
     });
   }
 
-  async refreshStockLocked(_reason, context) {
-    const stockMap = await this.fetchStockMap(context);
+  async refreshAvailabilityLocked(_reason, listingMap) {
     const timestamp = nowIso();
-    await this.writeStockFromMap(stockMap, timestamp);
-
     const published = await this.readPublished();
-    const before = published.activeProductIds.length;
-    const activeIds = [];
+    const nextActiveIds = [];
 
-    for (const productId of published.activeProductIds.map(String)) {
-      const available = stockMap[productId]?.available || 0;
-      if (available > 0) {
-        activeIds.push(productId);
+    for (const offerId of published.activeOfferIds.map(String)) {
+      if (listingMap[offerId]) {
+        nextActiveIds.push(offerId);
+        delete published.removedByUnavailable[offerId];
       } else {
-        published.removedByZero[productId] = timestamp;
+        published.removedByUnavailable[offerId] = timestamp;
       }
     }
 
-    published.activeProductIds = activeIds.sort(sortIds);
+    published.activeOfferIds = nextActiveIds.sort(sortIds);
     await writeJson(this.files.published, published);
+    await this.refreshOfferCacheLocked("refresh-availability", listingMap);
 
     const meta = await this.readMeta();
     meta.lastStockRefreshAt = timestamp;
-    meta.lastError = null;
-    meta.lastErrorAt = null;
-    await writeJson(this.files.meta, meta);
-
-    await this.rebuildStorefront(context, before - activeIds.length);
-  }
-
-  async refreshCatalogLocked(_reason, resolvedContext = null) {
-    const context = resolvedContext || (await this.baseClient.resolveContext());
-    const published = await this.readPublished();
-    const activeIds = published.activeProductIds.map(String);
-    const timestamp = nowIso();
-
-    const [categoriesData, products] = await Promise.all([
-      this.baseClient.call("getInventoryCategories", { inventory_id: context.inventoryId }),
-      this.fetchProductDetails(context, activeIds)
-    ]);
-
-    const catalog = {
-      version: this.config.version,
-      updatedAt: timestamp,
-      context,
-      categories: categoriesData.categories || [],
-      products
-    };
-
-    await writeJson(this.files.catalog, catalog);
-
-    const meta = await this.readMeta();
     meta.lastCatalogRefreshAt = timestamp;
     meta.lastError = null;
     meta.lastErrorAt = null;
     await writeJson(this.files.meta, meta);
-
-    await this.rebuildStorefront(context);
   }
 
-  async rebuildStorefront(contextOverride = null, recentlyHiddenCount = 0) {
-    const [published, catalog, stock] = await Promise.all([this.readPublished(), this.readCatalog(), this.readStock()]);
-    const context = contextOverride || catalog.context || { currency: "PLN" };
-    const activeSet = new Set(published.activeProductIds.map(String));
+  async refreshOfferCacheLocked(_reason, listingMap) {
+    const [published, previousCatalog] = await Promise.all([this.readPublished(), this.readCatalog()]);
+    const activeIds = published.activeOfferIds.map(String).filter((offerId) => listingMap[offerId]);
+    const offers = {};
+
+    for (const offerId of activeIds) {
+      offers[offerId] = normalizeOfferFromListing(listingMap[offerId], previousCatalog.offers?.[offerId]);
+    }
+
+    const categories = await this.fetchCategoriesForOffers(Object.values(offers), previousCatalog.categories || []);
+    const catalog = {
+      version: this.config.version,
+      updatedAt: nowIso(),
+      context: this.publicContext(await this.readAuth()),
+      categories,
+      offers
+    };
+
+    await writeJson(this.files.catalog, catalog);
+    await this.rebuildStorefront(catalog.context);
+  }
+
+  async hydrateOfferDetail(offerId) {
+    const catalog = await this.readCatalog();
+    const existing = catalog.offers?.[String(offerId)];
+    if (!existing) return null;
+
+    const detail = await this.withAccessToken((accessToken) => this.allegroClient.getOfferDetails(offerId, accessToken));
+    catalog.offers[String(offerId)] = mergeOfferDetail(existing, detail);
+    catalog.updatedAt = nowIso();
+    await writeJson(this.files.catalog, catalog);
+    await this.rebuildStorefront(catalog.context);
+    return catalog.offers[String(offerId)];
+  }
+
+  async rebuildStorefront(contextOverride = null) {
+    const [published, catalog] = await Promise.all([this.readPublished(), this.readCatalog()]);
+    const context = contextOverride || catalog.context || { source: "Allegro", currency: "PLN" };
+    const activeSet = new Set(published.activeOfferIds.map(String));
     const visibleProducts = [];
 
-    for (const productId of activeSet) {
-      const product = catalog.products[String(productId)];
-      const stockEntry = stock.products[String(productId)];
-      if (!product || !stockEntry || stockEntry.available <= 0) continue;
+    for (const offerId of activeSet) {
+      const offer = catalog.offers[String(offerId)];
+      if (!offer || Number(offer.stock || 0) <= 0) continue;
       visibleProducts.push({
-        ...product,
-        stock: stockEntry.available,
-        stockByWarehouse: stockEntry.stockByWarehouse,
-        categoryPath: getCategoryPath(catalog.categories, product.categoryId)
+        ...offer,
+        categoryPath: getCategoryPath(catalog.categories, offer.categoryId)
       });
     }
 
@@ -347,17 +385,16 @@ export class StoreCache {
     const storefront = {
       version: this.config.version,
       updatedAt: nowIso(),
-      stockUpdatedAt: stock.updatedAt,
+      stockUpdatedAt: catalog.updatedAt,
       catalogUpdatedAt: catalog.updatedAt,
       products: visibleProducts,
       categories,
       meta: {
         productCount: visibleProducts.length,
         categoryCount: countCategories(categories),
-        hiddenByStockCount: Object.keys(published.removedByZero || {}).length,
-        recentlyHiddenCount,
+        hiddenByStockCount: Object.keys(published.removedByUnavailable || {}).length,
         currency: context.currency || "PLN",
-        priceGroupName: context.priceGroupName || this.config.basePriceGroupName
+        source: "Allegro"
       }
     };
 
@@ -365,44 +402,107 @@ export class StoreCache {
     return storefront;
   }
 
-  async fetchStockMap(context) {
-    const pages = await this.baseClient.getAllPaged(
-      "getInventoryProductsStock",
-      { inventory_id: context.inventoryId },
-      "products"
+  async fetchActiveOfferMap() {
+    const offers = await this.withAccessToken((accessToken) => this.allegroClient.getActiveOffers(accessToken));
+    return Object.fromEntries(
+      offers
+        .filter((offer) => Number(offer?.stock?.available || 0) > 0)
+        .map((offer) => [String(offer.id), offer])
     );
-    const stockMap = {};
-
-    for (const page of pages) {
-      for (const [productId, record] of Object.entries(page)) {
-        stockMap[String(productId)] = normalizeStockRecord(record, this.config.baseWarehouseId);
-      }
-    }
-
-    return stockMap;
   }
 
-  async writeStockFromMap(stockMap, timestamp) {
-    await writeJson(this.files.stock, {
-      updatedAt: timestamp,
-      products: stockMap
+  async fetchCategoriesForOffers(offers, previousCategories) {
+    const categoriesById = new Map();
+    for (const category of previousCategories || []) {
+      if (category?.category_id) categoriesById.set(String(category.category_id), category);
+    }
+
+    const categoryIds = [...new Set(offers.map((offer) => offer.categoryId).filter(Boolean))];
+    if (!categoryIds.length) return [];
+
+    await this.withAccessToken(async (accessToken) => {
+      for (const categoryId of categoryIds) {
+        await this.ensureCategory(categoryId, categoriesById, accessToken);
+      }
     });
+
+    return [...categoriesById.values()];
   }
 
-  async fetchProductDetails(context, productIds) {
-    const result = {};
-    for (const chunk of chunkArray(productIds, this.config.productsDataChunkSize)) {
-      if (chunk.length === 0) continue;
-      const data = await this.baseClient.call("getInventoryProductsData", {
-        inventory_id: context.inventoryId,
-        products: chunk.map((productId) => Number(productId))
-      });
+  async ensureCategory(categoryId, categoriesById, accessToken) {
+    const id = String(categoryId || "");
+    if (!id || categoriesById.has(id)) return;
 
-      for (const [productId, record] of Object.entries(data.products || {})) {
-        result[String(productId)] = normalizeProduct(productId, record, context);
+    try {
+      const data = await this.allegroClient.getCategory(id, accessToken);
+      const category = {
+        category_id: String(data.id || id),
+        name: data.name || `Kategoria ${id}`,
+        parent_id: data.parent?.id ? String(data.parent.id) : ""
+      };
+      categoriesById.set(category.category_id, category);
+      if (category.parent_id) {
+        await this.ensureCategory(category.parent_id, categoriesById, accessToken);
       }
+    } catch {
+      categoriesById.set(id, {
+        category_id: id,
+        name: `Kategoria ${id}`,
+        parent_id: ""
+      });
     }
-    return result;
+  }
+
+  async withAccessToken(fn) {
+    let token = await this.getAccessToken();
+    try {
+      return await fn(token);
+    } catch (error) {
+      if (error?.status !== 401) throw error;
+      token = await this.refreshAccessToken();
+      return fn(token);
+    }
+  }
+
+  async getAccessToken() {
+    const auth = await this.readAuth();
+    if (!auth.token?.access_token) {
+      throw new Error("Allegro nie jest polaczone. Uzyj przycisku 'Polacz Allegro' w panelu.");
+    }
+    if (Number(auth.token.expires_at || 0) > Date.now() + 60_000) {
+      return auth.token.access_token;
+    }
+    return this.refreshAccessToken(auth);
+  }
+
+  async refreshAccessToken(existingAuth = null) {
+    const auth = existingAuth || await this.readAuth();
+    if (!auth.token?.refresh_token) {
+      throw new Error("Brak refresh tokena Allegro. Polacz konto Allegro ponownie.");
+    }
+    const token = await this.allegroClient.refreshToken(auth.token.refresh_token);
+    auth.token = normalizeToken(token, auth.token.refresh_token);
+    await writeJson(this.files.auth, auth);
+    return auth.token.access_token;
+  }
+
+  publicContext(auth) {
+    return {
+      source: "Allegro",
+      marketplaceId: this.config.allegroMarketplaceId,
+      connected: Boolean(auth?.token?.refresh_token || auth?.token?.access_token),
+      connectedAt: auth?.token?.created_at || null,
+      expiresAt: auth?.token?.expires_at ? new Date(auth.token.expires_at).toISOString() : null
+    };
+  }
+
+  publicAllegroStatus(auth) {
+    return {
+      configured: this.allegroClient.isConfigured(),
+      connected: Boolean(auth?.token?.refresh_token || auth?.token?.access_token),
+      connectedAt: auth?.token?.created_at || null,
+      expiresAt: auth?.token?.expires_at ? new Date(auth.token.expires_at).toISOString() : null
+    };
   }
 
   async ensureFile(filePath, fallback) {
@@ -410,20 +510,22 @@ export class StoreCache {
     if (!existing) await writeJson(filePath, fallback);
   }
 
+  async readAuth() {
+    const auth = await readJson(this.files.auth, emptyAuth());
+    auth.pendingStates = cleanPendingStates(auth.pendingStates || {});
+    return auth;
+  }
+
   async readPublished() {
     const published = await readJson(this.files.published, emptyPublished());
-    published.activeProductIds = [...new Set((published.activeProductIds || []).map(String))].sort(sortIds);
-    published.addedAtByProductId = published.addedAtByProductId || {};
-    published.removedByZero = published.removedByZero || {};
+    published.activeOfferIds = [...new Set((published.activeOfferIds || []).map(String))].sort(sortIds);
+    published.addedAtByOfferId = published.addedAtByOfferId || {};
+    published.removedByUnavailable = published.removedByUnavailable || {};
     return published;
   }
 
   async readCatalog() {
     return readJson(this.files.catalog, emptyCatalog(this.config.version));
-  }
-
-  async readStock() {
-    return readJson(this.files.stock, emptyStock());
   }
 
   async readMeta() {
@@ -456,102 +558,153 @@ export class StoreCache {
   }
 }
 
-function normalizeProduct(productId, record, context) {
-  const fields = record.text_fields || {};
-  const language = context.defaultLanguage || "";
-  const localizedName = language ? fields[`name|${language}`] : "";
-  const localizedDescription = language ? fields[`description|${language}`] : "";
-  const name = String(localizedName || fields.name || record.name || record.sku || `Produkt ${productId}`).trim();
-  const descriptionHtml = sanitizeDescription(localizedDescription || fields.description || "");
-  const priceRaw = record.prices ? record.prices[String(context.priceGroupId)] : null;
-  const price = priceRaw === undefined || priceRaw === null || priceRaw === "" ? null : Number(priceRaw);
+function normalizeToken(token, fallbackRefreshToken = "") {
+  const expiresIn = Number(token.expires_in || 0);
+  return {
+    access_token: token.access_token || "",
+    refresh_token: token.refresh_token || fallbackRefreshToken || "",
+    token_type: token.token_type || "Bearer",
+    scope: token.scope || "",
+    created_at: nowIso(),
+    expires_at: Date.now() + Math.max(60, expiresIn - 60) * 1000
+  };
+}
+
+function cleanPendingStates(states) {
+  const now = Date.now();
+  return Object.fromEntries(
+    Object.entries(states || {}).filter(([, value]) => now - Number(value?.createdAt || 0) < AUTH_STATE_TTL_MS)
+  );
+}
+
+function normalizeOfferFromListing(offer, existing = {}) {
+  const name = String(offer.name || existing.name || `Oferta ${offer.id}`).trim();
+  const price = parsePrice(offer.sellingMode?.price || existing);
+  const currency = offer.sellingMode?.price?.currency || existing.currency || "PLN";
+  const stock = Number(offer.stock?.available ?? existing.stock ?? 0);
+  const primaryImage = offer.primaryImage?.url || existing.images?.[0] || "";
+  const images = primaryImage ? [primaryImage, ...(existing.images || []).filter((src) => src !== primaryImage)] : existing.images || [];
+  const categoryId = offer.category?.id ? String(offer.category.id) : existing.categoryId || "";
+  const sku = offer.external?.id || existing.sku || "";
+  const descriptionHtml = existing.descriptionHtml || `<p>Oferta BookLoft dostepna na Allegro. Zakup, platnosc i obsluga zamowienia odbywaja sie w serwisie Allegro.</p>`;
+  const allegroUrl = `https://allegro.pl/oferta/${encodeURIComponent(String(offer.id))}`;
 
   return {
-    id: String(productId),
+    ...existing,
+    id: String(offer.id),
     slug: slugify(name),
-    sku: record.sku || "",
-    ean: record.ean || "",
+    sku,
+    ean: existing.ean || "",
     name,
-    searchText: stripHtml(`${name} ${record.sku || ""} ${record.ean || ""} ${descriptionHtml}`).toLowerCase(),
-    price: Number.isFinite(price) ? price : null,
-    currency: context.currency || "PLN",
-    categoryId: record.category_id ? String(record.category_id) : "",
-    images: normalizeImages(record.images),
-    baseAddedAt: normalizeBaseTimestamp(record.date_add || record.created_at || record.createdAt || record.added_at),
-    baseUpdatedAt: normalizeBaseTimestamp(record.date_update || record.updated_at || record.updatedAt),
+    searchText: stripHtml(`${name} ${sku} ${descriptionHtml} ${(existing.features || []).map((item) => `${item.name} ${item.value}`).join(" ")}`).toLowerCase(),
+    price,
+    currency,
+    categoryId,
+    images: normalizeImages(images),
+    stock,
+    stockByWarehouse: {},
+    allegroUrl,
+    source: "allegro",
+    publicationStatus: offer.publication?.status || existing.publicationStatus || "ACTIVE",
+    sourceAddedAt: existing.sourceAddedAt || offer.publication?.startingAt || null,
+    sourceUpdatedAt: existing.sourceUpdatedAt || null,
+    addedAt: existing.addedAt || offer.publication?.startingAt || null,
     descriptionHtml,
-    features: normalizeFeatures(fields.features)
+    features: existing.features || []
   };
+}
+
+function mergeOfferDetail(existing, detail) {
+  const descriptionHtml = standardizedDescriptionToHtml(detail.description) || existing.descriptionHtml;
+  const images = normalizeImages(detail.images || existing.images || []);
+  const features = normalizeParameters(detail.parameters || []);
+  const productParameters = normalizeProductSetParameters(detail.productSet || []);
+  const mergedFeatures = features.length ? features : productParameters;
+  const price = parsePrice(detail.sellingMode?.price || existing);
+  const name = String(detail.name || existing.name || "").trim();
+
+  return {
+    ...existing,
+    name: name || existing.name,
+    slug: slugify(name || existing.name),
+    descriptionHtml,
+    images: images.length ? images : existing.images,
+    features: mergedFeatures,
+    price,
+    currency: detail.sellingMode?.price?.currency || existing.currency || "PLN",
+    stock: Number(detail.stock?.available ?? existing.stock ?? 0),
+    categoryId: detail.category?.id ? String(detail.category.id) : existing.categoryId,
+    publicationStatus: detail.publication?.status || existing.publicationStatus,
+    sourceAddedAt: detail.createdAt || existing.sourceAddedAt || null,
+    sourceUpdatedAt: detail.updatedAt || existing.sourceUpdatedAt || null,
+    descriptionFetchedAt: nowIso(),
+    searchText: stripHtml(`${name || existing.name} ${existing.sku || ""} ${descriptionHtml} ${mergedFeatures.map((item) => `${item.name} ${item.value}`).join(" ")}`).toLowerCase()
+  };
+}
+
+function standardizedDescriptionToHtml(description) {
+  const sections = Array.isArray(description?.sections) ? description.sections : [];
+  const parts = [];
+  for (const section of sections) {
+    for (const item of section.items || []) {
+      if (item.type === "TEXT" && item.content) {
+        parts.push(`<p>${escapeHtml(item.content).replace(/\n/g, "<br>")}</p>`);
+      }
+    }
+  }
+  return sanitizeDescription(parts.join("\n"));
+}
+
+function normalizeParameters(parameters) {
+  return parameters
+    .map((parameter) => ({
+      name: String(parameter.name || "").trim(),
+      value: normalizeParameterValue(parameter)
+    }))
+    .filter((item) => item.name && item.value);
+}
+
+function normalizeProductSetParameters(productSet) {
+  return productSet.flatMap((item) => normalizeParameters(item?.product?.parameters || []));
+}
+
+function normalizeParameterValue(parameter) {
+  const values = [
+    ...(parameter.valuesLabels || []),
+    ...(parameter.values || []),
+    ...(parameter.rangeValue ? [parameter.rangeValue] : [])
+  ];
+  return values
+    .map((value) => {
+      if (value && typeof value === "object") return Object.values(value).filter(Boolean).join(" - ");
+      return String(value || "").trim();
+    })
+    .filter(Boolean)
+    .join(", ");
+}
+
+function parsePrice(price) {
+  const raw = price?.amount ?? price?.price ?? null;
+  const parsed = raw === undefined || raw === null || raw === "" ? null : Number(raw);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function productFreshnessTime(product) {
   return Math.max(
     Date.parse(product.addedAt || 0) || 0,
-    Date.parse(product.baseAddedAt || 0) || 0,
-    Date.parse(product.baseUpdatedAt || 0) || 0
+    Date.parse(product.sourceAddedAt || 0) || 0,
+    Date.parse(product.sourceUpdatedAt || 0) || 0,
+    Number(product.id || 0) || 0
   );
-}
-
-function normalizeBaseTimestamp(value) {
-  if (!value) return null;
-  if (typeof value === "number") {
-    const millis = value > 1_000_000_000_000 ? value : value * 1000;
-    return new Date(millis).toISOString();
-  }
-  const numeric = Number(value);
-  if (Number.isFinite(numeric) && numeric > 0) {
-    const millis = numeric > 1_000_000_000_000 ? numeric : numeric * 1000;
-    return new Date(millis).toISOString();
-  }
-  const parsed = Date.parse(value);
-  return Number.isFinite(parsed) ? new Date(parsed).toISOString() : null;
 }
 
 function normalizeImages(images) {
-  return Object.entries(images || {})
-    .sort(([left], [right]) => Number(left) - Number(right))
-    .map(([, value]) => String(value || "").trim())
-    .filter((value) => /^https?:\/\//i.test(value));
-}
-
-function normalizeFeatures(features) {
-  if (!features || typeof features !== "object" || Array.isArray(features)) return [];
-  return Object.entries(features)
-    .map(([name, value]) => ({ name: String(name), value: String(value) }))
-    .filter((item) => item.name && item.value);
-}
-
-function normalizeStockRecord(record, warehouseId) {
-  const baseAvailable = sumStock(record.stock, record.reservations, warehouseId);
-  const variantsAvailable = Object.values(record.variants || {}).reduce(
-    (sum, variantStock) => sum + sumStock(variantStock, null, warehouseId),
-    0
-  );
-
-  return {
-    productId: String(record.product_id || ""),
-    available: Math.max(0, baseAvailable + variantsAvailable),
-    stockByWarehouse: record.stock || {},
-    reservationsByWarehouse: record.reservations || {}
-  };
-}
-
-function sumStock(stock = {}, reservations = {}, warehouseId = "") {
-  if (!stock || typeof stock !== "object") return 0;
-  const keys = warehouseId ? [warehouseId] : Object.keys(stock);
-  return keys.reduce((sum, key) => {
-    const quantity = Number(stock[key] || 0);
-    const reserved = reservations && typeof reservations === "object" ? Number(reservations[key] || 0) : 0;
-    return sum + Math.max(0, quantity - reserved);
-  }, 0);
-}
-
-function chunkArray(items, size) {
-  const chunks = [];
-  for (let index = 0; index < items.length; index += size) {
-    chunks.push(items.slice(index, index + size));
-  }
-  return chunks;
+  return [...new Set(
+    (Array.isArray(images) ? images : Object.values(images || {}))
+      .map((value) => typeof value === "string" ? value : value?.url)
+      .map((value) => String(value || "").trim())
+      .filter((value) => /^https?:\/\//i.test(value))
+  )];
 }
 
 function sortIds(a, b) {
@@ -559,6 +712,10 @@ function sortIds(a, b) {
   const right = Number(b);
   if (Number.isFinite(left) && Number.isFinite(right)) return left - right;
   return String(a).localeCompare(String(b), "pl-PL");
+}
+
+function sortIdsDesc(a, b) {
+  return -sortIds(a, b);
 }
 
 function buildCategoryTree(categories, products) {
@@ -643,14 +800,15 @@ function toListProduct(product) {
     id: product.id,
     slug: product.slug || slugify(product.name),
     name: product.name,
-    searchText: stripHtml(`${product.name} ${categoryLeaf} ${categorySearch}`).toLowerCase(),
+    searchText: stripHtml(`${product.name} ${categoryLeaf} ${categorySearch} ${product.sku || ""}`).toLowerCase(),
     price: product.price,
     currency: product.currency,
     categoryId: product.categoryId,
     categoryName: categoryLeaf,
     categoryPath: product.categoryPath,
     images: product.images,
-    addedAt: product.addedAt || null
+    addedAt: product.addedAt || null,
+    allegroUrl: product.allegroUrl
   };
 }
 
@@ -662,21 +820,26 @@ function shortCategoryName(name) {
   const leaf = parts.length ? parts[parts.length - 1] : String(name || "Kategoria").trim();
   const aliases = [
     [/fantasy.*science fiction.*horror/i, "Fantasy"],
-    [/krymina.*sensacja.*thriller/i, "Kryminał"],
+    [/krymina.*sensacja.*thriller/i, "Kryminal"],
     [/literatura obyczajowa.*erotyczna/i, "Obyczajowe"],
-    [/ksi[aą]żki dla m[lł]odzieży/i, "Młodzieżowe"],
-    [/ksi[aą]żki dla dzieci/i, "Dziecięce"],
-    [/dla dzieci/i, "Dziecięce"],
-    [/ksi[aą]żki naukowe.*popularnonaukowe/i, "Naukowe"],
+    [/ksiazki dla mlodziezy/i, "Mlodziezowe"],
+    [/ksi[aą]zki dla m[lł]odzie[zż]y/i, "Mlodziezowe"],
+    [/ksiazki dla dzieci/i, "Dzieciece"],
+    [/ksi[aą]zki dla dzieci/i, "Dzieciece"],
+    [/dla dzieci/i, "Dzieciece"],
+    [/ksiazki naukowe.*popularnonaukowe/i, "Naukowe"],
+    [/ksi[aą]zki naukowe.*popularnonaukowe/i, "Naukowe"],
     [/naukowe.*popularnonaukowe/i, "Naukowe"],
     [/poradniki.*albumy/i, "Poradniki"],
-    [/literatura pi[eę]kna/i, "Literatura piękna"],
+    [/literatura piekna/i, "Literatura piekna"],
+    [/literatura pi[eę]kna/i, "Literatura piekna"],
     [/biografie.*wspomnienia/i, "Biografie"],
     [/historia/i, "Historia"],
     [/komiksy/i, "Komiksy"],
     [/filmy/i, "Filmy"],
     [/muzyka/i, "Muzyka"],
-    [/podr[eę]czniki/i, "Podręczniki"]
+    [/podreczniki/i, "Podreczniki"],
+    [/podr[eę]czniki/i, "Podreczniki"]
   ];
 
   for (const [pattern, label] of aliases) {
@@ -697,4 +860,13 @@ function slugify(value) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 80) || "produkt";
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }

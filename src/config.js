@@ -49,7 +49,7 @@ export function appPath(basePath, relativePath = "") {
 const resolvedBasePath = normalizeBasePath(env("BOOKLOFT_BASE_PATH") || "/");
 
 export const config = {
-  version: "1.03",
+  version: "1.04",
   appRoot,
   publicDir: path.join(appRoot, "public"),
   port: intEnv("BOOKLOFT_PORT", 3205),
@@ -62,16 +62,23 @@ export const config = {
   sessionSecret: env("BOOKLOFT_SESSION_SECRET", "SESSION_SECRET") || crypto.randomBytes(32).toString("hex"),
   sessionMaxAgeMs: msEnv("BOOKLOFT_SESSION_MAX_AGE_MS", 12 * 60 * 60 * 1000),
   cookieSecure: boolEnv("BOOKLOFT_COOKIE_SECURE", process.env.NODE_ENV === "production"),
-  baseApiUrl: env("BASE_COM_API_URL") || "https://api.baselinker.com/connector.php",
-  baseToken: env("BASE_COM_TOKEN"),
-  baseInventoryId: intEnv("BASE_COM_INVENTORY_ID", null),
-  basePriceGroupId: intEnv("BASE_COM_PRICE_GROUP_ID", null),
-  basePriceGroupName: env("BASE_COM_PRICE_GROUP_NAME") || "Sklep",
-  baseWarehouseId: env("BASE_COM_WAREHOUSE_ID"),
+  googleAnalyticsId: env("BOOKLOFT_GA_ID", "GOOGLE_ANALYTICS_ID") || "G-NQH5FFJ8Y4",
+  allegroApiUrl: (env("ALLEGRO_API_URL") || "https://api.allegro.pl").replace(/\/+$/, ""),
+  allegroAuthUrl: env("ALLEGRO_AUTH_URL") || "https://allegro.pl/auth/oauth/authorize",
+  allegroTokenUrl: env("ALLEGRO_TOKEN_URL") || "https://allegro.pl/auth/oauth/token",
+  allegroClientId: env("ALLEGRO_CLIENT_ID"),
+  allegroClientSecret: env("ALLEGRO_CLIENT_SECRET"),
+  allegroRedirectUri: env("ALLEGRO_REDIRECT_URI") || `${(env("BOOKLOFT_PUBLIC_ORIGIN") || "https://bookloft.pl").replace(/\/+$/, "")}/api/allegro/oauth/callback`,
+  allegroScope: env("ALLEGRO_SCOPE") || "allegro:api:sale:offers:read",
+  allegroMarketplaceId: env("ALLEGRO_MARKETPLACE_ID") || "allegro-pl",
+  allegroSellingFormats: (env("ALLEGRO_SELLING_FORMATS") || "BUY_NOW")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean),
+  allegroOfferLimit: intEnv("ALLEGRO_OFFER_LIMIT", 1000),
   stockRefreshMs: msEnv("BOOKLOFT_STOCK_REFRESH_MS", 30 * 60 * 1000),
   catalogRefreshMs: msEnv("BOOKLOFT_CATALOG_REFRESH_MS", 3 * 60 * 60 * 1000),
-  requestTimeoutMs: msEnv("BASE_COM_REQUEST_TIMEOUT_MS", 30000),
-  productsDataChunkSize: intEnv("BASE_COM_PRODUCTS_DATA_CHUNK_SIZE", 100)
+  requestTimeoutMs: msEnv(["ALLEGRO_REQUEST_TIMEOUT_MS", "BOOKLOFT_REQUEST_TIMEOUT_MS"], 30000)
 };
 
 export function publicUrl(relativePath = "") {

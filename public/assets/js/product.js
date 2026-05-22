@@ -33,6 +33,7 @@ function renderProduct(product) {
     : "Bez kategorii";
   const stock = Number(product.stock || 0);
   const stockLabel = stock > 1 ? `${stock} szt. na półce` : "Dostępna na półce";
+  const allegroUrl = product.allegroUrl || `https://allegro.pl/oferta/${encodeURIComponent(product.id)}`;
 
   page.innerHTML = `
     <div class="product-layout">
@@ -64,8 +65,7 @@ function renderProduct(product) {
           <span>${stockLabel}</span>
         </div>
         <div class="detail-actions">
-          <button class="buy-action" type="button">Kup</button>
-          <button class="cart-action icon-action" type="button" aria-label="Dodaj do koszyka">${cartIconSvg()}</button>
+          <a class="buy-action" href="${escapeAttribute(allegroUrl)}" target="_blank" rel="noopener noreferrer">Kup na Allegro</a>
         </div>
       </section>
     </article>
@@ -221,8 +221,4 @@ function escapeHtml(value) {
 
 function escapeAttribute(value) {
   return escapeHtml(value).replaceAll("`", "&#096;");
-}
-
-function cartIconSvg() {
-  return `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 6h16l-2 8H7L5 6Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M5 6 4.4 3H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="8" cy="19" r="1.7" fill="currentColor"/><circle cx="18" cy="19" r="1.7" fill="currentColor"/></svg>`;
 }

@@ -8,7 +8,8 @@ export async function ensureDir(dirPath) {
 export async function readJson(filePath, fallback) {
   try {
     const raw = await fs.readFile(filePath, "utf8");
-    return JSON.parse(raw);
+    const text = raw.charCodeAt(0) === 0xfeff ? raw.slice(1) : raw;
+    return JSON.parse(text);
   } catch (error) {
     if (error.code === "ENOENT") return fallback;
     throw error;

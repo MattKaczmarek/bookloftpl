@@ -1,14 +1,14 @@
 # Operacje BookLoft sklep
 
-Stan dokumentu: `2026-05-21`.
-Wersja sklepu: `1.03`.
-Branch wersji: `ver-1.03`.
+Stan dokumentu: `2026-05-22`.
+Wersja sklepu: `1.04`.
+Branch wersji: `ver-1.04`.
 Repo na Hetznerze: `/home/bookloftpl`.
-Usługa aplikacji: `bookloft-shop.service`.
+Usluga aplikacji: `bookloft-shop.service`.
 
 ## Granice projektu
 
-`bookloftpl` jest teraz aplikacją sklepu BookLoft serwowaną z root domeny `bookloft.pl`. Repo nie zawiera już osobnej statycznej wizytówki ani wydzielonego katalogu sklepu.
+`bookloftpl` jest aplikacja katalogu BookLoft serwowana z root domeny `bookloft.pl`. Dane katalogu pochodza bezposrednio z Allegro REST API.
 
 Nie dotyczy:
 
@@ -17,17 +17,19 @@ Nie dotyczy:
 - ofert Andrzeja,
 - API Jarka,
 - Google Sheets pakowania,
-- usług `bot-andrzej.service` i `bot-jarek.service`.
+- uslug `bot-andrzej.service` i `bot-jarek.service`.
 
 ## ENV produkcyjny
 
-Realne wartości sekretów są tylko na serwerze. Nie wolno wpisywać ich do repo, dokumentacji, logów ani frontendu.
+Realne wartosci sekretow sa tylko na serwerze. Nie wolno wpisywac ich do repo, dokumentacji, logow ani frontendu.
 
 Minimalny zestaw:
 
 ```bash
 NODE_ENV=production
-BASE_COM_TOKEN=...
+ALLEGRO_CLIENT_ID=...
+ALLEGRO_CLIENT_SECRET=...
+ALLEGRO_REDIRECT_URI=https://bookloft.pl/api/allegro/oauth/callback
 BOOKLOFT_ADMIN_USER=...
 BOOKLOFT_ADMIN_PASSWORD=...
 BOOKLOFT_SESSION_SECRET=...
@@ -37,34 +39,53 @@ BOOKLOFT_BASE_PATH=/
 BOOKLOFT_COOKIE_SECURE=true
 BOOKLOFT_DATA_DIR=/var/lib/bookloft-shop
 BOOKLOFT_PUBLIC_ORIGIN=https://bookloft.pl
-BASE_COM_PRICE_GROUP_NAME=Sklep
+BOOKLOFT_GA_ID=G-NQH5FFJ8Y4
+ALLEGRO_MARKETPLACE_ID=allegro-pl
+ALLEGRO_SELLING_FORMATS=BUY_NOW
 ```
 
-Opcjonalne identyfikatory Base:
+Opcjonalne:
 
 ```bash
-BASE_COM_INVENTORY_ID=...
-BASE_COM_PRICE_GROUP_ID=...
-BASE_COM_WAREHOUSE_ID=...
+BOOKLOFT_STOCK_REFRESH_MS=1800000
+BOOKLOFT_CATALOG_REFRESH_MS=10800000
+ALLEGRO_REQUEST_TIMEOUT_MS=30000
+ALLEGRO_SCOPE=allegro:api:sale:offers:read
 ```
+
+## OAuth Allegro
+
+1. Administrator wchodzi na `https://bookloft.pl/panel`.
+2. Klika `Polacz Allegro`.
+3. Allegro odsyla przegladarke na `https://bookloft.pl/api/allegro/oauth/callback`.
+4. Backend wymienia kod OAuth na tokeny i zapisuje je w `BOOKLOFT_DATA_DIR/allegro-auth.json`.
+
+Jesli token wygasnie albo zostanie cofniety, w panelu pojawi sie blad i trzeba ponownie kliknac `Polacz Allegro`.
+
+## Informacje prawne i cookies
+
+- `/informacje-prawne` jest strona informacyjna dla katalogu prowadzacego do Allegro.
+- Dane firmy: BookLoft Mateusz Kaczmarek, 334c, 33-152 Pogorska Wola, NIP 9930688202, REGON 522042224, bookloft.store@gmail.com, 518 104 941.
+- BookLoft.pl nie ma koszyka ani platnosci; zakup, dostawa, zwroty i reklamacje odbywaja sie w Allegro.
+- Google Analytics jest osadzony przez `public/assets/js/analytics.js` i wlacza sie dopiero po zgodzie na cookies analityczne.
+- Identyfikator GA jest domyslnie taki jak na dotychczasowym landingu (`G-NQH5FFJ8Y4`), ale moze byc nadpisany przez `BOOKLOFT_GA_ID`.
 
 ## Deploy
 
 ```bash
 cd /home/bookloftpl
 git fetch
-git switch ver-1.03
+git switch ver-1.04
 git pull --ff-only
 npm ci --omit=dev
 systemctl restart bookloft-shop.service
-systemctl reload nginx.service
 ```
 
-Reload Nginx jest potrzebny tylko po zmianie konfiguracji reverse proxy. Zwykłe zmiany UI/API wymagają restartu `bookloft-shop.service`.
+Reload Nginx jest potrzebny tylko po zmianie konfiguracji reverse proxy. Zwykle zmiany UI/API wymagaja restartu `bookloft-shop.service`.
 
 ## Nginx
 
-Root domeny powinien być proxy do procesu Node:
+Root domeny powinien byc proxy do procesu Node:
 
 ```nginx
 location / {
@@ -87,22 +108,25 @@ curl -I https://bookloft.pl/
 curl -I https://www.bookloft.pl/
 ```
 
-Oczekiwane publicznie, dopóki sklep jest za hasłem:
+Oczekiwane publicznie, dopoki katalog jest za haslem:
 
 - `/` zwraca przekierowanie do `/login?next=...` albo ekran logowania,
-- odpowiedź ma `X-Robots-Tag: noindex, nofollow, noarchive`,
+- odpowiedz ma `X-Robots-Tag: noindex, nofollow, noarchive`,
 - ekran logowania pokazuje komunikat `Strona w renowacji`,
-- po zalogowaniu strona główna pokazuje nowości i katalog,
-- `/sitemap.xml` pozostaje za logowaniem do czasu zdjęcia blokady indeksowania.
+- po zalogowaniu strona glowna pokazuje nowosci i katalog,
+- strona glowna linkuje do `/informacje-prawne`,
+- `/panel` pokazuje status polaczenia Allegro,
+- `/sitemap.xml` pozostaje za logowaniem do czasu zdjecia blokady indeksowania.
 
 ## Branch cleanup
 
-Prawidłowe branche repo:
+Prawidlowe branche repo:
 
 - `main`,
 - `ver-1.00`,
 - `ver-1.01`,
 - `ver-1.02`,
-- `ver-1.03`.
+- `ver-1.03`,
+- `ver-1.04`.
 
-Robocze branche z prefiksem `codex/` nie są linią wersji sklepu i po przeniesieniu zmian do aktualnego brancha `ver-*` powinny być usunięte lokalnie oraz z GitHuba.
+Robocze branche z prefiksem `codex/` nie sa linia wersji sklepu i po przeniesieniu zmian do aktualnego brancha `ver-*` powinny byc usuniete lokalnie oraz z GitHuba.

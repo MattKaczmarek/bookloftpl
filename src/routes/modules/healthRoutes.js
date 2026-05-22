@@ -16,7 +16,8 @@ export function createHealthRouter(config, storeCache) {
           stockUpdatedAt: status.stockUpdatedAt,
           catalogUpdatedAt: status.catalogUpdatedAt,
           visibleProductCount: status.visibleProductCount,
-          lastErrorAt: status.lastErrorAt
+          lastErrorAt: status.lastErrorAt,
+          allegroConnected: Boolean(status.allegro?.connected)
         }
       });
     })

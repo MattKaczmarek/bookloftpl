@@ -165,7 +165,6 @@ function renderProduct(product, index = 0) {
   const image = product.images && product.images.length ? product.images[0] : "";
   const price = product.price === null ? "Cena do ustalenia" : formatPrice(product.price, product.currency);
   const imagePriority = index < 6 ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"';
-
   card.innerHTML = `
     <a class="product-media${image ? "" : " is-loaded"}" href="${link}" aria-label="${escapeAttribute(product.name)}" itemprop="url">
       ${image ? `<img src="${escapeAttribute(image)}" ${imagePriority} decoding="async" alt="${escapeAttribute(product.name)}" itemprop="image">` : '<div class="image-fallback">BookLoft</div>'}
@@ -181,8 +180,6 @@ function renderProduct(product, index = 0) {
       </div>
       <div class="product-actions">
         <a class="details-action action-full" href="${link}" aria-label="Zobacz ${escapeAttribute(product.name)}">Zobacz</a>
-        <a class="buy-action" href="${link}" aria-label="Kup ${escapeAttribute(product.name)}">Kup</a>
-        <a class="cart-action icon-action" href="${link}" aria-label="Dodaj do koszyka ${escapeAttribute(product.name)}">${cartIconSvg()}</a>
       </div>
     </div>
   `;
@@ -221,7 +218,9 @@ function updateCategoryUrl() {
 
 function scrollToTop() {
   window.requestAnimationFrame(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
   });
 }
 
@@ -278,8 +277,4 @@ function escapeHtml(value) {
 
 function escapeAttribute(value) {
   return escapeHtml(value).replaceAll("`", "&#096;");
-}
-
-function cartIconSvg() {
-  return `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 6h16l-2 8H7L5 6Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M5 6 4.4 3H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="8" cy="19" r="1.7" fill="currentColor"/><circle cx="18" cy="19" r="1.7" fill="currentColor"/></svg>`;
 }

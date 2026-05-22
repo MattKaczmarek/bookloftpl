@@ -14,5 +14,13 @@ export function createAdminApiRouter(config, storeCache) {
     })
   );
 
+  router.get(
+    "/allegro/connect",
+    asyncHandler(async (_req, res) => {
+      const url = await storeCache.createAllegroConnectUrl();
+      res.redirect(url);
+    })
+  );
+
   return router;
 }

@@ -8,7 +8,8 @@ const fields = {
   hidden: document.querySelector("#metric-hidden"),
   stock: document.querySelector("#stock-updated"),
   catalog: document.querySelector("#catalog-updated"),
-  context: document.querySelector("#base-context"),
+  context: document.querySelector("#allegro-context"),
+  connection: document.querySelector("#allegro-connection"),
   error: document.querySelector("#last-error")
 };
 
@@ -17,7 +18,7 @@ loadStatus().catch(showError);
 
 async function addNewProducts() {
   button.disabled = true;
-  message.textContent = "Pobieram dane z Base...";
+  message.textContent = "Pobieram aktywne oferty z Allegro...";
 
   try {
     const response = await fetch("/api/admin/add-new", {
@@ -27,7 +28,7 @@ async function addNewProducts() {
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || `HTTP ${response.status}`);
 
-    message.textContent = `Dodano: ${data.addedCount}. Aktywne produkty: ${data.activeProductCount}.`;
+    message.textContent = `Dodano: ${data.addedCount}. Aktywne oferty: ${data.activeProductCount}.`;
     await loadStatus();
   } catch (error) {
     showError(error);
@@ -48,13 +49,16 @@ async function loadStatus() {
   fields.stock.textContent = formatDate(status.stockUpdatedAt);
   fields.catalog.textContent = formatDate(status.catalogUpdatedAt);
   fields.context.textContent = status.context
-    ? `${status.context.inventoryName} / ${status.context.priceGroupName} (${status.context.currency})`
+    ? `${status.context.source || "Allegro"} / ${status.context.marketplaceId || "allegro-pl"}`
     : "-";
+  fields.connection.textContent = status.allegro?.connected
+    ? `Polaczone, token do ${formatDate(status.allegro.expiresAt)}`
+    : "Niepolaczone";
   fields.error.textContent = status.lastError ? `${status.lastErrorAt || ""} ${status.lastError}` : "Brak";
 }
 
 function showError(error) {
-  message.textContent = `Błąd: ${error.message}`;
+  message.textContent = `Blad: ${error.message}`;
 }
 
 function formatDate(value) {

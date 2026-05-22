@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow,noarchive">
   <title>BookLoft panel sklepu</title>
-  <link rel="stylesheet" href="/assets/css/styles.css?v=1.03">
-  <script defer src="/assets/js/panel.js?v=1.03"></script>
+  <link rel="stylesheet" href="/assets/css/styles.css?v=1.04">
+  <script defer src="/assets/js/panel.js?v=1.04"></script>
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="/" aria-label="BookLoft sklep">
-      <img class="brand-logo" src="/assets/img/logo.png?v=1.03" alt="BookLoft">
+      <img class="brand-logo" src="/assets/img/logo.png?v=1.04" alt="BookLoft">
     </a>
     <nav class="top-actions" aria-label="Nawigacja">
       <form method="post" action="/logout">
@@ -23,19 +23,20 @@
   <main class="panel-layout">
     <section class="panel-hero">
       <p class="eyebrow">Panel administratora</p>
-      <h1>Dodawanie produktów</h1>
-      <p class="panel-copy">Akcja pobiera z Base produkty ze stanem minimum 1 i dodaje te, których nie ma obecnie w sklepie.</p>
+      <h1>Dodawanie ofert</h1>
+      <p class="panel-copy">Akcja pobiera aktywne oferty Allegro ze stanem minimum 1 i dodaje te, ktorych nie ma obecnie w katalogu.</p>
+      <a class="ghost-action panel-connect-action" href="/api/admin/allegro/connect">Polacz Allegro</a>
       <button id="add-new" class="primary-action" type="button">Dodaj nowe</button>
       <p id="panel-message" class="panel-message" role="status"></p>
     </section>
 
     <section class="metrics-grid" id="metrics-grid" aria-label="Status cache">
       <article class="metric">
-        <span>Widoczne produkty</span>
+        <span>Widoczne oferty</span>
         <strong id="metric-visible">-</strong>
       </article>
       <article class="metric">
-        <span>Aktywne produkty</span>
+        <span>Aktywne oferty</span>
         <strong id="metric-active">-</strong>
       </article>
       <article class="metric">
@@ -43,7 +44,7 @@
         <strong id="metric-categories">-</strong>
       </article>
       <article class="metric">
-        <span>Usunięte przez stan 0</span>
+        <span>Ukryte przez brak stanu</span>
         <strong id="metric-hidden">-</strong>
       </article>
     </section>
@@ -60,11 +61,15 @@
           <dd id="catalog-updated">-</dd>
         </div>
         <div>
-          <dt>Base</dt>
-          <dd id="base-context">-</dd>
+          <dt>Allegro</dt>
+          <dd id="allegro-context">-</dd>
         </div>
         <div>
-          <dt>Ostatni błąd</dt>
+          <dt>Polaczenie</dt>
+          <dd id="allegro-connection">-</dd>
+        </div>
+        <div>
+          <dt>Ostatni blad</dt>
           <dd id="last-error">-</dd>
         </div>
       </dl>

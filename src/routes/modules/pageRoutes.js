@@ -17,6 +17,10 @@ export function createPageRouter(config, storeCache) {
     res.sendFile(path.join(config.publicDir, "panel.html"));
   });
 
+  router.get("/informacje-prawne", auth, (_req, res) => {
+    res.sendFile(path.join(config.publicDir, "legal.html"));
+  });
+
   router.get(
     "/product/:productId/:slug?",
     auth,
@@ -84,6 +88,8 @@ function renderProductPage(config, product) {
   <script type="application/ld+json">${jsonLd}</script>
   <link rel="stylesheet" href="${appPath(config.basePath, `/assets/css/styles.css?v=${config.version}`)}">
   <script>window.__BOOKLOFT_PRODUCT__=${bootstrap};</script>
+  <script>window.BOOKLOFT_ANALYTICS_ID=${JSON.stringify(config.googleAnalyticsId || "")};</script>
+  <script defer src="${appPath(config.basePath, `/assets/js/analytics.js?v=${config.version}`)}"></script>
   <script defer src="${appPath(config.basePath, `/assets/js/product.js?v=${config.version}`)}"></script>
 </head>
 <body>
@@ -119,7 +125,7 @@ function productJsonLd(product, url, image, description, category) {
         price: product.price,
         availability: Number(product.stock || 0) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
         itemCondition: "https://schema.org/UsedCondition",
-        url
+        url: product.allegroUrl || url
       };
 
   return {

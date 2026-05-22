@@ -3,6 +3,7 @@ import { appPath } from "../../config.js";
 export function renderLogin(config, error, next = config.basePath) {
   const loginPath = appPath(config.basePath, "/login");
   const stylesheetPath = appPath(config.basePath, `/assets/css/styles.css?v=${config.version}`);
+  const analyticsPath = appPath(config.basePath, `/assets/js/analytics.js?v=${config.version}`);
   const logoPath = appPath(config.basePath, `/assets/img/logo.png?v=${config.version}`);
 
   return `<!doctype html>
@@ -12,6 +13,8 @@ export function renderLogin(config, error, next = config.basePath) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>BookLoft</title>
   <link rel="stylesheet" href="${stylesheetPath}">
+  <script>window.BOOKLOFT_ANALYTICS_ID=${JSON.stringify(config.googleAnalyticsId || "")};</script>
+  <script defer src="${analyticsPath}"></script>
 </head>
 <body class="login-page">
   <main class="login-shell">
