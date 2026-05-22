@@ -276,11 +276,15 @@ function setupBrandIntro() {
     shouldShow = true;
   }
 
-  if (!shouldShow) return;
+  if (!shouldShow) {
+    intro.hidden = true;
+    intro.classList.remove("is-visible", "is-hiding");
+    return;
+  }
 
   const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
   intro.hidden = false;
-  window.requestAnimationFrame(() => intro.classList.add("is-visible"));
+  intro.classList.add("is-visible");
 
   const visibleFor = prefersReducedMotion ? 450 : 1850;
   const fadeFor = prefersReducedMotion ? 120 : 650;
