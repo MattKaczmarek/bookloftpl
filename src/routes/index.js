@@ -14,6 +14,12 @@ export function createRouter(config, storeCache) {
     next();
   });
 
+  router.get("/favicon.ico", (_req, res) => {
+    res.type("image/png").sendFile(`${config.publicDir}/assets/img/favicon-32.png`);
+  });
+  router.get("/apple-touch-icon.png", (_req, res) => {
+    res.type("image/png").sendFile(`${config.publicDir}/assets/img/apple-touch-icon.png`);
+  });
   router.use("/assets", express.static(`${config.publicDir}/assets`, { maxAge: "10m", etag: true }));
   router.use(createHealthRouter(config, storeCache));
   router.use(createAuthRouter(config));
