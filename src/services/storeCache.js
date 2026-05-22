@@ -93,20 +93,21 @@ export class StoreCache {
     await this.ensureFile(this.files.catalog, emptyCatalog(this.config.version));
     await this.ensureFile(this.files.storefront, emptyStorefront(this.config.version));
     await this.ensureFile(this.files.meta, emptyMeta(this.config.version));
+    await this.clearExpectedDisconnectedState();
     await this.rebuildStorefront();
   }
 
   schedule() {
     setInterval(() => {
-      this.refreshStock("schedule").catch((error) => this.rememberError(error));
+      this.refreshStock("schedule").catch((error) => this.rememberScheduledError(error));
     }, this.config.stockRefreshMs).unref();
 
     setInterval(() => {
-      this.refreshCatalog("schedule").catch((error) => this.rememberError(error));
+      this.refreshCatalog("schedule").catch((error) => this.rememberScheduledError(error));
     }, this.config.catalogRefreshMs).unref();
 
     setTimeout(() => {
-      this.refreshStock("startup").catch((error) => this.rememberError(error));
+      this.refreshStock("startup").catch((error) => this.rememberScheduledError(error));
     }, 2500).unref();
   }
 
@@ -280,7 +281,7 @@ export class StoreCache {
         const listingMap = await this.fetchActiveOfferMap();
         await this.refreshAvailabilityLocked(reason, listingMap);
       } catch (error) {
-        await this.rememberError(error);
+        await this.rememberActionError(error, reason);
         throw error;
       } finally {
         await this.clearRunning();
@@ -295,7 +296,7 @@ export class StoreCache {
         const listingMap = await this.fetchActiveOfferMap();
         await this.refreshAvailabilityLocked(reason, listingMap);
       } catch (error) {
-        await this.rememberError(error);
+        await this.rememberActionError(error, reason);
         throw error;
       } finally {
         await this.clearRunning();
@@ -544,6 +545,14 @@ export class StoreCache {
     await writeJson(this.files.meta, meta);
   }
 
+  async clearExpectedDisconnectedState() {
+    const meta = await this.readMeta();
+    if (!meta.lastError || !isMissingAllegroAuthError(meta.lastError)) return;
+    meta.lastError = null;
+    meta.lastErrorAt = null;
+    await writeJson(this.files.meta, meta);
+  }
+
   async rememberError(error) {
     const meta = await this.readMeta();
     meta.lastErrorAt = nowIso();
@@ -551,11 +560,30 @@ export class StoreCache {
     await writeJson(this.files.meta, meta);
   }
 
+  async rememberScheduledError(error) {
+    if (isMissingAllegroAuthError(error)) return;
+    await this.rememberError(error);
+  }
+
+  async rememberActionError(error, reason) {
+    if (isAutomaticReason(reason) && isMissingAllegroAuthError(error)) return;
+    await this.rememberError(error);
+  }
+
   async runExclusive(_name, fn) {
     const run = this.queue.then(fn, fn);
     this.queue = run.catch(() => undefined);
     return run;
   }
+}
+
+function isMissingAllegroAuthError(error) {
+  const message = String(error?.message || error || "");
+  return message.includes("Allegro nie jest polaczone") || message.includes("Brak refresh tokena Allegro");
+}
+
+function isAutomaticReason(reason) {
+  return reason === "schedule" || reason === "startup";
 }
 
 function normalizeToken(token, fallbackRefreshToken = "") {
