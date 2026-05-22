@@ -278,7 +278,7 @@ function setupBrandIntro() {
 
   if (!shouldShow) {
     intro.hidden = true;
-    intro.classList.remove("is-visible", "is-hiding");
+    intro.classList.remove("is-visible", "is-ready", "is-hiding");
     return;
   }
 
@@ -288,13 +288,28 @@ function setupBrandIntro() {
 
   const visibleFor = prefersReducedMotion ? 450 : 1850;
   const fadeFor = prefersReducedMotion ? 120 : 650;
-  window.setTimeout(() => {
-    intro.classList.add("is-hiding");
+  waitForIntroFont().then(() => {
+    intro.classList.add("is-ready");
     window.setTimeout(() => {
-      intro.hidden = true;
-      intro.classList.remove("is-visible", "is-hiding");
-    }, fadeFor);
-  }, visibleFor);
+      intro.classList.add("is-hiding");
+      window.setTimeout(() => {
+        intro.hidden = true;
+        intro.classList.remove("is-visible", "is-ready", "is-hiding");
+      }, fadeFor);
+    }, visibleFor);
+  });
+}
+
+function waitForIntroFont() {
+  const fonts = document.fonts;
+  if (!fonts?.load) return Promise.resolve();
+  const headingFont = fonts.load('600 32px "Source Serif 4"');
+  const bodyFont = fonts.load('700 18px "Nunito Sans"');
+  const timeout = new Promise((resolve) => window.setTimeout(resolve, 420));
+  return Promise.race([
+    Promise.allSettled([headingFont, bodyFont]),
+    timeout
+  ]);
 }
 
 function productUrl(product) {

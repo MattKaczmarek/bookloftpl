@@ -123,7 +123,7 @@ export class AllegroClient {
 
   assertConfigured() {
     if (!this.isConfigured()) {
-      throw new Error("ALLEGRO_CLIENT_ID, ALLEGRO_CLIENT_SECRET i ALLEGRO_REDIRECT_URI musza byc skonfigurowane");
+      throw new Error("ALLEGRO_CLIENT_ID, ALLEGRO_CLIENT_SECRET i ALLEGRO_REDIRECT_URI muszą być skonfigurowane");
     }
   }
 }

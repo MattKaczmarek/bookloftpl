@@ -52,13 +52,13 @@ async function loadStatus() {
     ? `${status.context.source || "Allegro"} / ${status.context.marketplaceId || "allegro-pl"}`
     : "-";
   fields.connection.textContent = status.allegro?.connected
-    ? `Polaczone, token do ${formatDate(status.allegro.expiresAt)}`
-    : "Niepolaczone";
+    ? `Połączone, token do ${formatDate(status.allegro.expiresAt)}`
+    : "Niepołączone";
   fields.error.textContent = status.lastError ? `${status.lastErrorAt || ""} ${status.lastError}` : "Brak";
 }
 
 function showError(error) {
-  message.textContent = `Blad: ${error.message}`;
+  message.textContent = `Błąd: ${error.message}`;
 }
 
 function formatDate(value) {

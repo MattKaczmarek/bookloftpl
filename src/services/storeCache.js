@@ -204,7 +204,7 @@ export class StoreCache {
     const auth = await this.readAuth();
     auth.pendingStates = cleanPendingStates(auth.pendingStates || {});
     if (!auth.pendingStates[state]) {
-      throw new Error("Nieprawidlowy albo wygasly state Allegro OAuth");
+      throw new Error("Nieprawidłowy albo wygasły state Allegro OAuth");
     }
 
     const token = await this.allegroClient.exchangeCode(code);
@@ -471,7 +471,7 @@ export class StoreCache {
   async getAccessToken() {
     const auth = await this.readAuth();
     if (!auth.token?.access_token) {
-      throw new Error("Allegro nie jest polaczone. Uzyj przycisku 'Polacz Allegro' w panelu.");
+      throw new Error("Allegro nie jest połączone. Użyj przycisku 'Połącz Allegro' w panelu.");
     }
     if (Number(auth.token.expires_at || 0) > Date.now() + 60_000) {
       return auth.token.access_token;
@@ -482,7 +482,7 @@ export class StoreCache {
   async refreshAccessToken(existingAuth = null) {
     const auth = existingAuth || await this.readAuth();
     if (!auth.token?.refresh_token) {
-      throw new Error("Brak refresh tokena Allegro. Polacz konto Allegro ponownie.");
+      throw new Error("Brak refresh tokena Allegro. Połącz konto Allegro ponownie.");
     }
     const token = await this.allegroClient.refreshToken(auth.token.refresh_token);
     auth.token = normalizeToken(token, auth.token.refresh_token);
@@ -582,7 +582,9 @@ export class StoreCache {
 
 function isMissingAllegroAuthError(error) {
   const message = String(error?.message || error || "");
-  return message.includes("Allegro nie jest polaczone") || message.includes("Brak refresh tokena Allegro");
+  return message.includes("Allegro nie jest połączone") ||
+    message.includes("Allegro nie jest polaczone") ||
+    message.includes("Brak refresh tokena Allegro");
 }
 
 function isAutomaticReason(reason) {
@@ -617,7 +619,7 @@ function normalizeOfferFromListing(offer, existing = {}) {
   const images = primaryImage ? [primaryImage, ...(existing.images || []).filter((src) => src !== primaryImage)] : existing.images || [];
   const categoryId = offer.category?.id ? String(offer.category.id) : existing.categoryId || "";
   const sku = offer.external?.id || existing.sku || "";
-  const descriptionHtml = normalizeDescriptionHtml(existing.descriptionHtml) || `<p>Oferta BookLoft dostepna na Allegro. Zakup, platnosc i obsluga zamowienia odbywaja sie w serwisie Allegro.</p>`;
+  const descriptionHtml = normalizeDescriptionHtml(existing.descriptionHtml) || `<p>Oferta BookLoft dostępna na Allegro. Zakup, płatność i obsługa zamówienia odbywają się w serwisie Allegro.</p>`;
   const allegroUrl = `https://allegro.pl/oferta/${encodeURIComponent(String(offer.id))}`;
 
   return {
@@ -859,26 +861,26 @@ function shortCategoryName(name) {
   const leaf = parts.length ? parts[parts.length - 1] : String(name || "Kategoria").trim();
   const aliases = [
     [/fantasy.*science fiction.*horror/i, "Fantasy"],
-    [/krymina.*sensacja.*thriller/i, "Kryminal"],
+    [/krymina.*sensacja.*thriller/i, "Kryminał"],
     [/literatura obyczajowa.*erotyczna/i, "Obyczajowe"],
-    [/ksiazki dla mlodziezy/i, "Mlodziezowe"],
-    [/ksi[aą]zki dla m[lł]odzie[zż]y/i, "Mlodziezowe"],
-    [/ksiazki dla dzieci/i, "Dzieciece"],
-    [/ksi[aą]zki dla dzieci/i, "Dzieciece"],
-    [/dla dzieci/i, "Dzieciece"],
+    [/ksiazki dla mlodziezy/i, "Młodzieżowe"],
+    [/ksi[aą]zki dla m[lł]odzie[zż]y/i, "Młodzieżowe"],
+    [/ksiazki dla dzieci/i, "Dziecięce"],
+    [/ksi[aą]zki dla dzieci/i, "Dziecięce"],
+    [/dla dzieci/i, "Dziecięce"],
     [/ksiazki naukowe.*popularnonaukowe/i, "Naukowe"],
     [/ksi[aą]zki naukowe.*popularnonaukowe/i, "Naukowe"],
     [/naukowe.*popularnonaukowe/i, "Naukowe"],
     [/poradniki.*albumy/i, "Poradniki"],
-    [/literatura piekna/i, "Literatura piekna"],
-    [/literatura pi[eę]kna/i, "Literatura piekna"],
+    [/literatura piekna/i, "Literatura piękna"],
+    [/literatura pi[eę]kna/i, "Literatura piękna"],
     [/biografie.*wspomnienia/i, "Biografie"],
     [/historia/i, "Historia"],
     [/komiksy/i, "Komiksy"],
     [/filmy/i, "Filmy"],
     [/muzyka/i, "Muzyka"],
-    [/podreczniki/i, "Podreczniki"],
-    [/podr[eę]czniki/i, "Podreczniki"]
+    [/podreczniki/i, "Podręczniki"],
+    [/podr[eę]czniki/i, "Podręczniki"]
   ];
 
   for (const [pattern, label] of aliases) {

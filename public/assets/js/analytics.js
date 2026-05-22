@@ -85,11 +85,11 @@
     banner.innerHTML = `
       <div>
         <strong>Cookies i analityka</strong>
-        <p>Uzywamy niezbednych cookies do logowania. Google Analytics wlaczamy tylko po zgodzie.</p>
+        <p>Używamy niezbędnych cookies do logowania. Google Analytics włączamy tylko po zgodzie.</p>
       </div>
       <div class="cookie-consent-actions">
-        <button class="secondary-action" type="button" data-consent="denied">Tylko niezbedne</button>
-        <button class="primary-action" type="button" data-consent="granted">Akceptuje</button>
+        <button class="secondary-action" type="button" data-consent="denied">Tylko niezbędne</button>
+        <button class="primary-action" type="button" data-consent="granted">Akceptuję</button>
       </div>
     `;
 

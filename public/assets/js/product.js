@@ -45,7 +45,7 @@ function renderProduct(product) {
         <div id="product-category-tree" class="category-tree"></div>
       </aside>
       <div class="product-content">
-        <nav class="breadcrumbs" aria-label="Sciezka">
+        <nav class="breadcrumbs" aria-label="Ścieżka">
           <span>${escapeHtml(category)}</span>
         </nav>
         <article class="product-detail" itemscope itemtype="https://schema.org/Product">

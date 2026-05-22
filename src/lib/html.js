@@ -27,7 +27,7 @@ const allowedTags = [
 ];
 
 export function sanitizeDescription(html) {
-  return sanitizeHtml(String(html || ""), {
+  const sanitized = sanitizeHtml(String(html || ""), {
     allowedTags,
     allowedAttributes: {
       a: ["href", "target", "rel"],
@@ -45,6 +45,8 @@ export function sanitizeDescription(html) {
       })
     }
   }).trim();
+
+  return normalizeLegacyFallback(compactDescriptionHtml(sanitized));
 }
 
 export function normalizeDescriptionHtml(html) {
@@ -86,6 +88,30 @@ function containsAllowedHtml(value) {
 
 function looksLikeEscapedHtml(value) {
   return /&(amp;)?lt;\/?(p|br|strong|b|em|i|u|ul|ol|li|span|div|h2|h3|h4|blockquote|a|table|thead|tbody|tr|th|td)(\s|&(amp;)?gt;|\/)/i.test(value);
+}
+
+function compactDescriptionHtml(html) {
+  return String(html || "")
+    .replace(/<p>(?:\s|&nbsp;|<br\s*\/?>)*<\/p>/gi, "")
+    .replace(
+      /(<\/(?:p|h2|h3|h4|li|ul|ol|div|blockquote)>)\s*(?:<br\s*\/?>\s*)+(?=<(?:p|h2|h3|h4|ul|ol|div|blockquote)\b)/gi,
+      "$1"
+    )
+    .replace(/(?:<br\s*\/?>\s*){3,}/gi, "<br><br>")
+    .trim();
+}
+
+function normalizeLegacyFallback(html) {
+  const key = stripHtml(html)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+  if (key === "oferta bookloft dostepna na allegro. zakup, platnosc i obsluga zamowienia odbywaja sie w serwisie allegro.") {
+    return "<p>Oferta BookLoft dostępna na Allegro. Zakup, płatność i obsługa zamówienia odbywają się w serwisie Allegro.</p>";
+  }
+
+  return html;
 }
 
 function decodeHtmlEntities(value) {
