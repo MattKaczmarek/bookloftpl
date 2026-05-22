@@ -1,5 +1,5 @@
 const INITIAL_LIMIT = 50;
-const PAGE_SIZE = 48;
+const PAGE_SIZE = 50;
 
 const state = {
   products: [],
@@ -9,6 +9,7 @@ const state = {
   categoryId: "",
   rendered: 0,
   modeLimit: INITIAL_LIMIT,
+  autoLoadQueued: false,
   meta: {}
 };
 
@@ -20,7 +21,7 @@ const els = {
   categoryTree: document.querySelector("#category-tree"),
   categorySelect: document.querySelector("#category-select"),
   clearCategory: document.querySelector("#clear-category"),
-  loadMore: document.querySelector("#load-more")
+  loadSentinel: document.querySelector("#load-sentinel")
 };
 
 setupBrandIntro();
@@ -54,7 +55,8 @@ async function init() {
 function bindEvents() {
   els.search.addEventListener("input", debounce(() => {
     state.query = els.search.value.trim().toLowerCase();
-    state.modeLimit = state.query || state.categoryId ? PAGE_SIZE : INITIAL_LIMIT;
+    state.modeLimit = INITIAL_LIMIT;
+    scrollToTop();
     resetAndRender();
   }, 120));
 
@@ -64,10 +66,7 @@ function bindEvents() {
 
   els.clearCategory?.addEventListener("click", () => selectCategory("", { scroll: true }));
 
-  els.loadMore.addEventListener("click", () => {
-    state.modeLimit += PAGE_SIZE;
-    renderProducts();
-  });
+  setupInfiniteScroll();
 }
 
 function renderCategories() {
@@ -118,17 +117,15 @@ function resetAndRender() {
 function selectCategory(categoryId, { scroll = false } = {}) {
   state.categoryId = categoryId || "";
   els.categorySelect.value = state.categoryId;
-  state.modeLimit = state.query || state.categoryId ? PAGE_SIZE : INITIAL_LIMIT;
+  state.modeLimit = INITIAL_LIMIT;
   updateCategoryUrl();
   syncCategoryButtons();
-  resetAndRender();
   if (scroll) scrollToTop();
+  resetAndRender();
 }
 
 function renderProducts() {
-  const filteredMode = Boolean(state.query || state.categoryId);
-  const products = filteredMode ? filteredProducts() : newestProducts();
-  if (!filteredMode) state.modeLimit = INITIAL_LIMIT;
+  const products = currentProducts();
   const next = products.slice(state.rendered, state.modeLimit);
   const fragment = document.createDocumentFragment();
 
@@ -139,8 +136,20 @@ function renderProducts() {
   els.grid.appendChild(fragment);
   state.rendered += next.length;
   els.empty.hidden = products.length > 0;
-  els.loadMore.hidden = !filteredMode || state.rendered >= products.length;
+  els.loadSentinel.hidden = products.length === 0 || state.rendered >= products.length;
   els.listingTitle.textContent = "Nowości";
+  queueAutoLoadIfNeeded();
+}
+
+function currentProducts() {
+  return state.query || state.categoryId ? filteredProducts() : newestProducts();
+}
+
+function loadNextPage() {
+  const products = currentProducts();
+  if (state.rendered >= products.length) return;
+  state.modeLimit += PAGE_SIZE;
+  renderProducts();
 }
 
 function filteredProducts() {
@@ -153,7 +162,17 @@ function filteredProducts() {
 }
 
 function newestProducts() {
-  return state.newestProducts.length ? state.newestProducts.slice(0, INITIAL_LIMIT) : state.products.slice(0, INITIAL_LIMIT);
+  if (!state.newestProducts.length) return state.products;
+
+  const newestIds = new Set(state.newestProducts.map((product) => String(product.id)));
+  const remaining = state.products
+    .filter((product) => !newestIds.has(String(product.id)))
+    .sort((a, b) => {
+      const dateDiff = productFreshnessTime(b) - productFreshnessTime(a);
+      if (dateDiff) return dateDiff;
+      return sortProductIdDesc(a.id, b.id);
+    });
+  return [...state.newestProducts, ...remaining];
 }
 
 function renderProduct(product, index = 0) {
@@ -219,10 +238,46 @@ function updateCategoryUrl() {
 }
 
 function scrollToTop() {
+  window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
   window.requestAnimationFrame(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
+  });
+}
+
+function setupInfiniteScroll() {
+  if (!els.loadSentinel) return;
+
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) loadNextPage();
+    }, {
+      root: null,
+      rootMargin: "900px 0px",
+      threshold: 0
+    });
+    observer.observe(els.loadSentinel);
+    return;
+  }
+
+  window.addEventListener("scroll", debounce(() => {
+    if (els.loadSentinel.hidden) return;
+    const rect = els.loadSentinel.getBoundingClientRect();
+    if (rect.top < window.innerHeight + 900) loadNextPage();
+  }, 80), { passive: true });
+}
+
+function queueAutoLoadIfNeeded() {
+  if (state.autoLoadQueued || !els.loadSentinel || els.loadSentinel.hidden) return;
+  state.autoLoadQueued = true;
+  window.requestAnimationFrame(() => {
+    state.autoLoadQueued = false;
+    if (els.loadSentinel.hidden) return;
+    const rect = els.loadSentinel.getBoundingClientRect();
+    if (rect.top < window.innerHeight + 900) loadNextPage();
   });
 }
 
@@ -261,6 +316,20 @@ function normalizeCategoryName(value) {
     .replace(/[\u0300-\u036f]/g, "")
     .trim()
     .toLowerCase();
+}
+
+function productFreshnessTime(product) {
+  return Math.max(
+    Date.parse(product.addedAt || 0) || 0,
+    Number(product.id || 0) || 0
+  );
+}
+
+function sortProductIdDesc(a, b) {
+  const left = Number(a);
+  const right = Number(b);
+  if (Number.isFinite(left) && Number.isFinite(right)) return right - left;
+  return String(b).localeCompare(String(a), "pl-PL", { numeric: true });
 }
 
 function setupBrandIntro() {

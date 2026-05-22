@@ -850,25 +850,9 @@ h2 {
   height: auto;
 }
 
-.load-more {
-  display: flex;
-  width: min(100%, 420px);
-  min-height: 48px;
-  align-items: center;
-  justify-content: center;
-  margin: 22px auto 0;
-  border: 1px solid rgba(31, 111, 85, 0.25);
-  border-radius: var(--radius);
-  background: var(--surface-strong);
-  color: var(--forest-strong);
-  cursor: pointer;
-  font-weight: 850;
-  transition: background 160ms ease, box-shadow 160ms ease;
-}
-
-.load-more:hover {
-  background: var(--sage);
-  box-shadow: var(--shadow-soft);
+.load-sentinel {
+  height: 1px;
+  margin-top: 22px;
 }
 
 .product-page {
