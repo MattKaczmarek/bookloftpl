@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import path from "node:path";
 import { AllegroClient } from "../lib/allegroClient.js";
-import { sanitizeDescription, stripHtml } from "../lib/html.js";
+import { normalizeDescriptionHtml, richTextToHtml, stripHtml } from "../lib/html.js";
 import { ensureDir, readJson, writeJson } from "../lib/jsonStore.js";
 
 const AUTH_FILE = "allegro-auth.json";
@@ -374,8 +374,11 @@ export class StoreCache {
     for (const offerId of activeSet) {
       const offer = catalog.offers[String(offerId)];
       if (!offer || Number(offer.stock || 0) <= 0) continue;
+      const descriptionHtml = normalizeDescriptionHtml(offer.descriptionHtml);
       visibleProducts.push({
         ...offer,
+        descriptionHtml,
+        searchText: productSearchText(offer, descriptionHtml),
         categoryPath: getCategoryPath(catalog.categories, offer.categoryId)
       });
     }
@@ -614,7 +617,7 @@ function normalizeOfferFromListing(offer, existing = {}) {
   const images = primaryImage ? [primaryImage, ...(existing.images || []).filter((src) => src !== primaryImage)] : existing.images || [];
   const categoryId = offer.category?.id ? String(offer.category.id) : existing.categoryId || "";
   const sku = offer.external?.id || existing.sku || "";
-  const descriptionHtml = existing.descriptionHtml || `<p>Oferta BookLoft dostepna na Allegro. Zakup, platnosc i obsluga zamowienia odbywaja sie w serwisie Allegro.</p>`;
+  const descriptionHtml = normalizeDescriptionHtml(existing.descriptionHtml) || `<p>Oferta BookLoft dostepna na Allegro. Zakup, platnosc i obsluga zamowienia odbywaja sie w serwisie Allegro.</p>`;
   const allegroUrl = `https://allegro.pl/oferta/${encodeURIComponent(String(offer.id))}`;
 
   return {
@@ -624,7 +627,7 @@ function normalizeOfferFromListing(offer, existing = {}) {
     sku,
     ean: existing.ean || "",
     name,
-    searchText: stripHtml(`${name} ${sku} ${descriptionHtml} ${(existing.features || []).map((item) => `${item.name} ${item.value}`).join(" ")}`).toLowerCase(),
+    searchText: productSearchText({ name, sku, features: existing.features || [] }, descriptionHtml),
     price,
     currency,
     categoryId,
@@ -643,7 +646,7 @@ function normalizeOfferFromListing(offer, existing = {}) {
 }
 
 function mergeOfferDetail(existing, detail) {
-  const descriptionHtml = standardizedDescriptionToHtml(detail.description) || existing.descriptionHtml;
+  const descriptionHtml = standardizedDescriptionToHtml(detail.description) || normalizeDescriptionHtml(existing.descriptionHtml);
   const images = normalizeImages(detail.images || existing.images || []);
   const features = normalizeParameters(detail.parameters || []);
   const productParameters = normalizeProductSetParameters(detail.productSet || []);
@@ -666,7 +669,7 @@ function mergeOfferDetail(existing, detail) {
     sourceAddedAt: detail.createdAt || existing.sourceAddedAt || null,
     sourceUpdatedAt: detail.updatedAt || existing.sourceUpdatedAt || null,
     descriptionFetchedAt: nowIso(),
-    searchText: stripHtml(`${name || existing.name} ${existing.sku || ""} ${descriptionHtml} ${mergedFeatures.map((item) => `${item.name} ${item.value}`).join(" ")}`).toLowerCase()
+    searchText: productSearchText({ name: name || existing.name, sku: existing.sku || "", features: mergedFeatures }, descriptionHtml)
   };
 }
 
@@ -676,11 +679,19 @@ function standardizedDescriptionToHtml(description) {
   for (const section of sections) {
     for (const item of section.items || []) {
       if (item.type === "TEXT" && item.content) {
-        parts.push(`<p>${escapeHtml(item.content).replace(/\n/g, "<br>")}</p>`);
+        parts.push(richTextToHtml(item.content));
       }
     }
   }
-  return sanitizeDescription(parts.join("\n"));
+  return normalizeDescriptionHtml(parts.join("\n"));
+}
+
+function productSearchText(product, descriptionHtml) {
+  return stripHtml(
+    `${product.name || ""} ${product.sku || ""} ${descriptionHtml || ""} ${(product.features || [])
+      .map((item) => `${item.name} ${item.value}`)
+      .join(" ")}`
+  ).toLowerCase();
 }
 
 function normalizeParameters(parameters) {
@@ -888,13 +899,4 @@ function slugify(value) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 80) || "produkt";
-}
-
-function escapeHtml(value) {
-  return String(value || "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
 }
