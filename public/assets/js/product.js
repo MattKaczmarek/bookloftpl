@@ -28,8 +28,9 @@ async function fetchProduct(productId) {
 function renderProduct(product) {
   const image = product.images && product.images.length ? product.images[0] : "";
   const price = product.price === null ? "Cena do ustalenia" : formatPrice(product.price, product.currency);
-  const category = product.categoryPath && product.categoryPath.length
-    ? product.categoryPath.map((item) => item.displayName || item.name).join(" / ")
+  const displayCategoryPath = visibleCategoryPath(product.categoryPath || []);
+  const category = displayCategoryPath.length
+    ? displayCategoryPath.map((item) => item.displayName || item.name).join(" / ")
     : "Bez kategorii";
   const stock = Number(product.stock || 0);
   const stockLabel = stock > 1 ? `${stock} szt. na półce` : "Dostępna na półce";
@@ -135,6 +136,7 @@ function visibleCategories(categories) {
   const seen = new Set();
   return flattenCategories(categories)
     .filter((category) => (category.totalProductCount || category.productCount || 0) > 0)
+    .filter((category) => !isGenericAllegroCategory(category))
     .sort((a, b) => {
       const countDiff = (b.totalProductCount || b.productCount || 0) - (a.totalProductCount || a.productCount || 0);
       return countDiff || String(a.displayName || a.name).localeCompare(String(b.displayName || b.name), "pl-PL");
@@ -145,6 +147,23 @@ function visibleCategories(categories) {
       seen.add(key);
       return true;
     });
+}
+
+function visibleCategoryPath(categories) {
+  return categories.filter((category) => !isGenericAllegroCategory(category));
+}
+
+function isGenericAllegroCategory(category) {
+  const key = normalizeCategoryName(category.displayName || category.name);
+  return key === "kultura i rozrywka" || key === "ksiazki";
+}
+
+function normalizeCategoryName(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
 }
 
 function renderRelated(products) {

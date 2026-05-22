@@ -23,6 +23,8 @@ const els = {
   loadMore: document.querySelector("#load-more")
 };
 
+setupBrandIntro();
+
 init().catch((error) => {
   els.listingTitle.textContent = `Nie udało się załadować sklepu: ${error.message}`;
 });
@@ -235,6 +237,7 @@ function visibleCategories(categories) {
   const seen = new Set();
   return flattenCategories(categories)
     .filter((category) => (category.totalProductCount || category.productCount || 0) > 0)
+    .filter((category) => !isGenericAllegroCategory(category))
     .sort((a, b) => {
       const countDiff = (b.totalProductCount || b.productCount || 0) - (a.totalProductCount || a.productCount || 0);
       return countDiff || String(a.displayName || a.name).localeCompare(String(b.displayName || b.name), "pl-PL");
@@ -245,6 +248,49 @@ function visibleCategories(categories) {
       seen.add(key);
       return true;
     });
+}
+
+function isGenericAllegroCategory(category) {
+  const key = normalizeCategoryName(category.displayName || category.name);
+  return key === "kultura i rozrywka" || key === "ksiazki";
+}
+
+function normalizeCategoryName(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
+}
+
+function setupBrandIntro() {
+  const intro = document.querySelector("#brand-intro");
+  if (!intro) return;
+
+  const storageKey = "bookloft_intro_seen";
+  let shouldShow = true;
+  try {
+    shouldShow = window.sessionStorage.getItem(storageKey) !== "1";
+    window.sessionStorage.setItem(storageKey, "1");
+  } catch {
+    shouldShow = true;
+  }
+
+  if (!shouldShow) return;
+
+  const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  intro.hidden = false;
+  window.requestAnimationFrame(() => intro.classList.add("is-visible"));
+
+  const visibleFor = prefersReducedMotion ? 450 : 1850;
+  const fadeFor = prefersReducedMotion ? 120 : 650;
+  window.setTimeout(() => {
+    intro.classList.add("is-hiding");
+    window.setTimeout(() => {
+      intro.hidden = true;
+      intro.classList.remove("is-visible", "is-hiding");
+    }, fadeFor);
+  }, visibleFor);
 }
 
 function productUrl(product) {

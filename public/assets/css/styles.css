@@ -197,6 +197,68 @@ a {
   padding: 28px clamp(16px, 4vw, 42px) 54px;
 }
 
+.brand-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  background:
+    repeating-linear-gradient(90deg, rgba(31, 111, 85, 0.018) 0 1px, transparent 1px 92px),
+    linear-gradient(180deg, #fffdf8 0%, #fbf6ed 54%, #f6fbf3 100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 620ms ease;
+}
+
+.brand-intro[hidden] {
+  display: none;
+}
+
+.brand-intro.is-visible {
+  opacity: 1;
+}
+
+.brand-intro.is-hiding {
+  opacity: 0;
+}
+
+.brand-intro-inner {
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+  animation: brandIntroEnter 900ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.brand-intro-inner img {
+  width: clamp(230px, 34vw, 500px);
+  max-width: min(82vw, 500px);
+  height: auto;
+}
+
+.brand-intro-inner p {
+  position: relative;
+  margin: 0;
+  color: var(--forest-strong);
+  font-family: var(--font-heading);
+  font-size: clamp(1.35rem, 3vw, 2.5rem);
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.12;
+  text-align: center;
+}
+
+.brand-intro-inner p::after {
+  display: block;
+  width: min(220px, 54vw);
+  height: 2px;
+  margin: 18px auto 0;
+  background: linear-gradient(90deg, transparent, var(--forest), var(--berry), transparent);
+  content: "";
+  opacity: 0.7;
+}
+
 .category-rail {
   position: sticky;
   top: 28px;
@@ -286,6 +348,12 @@ a {
   min-width: 0;
 }
 
+.shop-brand-hero {
+  display: grid;
+  justify-items: center;
+  margin: 2px 0 clamp(20px, 4vw, 38px);
+}
+
 .shop-toolbar {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
@@ -339,7 +407,7 @@ h2 {
 
 .hero-logo {
   display: block;
-  width: clamp(210px, 18vw, 300px);
+  width: clamp(260px, 26vw, 430px);
   max-width: 100%;
   height: auto;
   justify-self: center;
@@ -1279,6 +1347,18 @@ h2 {
   }
 }
 
+@keyframes brandIntroEnter {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 @keyframes imageSheen {
   from {
     background-position: 100% 0;
@@ -1397,8 +1477,8 @@ h2 {
   }
 
   .hero-logo {
-    width: 168px;
-    justify-self: start;
+    width: min(74vw, 300px);
+    justify-self: center;
   }
 
   .status-strip {
@@ -1498,5 +1578,9 @@ h2 {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 1ms !important;
+  }
+
+  .brand-intro {
+    transition-duration: 120ms !important;
   }
 }
