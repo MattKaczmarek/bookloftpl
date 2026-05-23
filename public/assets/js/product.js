@@ -144,6 +144,9 @@ function openImageLightbox(images, startIndex, productName) {
 
   let currentIndex = wrapImageIndex(startIndex, images.length);
   let zoomScale = 1;
+  let panX = 0;
+  let panY = 0;
+  let panStart = null;
   const dialog = document.createElement("div");
   dialog.className = "image-lightbox";
   dialog.tabIndex = -1;
@@ -174,6 +177,8 @@ function openImageLightbox(images, startIndex, productName) {
   function setLightboxImage(nextIndex) {
     currentIndex = wrapImageIndex(nextIndex, images.length);
     zoomScale = 1;
+    panX = 0;
+    panY = 0;
     render();
   }
 
@@ -184,7 +189,14 @@ function openImageLightbox(images, startIndex, productName) {
   }
 
   function updateZoom() {
+    if (zoomScale <= 1.01) {
+      panX = 0;
+      panY = 0;
+    }
+    clampPan();
     dialog.style.setProperty("--lightbox-zoom", zoomScale.toFixed(2));
+    dialog.style.setProperty("--lightbox-pan-x", `${panX.toFixed(1)}px`);
+    dialog.style.setProperty("--lightbox-pan-y", `${panY.toFixed(1)}px`);
     dialog.classList.toggle("is-zoomed", zoomScale > 1.01);
   }
 
@@ -193,6 +205,46 @@ function openImageLightbox(images, startIndex, productName) {
     const direction = event.deltaY < 0 ? 1 : -1;
     zoomScale = clamp(zoomScale + direction * 0.16, 1, 2.6);
     updateZoom();
+  }
+
+  function startPan(event) {
+    if (zoomScale <= 1.01 || event.button !== 0) return;
+    event.preventDefault();
+    panStart = {
+      pointerId: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+      panX,
+      panY
+    };
+    dialog.classList.add("is-panning");
+    image.setPointerCapture?.(event.pointerId);
+  }
+
+  function movePan(event) {
+    if (!panStart || event.pointerId !== panStart.pointerId) return;
+    event.preventDefault();
+    panX = panStart.panX + event.clientX - panStart.x;
+    panY = panStart.panY + event.clientY - panStart.y;
+    clampPan();
+    dialog.style.setProperty("--lightbox-pan-x", `${panX.toFixed(1)}px`);
+    dialog.style.setProperty("--lightbox-pan-y", `${panY.toFixed(1)}px`);
+  }
+
+  function stopPan(event) {
+    if (panStart && event.pointerId === panStart.pointerId && image.hasPointerCapture?.(event.pointerId)) {
+      image.releasePointerCapture(event.pointerId);
+    }
+    panStart = null;
+    dialog.classList.remove("is-panning");
+  }
+
+  function clampPan() {
+    if (!stage || !image || zoomScale <= 1.01) return;
+    const maxX = Math.max(0, ((image.clientWidth || 0) * zoomScale - (stage.clientWidth || 0)) / 2 + 32);
+    const maxY = Math.max(0, ((image.clientHeight || 0) * zoomScale - (stage.clientHeight || 0)) / 2 + 32);
+    panX = clamp(panX, -maxX, maxX);
+    panY = clamp(panY, -maxY, maxY);
   }
 
   function onKeyDown(event) {
@@ -205,6 +257,11 @@ function openImageLightbox(images, startIndex, productName) {
   dialog.querySelector("[data-lightbox-prev]")?.addEventListener("click", () => setLightboxImage(currentIndex - 1));
   dialog.querySelector("[data-lightbox-next]")?.addEventListener("click", () => setLightboxImage(currentIndex + 1));
   stage?.addEventListener("wheel", zoomWithWheel, { passive: false });
+  image?.addEventListener("pointerdown", startPan);
+  image?.addEventListener("pointermove", movePan);
+  image?.addEventListener("pointerup", stopPan);
+  image?.addEventListener("pointercancel", stopPan);
+  image?.addEventListener("lostpointercapture", stopPan);
   dialog.addEventListener("click", (event) => {
     if (event.target === dialog) close();
   });
