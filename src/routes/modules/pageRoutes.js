@@ -130,8 +130,8 @@ function renderProductPage(config, product) {
       </div>
     </div>
     <form class="product-search-box search-box" id="product-search-form" action="${appPath(config.basePath, "/")}" role="search">
-      <label for="product-page-search">Szukaj</label>
-      <input id="product-page-search" name="q" type="search" placeholder="Tytuł, autor, seria">
+      <label class="visually-hidden" for="product-page-search">Szukaj</label>
+      <input id="product-page-search" name="q" type="search" placeholder="Sprawdź czy mamy to czego szukasz ...">
     </form>
   </section>
   <main class="product-page" id="product-page">

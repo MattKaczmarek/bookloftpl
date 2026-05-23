@@ -36,7 +36,8 @@ async function fetchProduct(productId) {
 }
 
 function renderProduct(product) {
-  const image = product.images && product.images.length ? product.images[0] : "";
+  const images = Array.isArray(product.images) ? product.images.filter(Boolean) : [];
+  const image = images.length ? images[0] : "";
   const price = product.price === null ? "Cena do ustalenia" : formatPrice(product.price, product.currency);
   const displayCategoryPath = visibleCategoryPath(product.categoryPath || []);
   const category = displayCategoryPath.length
@@ -60,9 +61,21 @@ function renderProduct(product) {
         </nav>
         <article class="product-detail" itemscope itemtype="https://schema.org/Product">
           <section class="detail-gallery">
-            ${image ? `<img class="detail-main-image" src="${escapeAttribute(image)}" alt="${escapeAttribute(product.name)}" itemprop="image">` : '<div class="image-fallback">BookLoft</div>'}
+            <div class="gallery-main">
+              ${images.length > 1 ? '<button class="gallery-arrow gallery-arrow-prev" type="button" data-gallery-prev aria-label="Poprzednie zdjęcie">&lsaquo;</button>' : ""}
+              ${image ? `
+                <button class="detail-main-trigger" type="button" data-gallery-open aria-label="Otwórz zdjęcie produktu">
+                  <img class="detail-main-image" src="${escapeAttribute(image)}" alt="${escapeAttribute(product.name)}" itemprop="image" data-gallery-main>
+                </button>
+              ` : '<div class="image-fallback">BookLoft</div>'}
+              ${images.length > 1 ? '<button class="gallery-arrow gallery-arrow-next" type="button" data-gallery-next aria-label="Następne zdjęcie">&rsaquo;</button>' : ""}
+            </div>
             <div class="thumb-strip">
-              ${(product.images || []).slice(0, 6).map((src) => `<img src="${escapeAttribute(src)}" alt="">`).join("")}
+              ${images.slice(0, 8).map((src, index) => `
+                <button class="thumb-button${index === 0 ? " active" : ""}" type="button" data-image-index="${index}" aria-label="Pokaż zdjęcie ${index + 1}">
+                  <img src="${escapeAttribute(src)}" alt="">
+                </button>
+              `).join("")}
             </div>
           </section>
           <section class="detail-info">
@@ -90,13 +103,118 @@ function renderProduct(product) {
     </div>
   `;
 
-  page.querySelectorAll(".thumb-strip img").forEach((thumb) => {
-    thumb.addEventListener("click", () => {
-      const main = page.querySelector(".detail-main-image");
-      if (main) main.src = thumb.src;
-    });
-  });
+  initProductGallery(images, product.name);
   renderProductCategories(product.categoryId);
+}
+
+function initProductGallery(images, productName) {
+  if (!images.length) return;
+
+  let currentIndex = 0;
+  const mainImage = page.querySelector("[data-gallery-main]");
+  const thumbButtons = [...page.querySelectorAll("[data-image-index]")];
+  const previousButton = page.querySelector("[data-gallery-prev]");
+  const nextButton = page.querySelector("[data-gallery-next]");
+  const openButton = page.querySelector("[data-gallery-open]");
+
+  function setImage(nextIndex) {
+    currentIndex = wrapImageIndex(nextIndex, images.length);
+    if (mainImage) {
+      mainImage.src = images[currentIndex];
+      mainImage.alt = `${productName} - zdjęcie ${currentIndex + 1}`;
+    }
+    thumbButtons.forEach((button) => {
+      const active = Number(button.dataset.imageIndex) === currentIndex;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-current", active ? "true" : "false");
+    });
+  }
+
+  thumbButtons.forEach((button) => {
+    button.addEventListener("click", () => setImage(Number(button.dataset.imageIndex || 0)));
+  });
+  previousButton?.addEventListener("click", () => setImage(currentIndex - 1));
+  nextButton?.addEventListener("click", () => setImage(currentIndex + 1));
+  openButton?.addEventListener("click", () => openImageLightbox(images, currentIndex, productName));
+  setImage(0);
+}
+
+function openImageLightbox(images, startIndex, productName) {
+  if (!images.length) return;
+
+  let currentIndex = wrapImageIndex(startIndex, images.length);
+  let zoomed = false;
+  const dialog = document.createElement("div");
+  dialog.className = "image-lightbox";
+  dialog.setAttribute("role", "dialog");
+  dialog.setAttribute("aria-modal", "true");
+  dialog.setAttribute("aria-label", "Podgląd zdjęcia produktu");
+  dialog.innerHTML = `
+    <button class="lightbox-close" type="button" data-lightbox-close aria-label="Zamknij podgląd">Zamknij</button>
+    ${images.length > 1 ? '<button class="lightbox-arrow lightbox-arrow-prev" type="button" data-lightbox-prev aria-label="Poprzednie zdjęcie">&lsaquo;</button>' : ""}
+    <div class="lightbox-stage">
+      <img src="${escapeAttribute(images[currentIndex])}" alt="${escapeAttribute(productName)} - zdjęcie ${currentIndex + 1}" data-lightbox-image>
+    </div>
+    ${images.length > 1 ? '<button class="lightbox-arrow lightbox-arrow-next" type="button" data-lightbox-next aria-label="Następne zdjęcie">&rsaquo;</button>' : ""}
+    <div class="lightbox-toolbar">
+      <button type="button" data-lightbox-zoom>Przybliż</button>
+      <span data-lightbox-counter></span>
+    </div>
+  `;
+
+  const image = dialog.querySelector("[data-lightbox-image]");
+  const counter = dialog.querySelector("[data-lightbox-counter]");
+  const zoomButton = dialog.querySelector("[data-lightbox-zoom]");
+
+  function render() {
+    image.src = images[currentIndex];
+    image.alt = `${productName} - zdjęcie ${currentIndex + 1}`;
+    counter.textContent = `${currentIndex + 1} / ${images.length}`;
+  }
+
+  function setLightboxImage(nextIndex) {
+    currentIndex = wrapImageIndex(nextIndex, images.length);
+    zoomed = false;
+    dialog.classList.remove("is-zoomed");
+    zoomButton.textContent = "Przybliż";
+    render();
+  }
+
+  function close() {
+    document.removeEventListener("keydown", onKeyDown);
+    document.body.classList.remove("modal-open");
+    dialog.remove();
+  }
+
+  function toggleZoom() {
+    zoomed = !zoomed;
+    dialog.classList.toggle("is-zoomed", zoomed);
+    zoomButton.textContent = zoomed ? "Pomniejsz" : "Przybliż";
+  }
+
+  function onKeyDown(event) {
+    if (event.key === "Escape") close();
+    if (event.key === "ArrowLeft") setLightboxImage(currentIndex - 1);
+    if (event.key === "ArrowRight") setLightboxImage(currentIndex + 1);
+  }
+
+  dialog.querySelector("[data-lightbox-close]")?.addEventListener("click", close);
+  dialog.querySelector("[data-lightbox-prev]")?.addEventListener("click", () => setLightboxImage(currentIndex - 1));
+  dialog.querySelector("[data-lightbox-next]")?.addEventListener("click", () => setLightboxImage(currentIndex + 1));
+  zoomButton?.addEventListener("click", toggleZoom);
+  image?.addEventListener("click", toggleZoom);
+  dialog.addEventListener("click", (event) => {
+    if (event.target === dialog) close();
+  });
+  document.addEventListener("keydown", onKeyDown);
+  document.body.classList.add("modal-open");
+  document.body.appendChild(dialog);
+  render();
+  dialog.querySelector("[data-lightbox-close]")?.focus();
+}
+
+function wrapImageIndex(index, length) {
+  return ((index % length) + length) % length;
 }
 
 async function renderProductCategories(activeCategoryId) {
@@ -215,12 +333,12 @@ function renderProductAbout() {
       <h2 id="product-about-title">Książki z drugiego obiegu, gotowe na kolejną historię</h2>
       <div class="shop-about-copy">
         <p>
-          BookLoft to miejsce dla osób, które lubią książki z charakterem. Wybieramy używane egzemplarze,
-          sprawdzamy ich stan i pomagamy im trafić do kolejnych czytelników.
+          Każdą książkę starannie fotografujemy i pokazujemy realny egzemplarz, który trafia do oferty.
+          Dzięki temu przed zakupem widać okładkę, grzbiet i najważniejsze szczegóły stanu.
         </p>
         <p>
-          Dajemy książkom drugie życie, dbamy o prosty zakup przez Allegro i pakujemy zamówienia tak,
-          żeby bezpiecznie ruszyły w kolejną drogę.
+          Dokładnie opisujemy widoczne ślady używania oraz dodatkowe uwagi, żeby klient otrzymał dokładnie to,
+          co widzi w ofercie, a potem bezpiecznie pakujemy zamówienie do wysyłki.
         </p>
       </div>
       <div class="shop-about-stats" aria-label="BookLoft w liczbach">
