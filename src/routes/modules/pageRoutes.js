@@ -97,10 +97,24 @@ function renderProductPage(config, product) {
 </head>
 <body>
   <section class="product-visual-shell" aria-label="BookLoft - Przestrzeń pełna książek">
-    <div class="shop-brand-hero product-brand-hero">
+    <a class="shop-brand-hero product-brand-hero" href="${appPath(config.basePath, "/")}" aria-label="BookLoft - wróć na stronę główną">
       <div class="hero-brand-copy">
         <img class="hero-logo" src="${appPath(config.basePath, `/assets/img/logo.png?v=${config.version}`)}" alt="BookLoft">
         <p>Przestrzeń pełna książek</p>
+      </div>
+    </a>
+    <div class="product-trust-strip" aria-label="Atuty BookLoft">
+      <div class="trust-track">
+        <span>Eko przesyłka</span>
+        <span>Szybka wysyłka</span>
+        <span>Niskie ceny</span>
+        <span>Drugie życie książek</span>
+        <span>Książki z charakterem</span>
+        <span>Zakup przez Allegro</span>
+        <span>Eko przesyłka</span>
+        <span>Szybka wysyłka</span>
+        <span>Niskie ceny</span>
+        <span>Drugie życie książek</span>
       </div>
     </div>
     <form class="product-search-box search-box" id="product-search-form" action="${appPath(config.basePath, "/")}" role="search">

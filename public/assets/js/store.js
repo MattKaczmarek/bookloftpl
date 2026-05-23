@@ -10,6 +10,7 @@ const state = {
   rendered: 0,
   modeLimit: INITIAL_LIMIT,
   autoLoadQueued: false,
+  autoLoadPaused: false,
   meta: {}
 };
 
@@ -21,6 +22,7 @@ const els = {
   categoryTree: document.querySelector("#category-tree"),
   categorySelect: document.querySelector("#category-select"),
   clearCategory: document.querySelector("#clear-category"),
+  aboutJump: document.querySelector(".about-jump"),
   loadSentinel: document.querySelector("#load-sentinel")
 };
 
@@ -52,10 +54,12 @@ async function init() {
   els.search.value = state.query;
   syncCategoryButtons();
   resetAndRender();
+  if (window.location.hash === "#o-nas") pauseAutoLoadAndScrollToAbout();
 }
 
 function bindEvents() {
   els.search.addEventListener("input", debounce(() => {
+    state.autoLoadPaused = false;
     state.query = els.search.value.trim().toLowerCase();
     state.modeLimit = INITIAL_LIMIT;
     updateSearchUrl();
@@ -64,10 +68,15 @@ function bindEvents() {
   }, 120));
 
   els.categorySelect.addEventListener("change", () => {
+    state.autoLoadPaused = false;
     selectCategory(els.categorySelect.value, { scroll: true });
   });
 
   els.clearCategory?.addEventListener("click", () => selectCategory("", { scroll: true }));
+  els.aboutJump?.addEventListener("click", (event) => {
+    event.preventDefault();
+    pauseAutoLoadAndScrollToAbout();
+  });
 
   setupInfiniteScroll();
 }
@@ -118,6 +127,7 @@ function resetAndRender() {
 }
 
 function selectCategory(categoryId, { scroll = false } = {}) {
+  state.autoLoadPaused = false;
   state.categoryId = categoryId || "";
   els.categorySelect.value = state.categoryId;
   state.modeLimit = INITIAL_LIMIT;
@@ -139,7 +149,7 @@ function renderProducts() {
   els.grid.appendChild(fragment);
   state.rendered += next.length;
   els.empty.hidden = products.length > 0;
-  els.loadSentinel.hidden = products.length === 0 || state.rendered >= products.length;
+  els.loadSentinel.hidden = state.autoLoadPaused || products.length === 0 || state.rendered >= products.length;
   els.listingTitle.textContent = "Nowości";
   queueAutoLoadIfNeeded();
 }
@@ -149,6 +159,7 @@ function currentProducts() {
 }
 
 function loadNextPage() {
+  if (state.autoLoadPaused) return;
   const products = currentProducts();
   if (state.rendered >= products.length) return;
   state.modeLimit += PAGE_SIZE;
@@ -267,7 +278,7 @@ function setupInfiniteScroll() {
 
   if ("IntersectionObserver" in window) {
     const observer = new IntersectionObserver((entries) => {
-      if (entries.some((entry) => entry.isIntersecting)) loadNextPage();
+      if (!state.autoLoadPaused && entries.some((entry) => entry.isIntersecting)) loadNextPage();
     }, {
       root: null,
       rootMargin: "900px 0px",
@@ -278,6 +289,7 @@ function setupInfiniteScroll() {
   }
 
   window.addEventListener("scroll", debounce(() => {
+    if (state.autoLoadPaused) return;
     if (els.loadSentinel.hidden) return;
     const rect = els.loadSentinel.getBoundingClientRect();
     if (rect.top < window.innerHeight + 900) loadNextPage();
@@ -285,13 +297,26 @@ function setupInfiniteScroll() {
 }
 
 function queueAutoLoadIfNeeded() {
+  if (state.autoLoadPaused) return;
   if (state.autoLoadQueued || !els.loadSentinel || els.loadSentinel.hidden) return;
   state.autoLoadQueued = true;
   window.requestAnimationFrame(() => {
     state.autoLoadQueued = false;
+    if (state.autoLoadPaused) return;
     if (els.loadSentinel.hidden) return;
     const rect = els.loadSentinel.getBoundingClientRect();
     if (rect.top < window.innerHeight + 900) loadNextPage();
+  });
+}
+
+function pauseAutoLoadAndScrollToAbout() {
+  const about = document.querySelector("#o-nas");
+  if (!about) return;
+  state.autoLoadPaused = true;
+  if (els.loadSentinel) els.loadSentinel.hidden = true;
+  window.history.replaceState(null, "", "#o-nas");
+  window.requestAnimationFrame(() => {
+    about.scrollIntoView({ block: "start", behavior: "auto" });
   });
 }
 

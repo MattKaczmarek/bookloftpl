@@ -85,6 +85,7 @@ function renderProduct(product) {
           <div class="description">${product.descriptionHtml || "<p>Brak opisu.</p>"}</div>
         </section>
         ${renderRelated(product.related || [])}
+        ${renderProductAbout()}
       </div>
     </div>
   `;
@@ -205,6 +206,29 @@ function renderRelatedCard(product) {
       </span>
     </a>
   `;
+}
+
+function renderProductAbout() {
+  return `
+    <section class="shop-about product-about" id="o-nas" aria-labelledby="product-about-title">
+      <p class="eyebrow">O BookLoft</p>
+      <h2 id="product-about-title">Książki z drugiego obiegu, gotowe na kolejną historię</h2>
+      <div class="shop-about-copy">
+        <p>
+          BookLoft to miejsce dla osób, które lubią książki z charakterem. Wybieramy używane egzemplarze,
+          sprawdzamy ich stan i pomagamy im trafić do kolejnych czytelników.
+        </p>
+        <p>
+          Dajemy książkom drugie życie, dbamy o prosty zakup przez Allegro i pakujemy zamówienia tak,
+          żeby bezpiecznie ruszyły w kolejną drogę.
+        </p>
+      </div>
+      <div class="shop-about-stats" aria-label="BookLoft w liczbach">
+        <span><strong>100 000+</strong> uratowanych książek</span>
+        <span><strong>15 000+</strong> zadowolonych klientów</span>
+        <span><strong>4</strong> lata doświadczenia</span>
+      </div>
+    </section>`;
 }
 
 function updateMeta(product) {
