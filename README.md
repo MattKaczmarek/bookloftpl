@@ -1,7 +1,7 @@
 # BookLoft sklep
 
-Wersja sklepu: `1.06.0`.
-Branch tej wersji: `ver-1.06`.
+Wersja sklepu: `1.07.0`.
+Branch tej wersji: `ver-1.07`.
 
 Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://bookloft.pl/`. Katalog jest oparty bezposrednio o aktywne oferty Allegro konta BookLoft.
 
@@ -15,6 +15,7 @@ Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://booklo
 - OAuth Allegro dla konta sprzedawcy,
 - cache ofert, cen, zdjec, stanow i kategorii z Allegro,
 - linki `Kup na Allegro` prowadzace bezposrednio do `https://allegro.pl/oferta/:id`,
+- osobna strona `/o-nas` z opisem BookLoft,
 - strona informacyjna `/informacje-prawne` z danymi firmy, prywatnoscia, cookies i wyjasnieniem modelu zakupu przez Allegro,
 - Google Analytics z obecnego bookloft.pl, uruchamiany po zgodzie na cookies analityczne,
 - meta tagi, canonicale, dane strukturalne Product/Offer i sitemap pod przyszle SEO.
@@ -87,10 +88,11 @@ Zasady:
 ## Frontend
 
 - strona glowna startuje od 50 najnowszych aktywnych ofert i automatycznie dociaga kolejne paczki po 50 podczas scrollowania,
+- strona glowna jest katalogiem bez sekcji `O nas`; linki informacyjne sa dyskretne i prowadza do `/o-nas` oraz `/informacje-prawne`,
 - gorny obszar strony glownej ma loftowy banner graficzny z logo i haslem `Przestrzen pelna ksiazek`,
 - pelny katalog mozna przeszukiwac po tytule, SKU i kategorii,
 - karty listingu pokazuja zdjecie, kategorie, tytul, cene i link `Zobacz`,
-- strona oferty pokazuje przycisk `Kup na Allegro`,
+- strona oferty pokazuje przycisk `Kup na Allegro`, pasek zalet BookLoft oraz stopke `O nas`,
 - favicon i ikona Apple Touch korzystaja z monogramu `B` z transparentnymi rogami,
 - opisy szczegolowe sa dociagane z Allegro na stronie oferty, jesli nie ma ich jeszcze w cache,
 - uklad kategorii i filtrowania zostaje zgodny z poprzednia wersja sklepu,
@@ -101,7 +103,7 @@ Zasady:
 - Dane firmy na stronie: `BookLoft Mateusz Kaczmarek`, 334c, 33-152 Pogorska Wola, NIP `9930688202`, REGON `522042224`, `bookloft.store@gmail.com`, `518 104 941`.
 - `/informacje-prawne` nie jest pelnym regulaminem samodzielnego sklepu, bo aplikacja nie ma koszyka ani platnosci.
 - Google Analytics używa `BOOKLOFT_GA_ID`; domyślnie jest to identyfikator z dotychczasowego landingu.
-- Skrypt `public/assets/js/analytics.js` startuje GA dopiero po akceptacji cookies analitycznych, obsługuje cofnięcie zgody, czyści cookies GA i wysyła event kliknięcia w ofertę Allegro tylko po zgodzie.
+- Skrypt `public/assets/js/analytics.js` startuje GA dopiero po akceptacji cookies analitycznych, obsługuje cofnięcie zgody z poziomu `/informacje-prawne`, czyści cookies GA i wysyła event kliknięcia w ofertę Allegro tylko po zgodzie.
 
 ## Uruchomienie lokalne
 
@@ -132,7 +134,7 @@ Standard:
 
 1. zmiana lokalna,
 2. `git push`,
-3. na Hetznerze: `cd /home/bookloftpl && git fetch && git switch ver-1.06 && git pull --ff-only`,
+3. na Hetznerze: `cd /home/bookloftpl && git fetch && git switch ver-1.07 && git pull --ff-only`,
 4. uzupelnienie ENV Allegro w `/etc/bookloft-shop/bookloft-shop.env`,
 5. `npm ci --omit=dev`,
 6. restart uslugi sklepu,

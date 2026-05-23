@@ -1,8 +1,8 @@
 # Operacje BookLoft sklep
 
 Stan dokumentu: `2026-05-22`.
-Wersja sklepu: `1.06.0`.
-Branch wersji: `ver-1.06`.
+Wersja sklepu: `1.07.0`.
+Branch wersji: `ver-1.07`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
 
@@ -65,9 +65,10 @@ Jesli token wygasnie albo zostanie cofniety, w panelu pojawi sie blad i trzeba p
 ## Informacje prawne i cookies
 
 - `/informacje-prawne` jest strona informacyjna dla katalogu prowadzacego do Allegro.
+- `/o-nas` jest osobna strona o BookLoft; strona glowna pozostaje samym katalogiem bez sekcji `O nas`.
 - Dane firmy: BookLoft Mateusz Kaczmarek, 334c, 33-152 Pogorska Wola, NIP 9930688202, REGON 522042224, bookloft.store@gmail.com, 518 104 941.
 - BookLoft.pl nie ma koszyka ani platnosci; zakup, dostawa, zwroty i reklamacje odbywaja sie w Allegro.
-- Google Analytics jest osadzony przez `public/assets/js/analytics.js` i włącza się dopiero po zgodzie na cookies analityczne; cofnięcie zgody wysyła `analytics_storage=denied` i usuwa cookies GA.
+- Google Analytics jest osadzony przez `public/assets/js/analytics.js` i włącza się dopiero po zgodzie na cookies analityczne; cofnięcie zgody jest dostępne na `/informacje-prawne`, wysyła `analytics_storage=denied` i usuwa cookies GA.
 - Identyfikator GA jest domyslnie taki jak na dotychczasowym landingu (`G-NQH5FFJ8Y4`), ale moze byc nadpisany przez `BOOKLOFT_GA_ID`.
 
 ## Deploy
@@ -75,7 +76,7 @@ Jesli token wygasnie albo zostanie cofniety, w panelu pojawi sie blad i trzeba p
 ```bash
 cd /home/bookloftpl
 git fetch
-git switch ver-1.06
+git switch ver-1.07
 git pull --ff-only
 npm ci --omit=dev
 systemctl restart bookloft-shop.service
@@ -115,7 +116,8 @@ Oczekiwane publicznie, dopoki katalog jest za haslem:
 - ekran logowania pokazuje komunikat `Strona w renowacji`,
 - po zalogowaniu strona glowna pokazuje nowosci i katalog, a kolejne oferty dociagaja sie automatycznie podczas scrollowania,
 - gorny banner strony glownej uzywa statycznego assetu `public/assets/img/loft-hero.jpg`,
-- strona glowna linkuje do `/informacje-prawne`,
+- strona glowna linkuje subtelnie do `/o-nas` oraz `/informacje-prawne`, ale nie wyswietla sekcji `O nas`,
+- strona produktu wyswietla stopke `O nas` pod sekcja powiazanych ofert,
 - `/panel` pokazuje status polaczenia Allegro,
 - `/sitemap.xml` pozostaje za logowaniem do czasu zdjecia blokady indeksowania.
 
@@ -130,6 +132,7 @@ Prawidlowe branche repo:
 - `ver-1.03`,
 - `ver-1.04`,
 - `ver-1.05`,
-- `ver-1.06`.
+- `ver-1.06`,
+- `ver-1.07`.
 
 Robocze branche z prefiksem `codex/` nie sa linia wersji sklepu i po przeniesieniu zmian do aktualnego brancha `ver-*` powinny byc usuniete lokalnie oraz z GitHuba.

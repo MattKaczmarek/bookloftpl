@@ -33,12 +33,6 @@
     }
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", ensureSettingsTrigger, { once: true });
-  } else {
-    ensureSettingsTrigger();
-  }
-
   document.addEventListener("click", (event) => {
     const settingsButton = event.target.closest ? event.target.closest("[data-cookie-settings]") : null;
     if (settingsButton) {
@@ -130,17 +124,6 @@
     });
 
     document.body.appendChild(banner);
-  }
-
-  function ensureSettingsTrigger() {
-    if (document.querySelector("[data-cookie-settings].cookie-settings-trigger")) return;
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "cookie-settings-trigger";
-    button.dataset.cookieSettings = "";
-    button.textContent = "Cookies";
-    button.setAttribute("aria-label", "Ustawienia cookies");
-    document.body.appendChild(button);
   }
 
   function readConsent() {

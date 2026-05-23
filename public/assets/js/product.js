@@ -228,6 +228,10 @@ function renderProductAbout() {
         <span><strong>15 000+</strong> zadowolonych klientów</span>
         <span><strong>4</strong> lata doświadczenia</span>
       </div>
+      <nav class="product-about-links" aria-label="Więcej o BookLoft">
+        <a href="/o-nas">Więcej o nas</a>
+        <a href="/informacje-prawne">Informacje prawne</a>
+      </nav>
     </section>`;
 }
 

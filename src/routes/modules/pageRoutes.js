@@ -21,6 +21,10 @@ export function createPageRouter(config, storeCache) {
     res.sendFile(path.join(config.publicDir, "legal.html"));
   });
 
+  router.get("/o-nas", auth, (_req, res) => {
+    res.sendFile(path.join(config.publicDir, "about.html"));
+  });
+
   router.get(
     "/product/:productId/:slug?",
     auth,
@@ -44,6 +48,14 @@ export function createPageRouter(config, storeCache) {
         {
           loc: absoluteUrl(config, "/"),
           priority: "1.0"
+        },
+        {
+          loc: absoluteUrl(config, "/o-nas"),
+          priority: "0.6"
+        },
+        {
+          loc: absoluteUrl(config, "/informacje-prawne"),
+          priority: "0.4"
         },
         ...storefront.products.map((product) => ({
           loc: absoluteUrl(config, productPath(product)),
