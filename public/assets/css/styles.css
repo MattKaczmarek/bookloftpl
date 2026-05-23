@@ -363,7 +363,9 @@ a {
   margin: 2px 0 clamp(20px, 4vw, 38px);
   overflow: hidden;
   border-radius: var(--radius);
-  background: #f6efe3 url("/assets/img/loft-hero.jpg") right center / 140% auto no-repeat;
+  background:
+    linear-gradient(90deg, rgba(255, 250, 241, 0.98) 0%, rgba(255, 250, 241, 0.9) 36%, rgba(255, 250, 241, 0.24) 68%, rgba(255, 250, 241, 0.02) 100%),
+    url("/assets/img/loft-hero.jpg") center right / cover no-repeat;
   box-shadow: var(--shadow-soft);
 }
 
@@ -377,9 +379,10 @@ a {
 
 .shop-brand-hero::after {
   position: absolute;
-  inset: 0;
+  inset: auto 0 0;
   z-index: 0;
-  background: rgba(255, 252, 246, 0.05);
+  height: 46%;
+  background: linear-gradient(180deg, transparent 0%, rgba(13, 47, 37, 0.18) 100%);
   content: "";
 }
 
@@ -389,12 +392,8 @@ a {
   display: grid;
   width: min(72%, 760px);
   gap: clamp(6px, 1vw, 10px);
-  padding: clamp(13px, 1.8vw, 22px) clamp(18px, 2.5vw, 28px);
+  padding: clamp(14px, 2vw, 24px) clamp(18px, 2.6vw, 30px);
   color: var(--forest-strong);
-  text-shadow:
-    0 1px 1px rgba(255, 253, 248, 0.82),
-    0 0 12px rgba(255, 253, 248, 0.82),
-    0 10px 34px rgba(255, 250, 241, 0.58);
 }
 
 .hero-brand-copy p {
@@ -464,9 +463,6 @@ h2 {
   width: clamp(168px, 17vw, 302px);
   max-width: 100%;
   height: auto;
-  filter:
-    drop-shadow(0 1px 1px rgba(255, 253, 248, 0.68))
-    drop-shadow(0 8px 22px rgba(255, 250, 241, 0.46));
 }
 
 .search-box,
@@ -1487,7 +1483,9 @@ h2 {
 
   .shop-brand-hero {
     min-height: 220px;
-    background: #f6efe3 url("/assets/img/loft-hero.jpg") right center / 156% auto no-repeat;
+    background:
+      linear-gradient(90deg, rgba(255, 250, 241, 0.98) 0%, rgba(255, 250, 241, 0.91) 50%, rgba(255, 250, 241, 0.25) 100%),
+      url("/assets/img/loft-hero.jpg") center right / cover no-repeat;
   }
 
   .hero-brand-copy {
@@ -1587,7 +1585,9 @@ h2 {
 
   .shop-brand-hero {
     min-height: 176px;
-    background: #f6efe3 url("/assets/img/loft-hero.jpg") right center / 118% auto no-repeat;
+    background:
+      linear-gradient(90deg, rgba(255, 250, 241, 0.99) 0%, rgba(255, 250, 241, 0.91) 66%, rgba(255, 250, 241, 0.28) 100%),
+      url("/assets/img/loft-hero.jpg") 62% center / cover no-repeat;
   }
 
   .hero-brand-copy {
