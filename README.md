@@ -1,6 +1,6 @@
 # BookLoft sklep
 
-Wersja sklepu: `1.04.7`.
+Wersja sklepu: `1.04.8`.
 Branch tej wersji: `ver-1.04`.
 
 Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://bookloft.pl/`. Katalog jest oparty bezposrednio o aktywne oferty Allegro konta BookLoft.
@@ -87,6 +87,7 @@ Zasady:
 ## Frontend
 
 - strona glowna startuje od 50 najnowszych aktywnych ofert i automatycznie dociaga kolejne paczki po 50 podczas scrollowania,
+- gorny obszar strony glownej ma loftowy banner graficzny z logo i haslem `Przestrzen pelna ksiazek`,
 - pelny katalog mozna przeszukiwac po tytule, SKU i kategorii,
 - karty listingu pokazuja zdjecie, kategorie, tytul, cene i link `Zobacz`,
 - strona oferty pokazuje przycisk `Kup na Allegro`,

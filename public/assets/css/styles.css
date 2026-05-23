@@ -354,9 +354,48 @@ a {
 }
 
 .shop-brand-hero {
-  display: grid;
-  justify-items: center;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  min-height: clamp(190px, 22vw, 284px);
+  align-items: flex-start;
   margin: 2px 0 clamp(20px, 4vw, 38px);
+  overflow: hidden;
+  border: 1px solid rgba(31, 71, 55, 0.13);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(90deg, rgba(255, 250, 241, 0.96) 0%, rgba(255, 250, 241, 0.88) 38%, rgba(255, 250, 241, 0.22) 68%, rgba(255, 250, 241, 0.02) 100%),
+    url("/assets/img/loft-hero.jpg") center right / cover no-repeat;
+  box-shadow: var(--shadow-soft);
+}
+
+.shop-brand-hero::after {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 0;
+  height: 46%;
+  background: linear-gradient(180deg, transparent 0%, rgba(13, 47, 37, 0.18) 100%);
+  content: "";
+}
+
+.hero-brand-copy {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: min(58%, 610px);
+  gap: clamp(8px, 1.4vw, 14px);
+  padding: clamp(20px, 3.2vw, 34px);
+  color: var(--forest-strong);
+}
+
+.hero-brand-copy p {
+  max-width: 520px;
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: clamp(1.82rem, 4vw, 3.9rem);
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.02;
 }
 
 .shop-toolbar {
@@ -412,10 +451,9 @@ h2 {
 
 .hero-logo {
   display: block;
-  width: clamp(260px, 26vw, 430px);
+  width: clamp(176px, 18vw, 320px);
   max-width: 100%;
   height: auto;
-  justify-self: center;
 }
 
 .search-box,
@@ -1408,6 +1446,17 @@ h2 {
     display: grid;
   }
 
+  .shop-brand-hero {
+    min-height: 220px;
+    background:
+      linear-gradient(90deg, rgba(255, 250, 241, 0.97) 0%, rgba(255, 250, 241, 0.9) 48%, rgba(255, 250, 241, 0.24) 100%),
+      url("/assets/img/loft-hero.jpg") center right / cover no-repeat;
+  }
+
+  .hero-brand-copy {
+    width: min(70%, 560px);
+  }
+
   .shop-toolbar {
     grid-template-columns: 1fr;
     align-items: stretch;
@@ -1487,6 +1536,23 @@ h2 {
     padding-left: 16px;
   }
 
+  .shop-brand-hero {
+    min-height: 184px;
+    background:
+      linear-gradient(90deg, rgba(255, 250, 241, 0.98) 0%, rgba(255, 250, 241, 0.9) 62%, rgba(255, 250, 241, 0.28) 100%),
+      url("/assets/img/loft-hero.jpg") 62% center / cover no-repeat;
+  }
+
+  .hero-brand-copy {
+    width: 78%;
+    padding: 16px;
+  }
+
+  .hero-brand-copy p {
+    max-width: 280px;
+    font-size: 1.74rem;
+  }
+
   .shop-toolbar h1 {
     font-size: 1.86rem;
     line-height: 1.08;
@@ -1504,8 +1570,7 @@ h2 {
   }
 
   .hero-logo {
-    width: min(74vw, 300px);
-    justify-self: center;
+    width: min(52vw, 210px);
   }
 
   .status-strip {

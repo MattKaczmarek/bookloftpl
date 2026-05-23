@@ -1,7 +1,7 @@
 # Operacje BookLoft sklep
 
 Stan dokumentu: `2026-05-22`.
-Wersja sklepu: `1.04.7`.
+Wersja sklepu: `1.04.8`.
 Branch wersji: `ver-1.04`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
@@ -114,6 +114,7 @@ Oczekiwane publicznie, dopoki katalog jest za haslem:
 - odpowiedz ma `X-Robots-Tag: noindex, nofollow, noarchive`,
 - ekran logowania pokazuje komunikat `Strona w renowacji`,
 - po zalogowaniu strona glowna pokazuje nowosci i katalog, a kolejne oferty dociagaja sie automatycznie podczas scrollowania,
+- gorny banner strony glownej uzywa statycznego assetu `public/assets/img/loft-hero.jpg`,
 - strona glowna linkuje do `/informacje-prawne`,
 - `/panel` pokazuje status polaczenia Allegro,
 - `/sitemap.xml` pozostaje za logowaniem do czasu zdjecia blokady indeksowania.
