@@ -143,40 +143,37 @@ function openImageLightbox(images, startIndex, productName) {
   if (!images.length) return;
 
   let currentIndex = wrapImageIndex(startIndex, images.length);
-  let zoomed = false;
+  let zoomScale = 1;
   const dialog = document.createElement("div");
   dialog.className = "image-lightbox";
+  dialog.tabIndex = -1;
   dialog.setAttribute("role", "dialog");
   dialog.setAttribute("aria-modal", "true");
   dialog.setAttribute("aria-label", "Podgląd zdjęcia produktu");
   dialog.innerHTML = `
-    <button class="lightbox-close" type="button" data-lightbox-close aria-label="Zamknij podgląd">Zamknij</button>
+    <button class="lightbox-close" type="button" data-lightbox-close aria-label="Zamknij podgląd">&times;</button>
     ${images.length > 1 ? '<button class="lightbox-arrow lightbox-arrow-prev" type="button" data-lightbox-prev aria-label="Poprzednie zdjęcie">&lsaquo;</button>' : ""}
     <div class="lightbox-stage">
       <img src="${escapeAttribute(images[currentIndex])}" alt="${escapeAttribute(productName)} - zdjęcie ${currentIndex + 1}" data-lightbox-image>
     </div>
     ${images.length > 1 ? '<button class="lightbox-arrow lightbox-arrow-next" type="button" data-lightbox-next aria-label="Następne zdjęcie">&rsaquo;</button>' : ""}
-    <div class="lightbox-toolbar">
-      <button type="button" data-lightbox-zoom>Przybliż</button>
-      <span data-lightbox-counter></span>
-    </div>
+    <span class="lightbox-counter" data-lightbox-counter></span>
   `;
 
+  const stage = dialog.querySelector(".lightbox-stage");
   const image = dialog.querySelector("[data-lightbox-image]");
   const counter = dialog.querySelector("[data-lightbox-counter]");
-  const zoomButton = dialog.querySelector("[data-lightbox-zoom]");
 
   function render() {
     image.src = images[currentIndex];
     image.alt = `${productName} - zdjęcie ${currentIndex + 1}`;
     counter.textContent = `${currentIndex + 1} / ${images.length}`;
+    updateZoom();
   }
 
   function setLightboxImage(nextIndex) {
     currentIndex = wrapImageIndex(nextIndex, images.length);
-    zoomed = false;
-    dialog.classList.remove("is-zoomed");
-    zoomButton.textContent = "Przybliż";
+    zoomScale = 1;
     render();
   }
 
@@ -186,10 +183,16 @@ function openImageLightbox(images, startIndex, productName) {
     dialog.remove();
   }
 
-  function toggleZoom() {
-    zoomed = !zoomed;
-    dialog.classList.toggle("is-zoomed", zoomed);
-    zoomButton.textContent = zoomed ? "Pomniejsz" : "Przybliż";
+  function updateZoom() {
+    dialog.style.setProperty("--lightbox-zoom", zoomScale.toFixed(2));
+    dialog.classList.toggle("is-zoomed", zoomScale > 1.01);
+  }
+
+  function zoomWithWheel(event) {
+    event.preventDefault();
+    const direction = event.deltaY < 0 ? 1 : -1;
+    zoomScale = clamp(zoomScale + direction * 0.16, 1, 2.6);
+    updateZoom();
   }
 
   function onKeyDown(event) {
@@ -201,8 +204,7 @@ function openImageLightbox(images, startIndex, productName) {
   dialog.querySelector("[data-lightbox-close]")?.addEventListener("click", close);
   dialog.querySelector("[data-lightbox-prev]")?.addEventListener("click", () => setLightboxImage(currentIndex - 1));
   dialog.querySelector("[data-lightbox-next]")?.addEventListener("click", () => setLightboxImage(currentIndex + 1));
-  zoomButton?.addEventListener("click", toggleZoom);
-  image?.addEventListener("click", toggleZoom);
+  stage?.addEventListener("wheel", zoomWithWheel, { passive: false });
   dialog.addEventListener("click", (event) => {
     if (event.target === dialog) close();
   });
@@ -210,11 +212,15 @@ function openImageLightbox(images, startIndex, productName) {
   document.body.classList.add("modal-open");
   document.body.appendChild(dialog);
   render();
-  dialog.querySelector("[data-lightbox-close]")?.focus();
+  dialog.focus({ preventScroll: true });
 }
 
 function wrapImageIndex(index, length) {
   return ((index % length) + length) % length;
+}
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
 }
 
 async function renderProductCategories(activeCategoryId) {
