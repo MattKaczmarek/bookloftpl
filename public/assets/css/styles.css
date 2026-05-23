@@ -247,11 +247,12 @@ a {
   margin: 0;
   color: var(--forest-strong);
   font-family: var(--font-heading);
-  font-size: clamp(1.35rem, 3vw, 2.5rem);
+  font-size: clamp(1.08rem, 3vw, 2.5rem);
   font-weight: 600;
   letter-spacing: 0;
   line-height: 1.12;
   text-align: center;
+  white-space: nowrap;
 }
 
 .brand-intro-inner p::after {
@@ -361,12 +362,19 @@ a {
   align-items: flex-start;
   margin: 2px 0 clamp(20px, 4vw, 38px);
   overflow: hidden;
-  border: 1px solid rgba(31, 71, 55, 0.13);
   border-radius: var(--radius);
   background:
-    linear-gradient(90deg, rgba(255, 250, 241, 0.96) 0%, rgba(255, 250, 241, 0.88) 38%, rgba(255, 250, 241, 0.22) 68%, rgba(255, 250, 241, 0.02) 100%),
+    linear-gradient(90deg, rgba(255, 250, 241, 0.98) 0%, rgba(255, 250, 241, 0.9) 36%, rgba(255, 250, 241, 0.24) 68%, rgba(255, 250, 241, 0.02) 100%),
     url("/assets/img/loft-hero.jpg") center right / cover no-repeat;
   box-shadow: var(--shadow-soft);
+}
+
+.shop-layout > .category-rail {
+  margin-top: calc(clamp(190px, 22vw, 284px) + clamp(20px, 4vw, 38px) + 2px);
+}
+
+.shop-surface > .shop-brand-hero {
+  margin-left: calc((clamp(230px, 20vw, 292px) + 26px) * -1);
 }
 
 .shop-brand-hero::after {
@@ -382,20 +390,21 @@ a {
   position: relative;
   z-index: 1;
   display: grid;
-  width: min(58%, 610px);
-  gap: clamp(8px, 1.4vw, 14px);
-  padding: clamp(20px, 3.2vw, 34px);
+  width: min(72%, 760px);
+  gap: clamp(6px, 1vw, 10px);
+  padding: clamp(14px, 2vw, 24px) clamp(18px, 2.6vw, 30px);
   color: var(--forest-strong);
 }
 
 .hero-brand-copy p {
-  max-width: 520px;
+  max-width: 720px;
   margin: 0;
   font-family: var(--font-heading);
-  font-size: clamp(1.82rem, 4vw, 3.9rem);
+  font-size: clamp(1.5rem, 2.55vw, 2.74rem);
   font-weight: 600;
   letter-spacing: 0;
-  line-height: 1.02;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .shop-toolbar {
@@ -451,7 +460,7 @@ h2 {
 
 .hero-logo {
   display: block;
-  width: clamp(176px, 18vw, 320px);
+  width: clamp(168px, 17vw, 302px);
   max-width: 100%;
   height: auto;
 }
@@ -896,7 +905,25 @@ h2 {
 .product-page {
   width: min(1480px, 100%);
   margin: 0 auto;
-  padding: 28px clamp(16px, 4vw, 42px) 60px;
+  padding: 18px clamp(16px, 4vw, 42px) 60px;
+}
+
+.product-visual-shell {
+  display: grid;
+  width: min(1480px, 100%);
+  gap: 16px;
+  margin: 0 auto;
+  padding: 28px clamp(16px, 4vw, 42px) 0;
+}
+
+.product-brand-hero {
+  min-height: clamp(190px, 20vw, 264px);
+  margin-bottom: 0;
+}
+
+.product-search-box {
+  width: min(100%, 360px);
+  justify-self: end;
 }
 
 .product-layout {
@@ -1442,6 +1469,14 @@ h2 {
     display: none;
   }
 
+  .shop-layout > .category-rail {
+    margin-top: 0;
+  }
+
+  .shop-surface > .shop-brand-hero {
+    margin-left: 0;
+  }
+
   .mobile-categories {
     display: grid;
   }
@@ -1449,12 +1484,20 @@ h2 {
   .shop-brand-hero {
     min-height: 220px;
     background:
-      linear-gradient(90deg, rgba(255, 250, 241, 0.97) 0%, rgba(255, 250, 241, 0.9) 48%, rgba(255, 250, 241, 0.24) 100%),
+      linear-gradient(90deg, rgba(255, 250, 241, 0.98) 0%, rgba(255, 250, 241, 0.91) 50%, rgba(255, 250, 241, 0.25) 100%),
       url("/assets/img/loft-hero.jpg") center right / cover no-repeat;
   }
 
   .hero-brand-copy {
-    width: min(70%, 560px);
+    width: min(86%, 640px);
+  }
+
+  .product-visual-shell {
+    padding-top: 20px;
+  }
+
+  .product-search-box {
+    justify-self: stretch;
   }
 
   .shop-toolbar {
@@ -1536,21 +1579,25 @@ h2 {
     padding-left: 16px;
   }
 
+  .product-visual-shell {
+    padding: 20px 16px 0;
+  }
+
   .shop-brand-hero {
-    min-height: 184px;
+    min-height: 176px;
     background:
-      linear-gradient(90deg, rgba(255, 250, 241, 0.98) 0%, rgba(255, 250, 241, 0.9) 62%, rgba(255, 250, 241, 0.28) 100%),
+      linear-gradient(90deg, rgba(255, 250, 241, 0.99) 0%, rgba(255, 250, 241, 0.91) 66%, rgba(255, 250, 241, 0.28) 100%),
       url("/assets/img/loft-hero.jpg") 62% center / cover no-repeat;
   }
 
   .hero-brand-copy {
-    width: 78%;
-    padding: 16px;
+    width: 92%;
+    padding: 12px 14px;
   }
 
   .hero-brand-copy p {
-    max-width: 280px;
-    font-size: 1.74rem;
+    max-width: none;
+    font-size: clamp(1.16rem, 5vw, 1.42rem);
   }
 
   .shop-toolbar h1 {
@@ -1570,7 +1617,7 @@ h2 {
   }
 
   .hero-logo {
-    width: min(52vw, 210px);
+    width: min(48vw, 196px);
   }
 
   .status-strip {

@@ -86,6 +86,9 @@ function renderProductPage(config, product) {
   <meta property="product:price:amount" content="${escapeAttribute(product.price ?? "")}">
   <meta property="product:price:currency" content="${escapeAttribute(product.currency || "PLN")}">
   <script type="application/ld+json">${jsonLd}</script>
+  <link rel="icon" type="image/png" sizes="32x32" href="${appPath(config.basePath, `/assets/img/favicon-32.png?v=${config.version}`)}">
+  <link rel="icon" type="image/png" sizes="512x512" href="${appPath(config.basePath, `/assets/img/favicon.png?v=${config.version}`)}">
+  <link rel="apple-touch-icon" sizes="180x180" href="${appPath(config.basePath, `/assets/img/apple-touch-icon.png?v=${config.version}`)}">
   <link rel="stylesheet" href="${appPath(config.basePath, `/assets/css/styles.css?v=${config.version}`)}">
   <script>window.__BOOKLOFT_PRODUCT__=${bootstrap};</script>
   <script>window.BOOKLOFT_ANALYTICS_ID=${JSON.stringify(config.googleAnalyticsId || "")};</script>
@@ -93,6 +96,18 @@ function renderProductPage(config, product) {
   <script defer src="${appPath(config.basePath, `/assets/js/product.js?v=${config.version}`)}"></script>
 </head>
 <body>
+  <section class="product-visual-shell" aria-label="BookLoft - Przestrzeń pełna książek">
+    <div class="shop-brand-hero product-brand-hero">
+      <div class="hero-brand-copy">
+        <img class="hero-logo" src="${appPath(config.basePath, `/assets/img/logo.png?v=${config.version}`)}" alt="BookLoft">
+        <p>Przestrzeń pełna książek</p>
+      </div>
+    </div>
+    <form class="product-search-box search-box" id="product-search-form" action="${appPath(config.basePath, "/")}" role="search">
+      <label for="product-page-search">Szukaj</label>
+      <input id="product-page-search" name="q" type="search" placeholder="Tytuł, autor, seria">
+    </form>
+  </section>
   <main class="product-page" id="product-page">
     <div class="status-strip"><span>Ładowanie produktu...</span></div>
   </main>

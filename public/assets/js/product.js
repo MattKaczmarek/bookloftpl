@@ -1,4 +1,14 @@
 const page = document.querySelector("#product-page");
+const productSearchForm = document.querySelector("#product-search-form");
+const productSearchInput = document.querySelector("#product-page-search");
+
+productSearchForm?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const query = productSearchInput?.value.trim() || "";
+  const url = new URL("/", window.location.origin);
+  if (query) url.searchParams.set("q", query);
+  window.location.href = `${url.pathname}${url.search}`;
+});
 
 init().catch((error) => {
   page.innerHTML = `<div class="empty-state"><h1>Nie udało się załadować produktu</h1><p>${escapeHtml(error.message)}</p></div>`;

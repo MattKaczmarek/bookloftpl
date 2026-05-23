@@ -1,8 +1,8 @@
 # Operacje BookLoft sklep
 
 Stan dokumentu: `2026-05-22`.
-Wersja sklepu: `1.04.8`.
-Branch wersji: `ver-1.04`.
+Wersja sklepu: `1.05.0`.
+Branch wersji: `ver-1.05`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
 
@@ -75,7 +75,7 @@ Jesli token wygasnie albo zostanie cofniety, w panelu pojawi sie blad i trzeba p
 ```bash
 cd /home/bookloftpl
 git fetch
-git switch ver-1.04
+git switch ver-1.05
 git pull --ff-only
 npm ci --omit=dev
 systemctl restart bookloft-shop.service
@@ -128,6 +128,7 @@ Prawidlowe branche repo:
 - `ver-1.01`,
 - `ver-1.02`,
 - `ver-1.03`,
-- `ver-1.04`.
+- `ver-1.04`,
+- `ver-1.05`.
 
 Robocze branche z prefiksem `codex/` nie sa linia wersji sklepu i po przeniesieniu zmian do aktualnego brancha `ver-*` powinny byc usuniete lokalnie oraz z GitHuba.

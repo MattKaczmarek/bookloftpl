@@ -44,10 +44,12 @@ async function init() {
   state.categories = Array.isArray(data.categories) ? data.categories : [];
   state.meta = data.meta || {};
   state.categoryId = categoryIdFromUrl();
+  state.query = queryFromUrl();
 
   bindEvents();
   renderCategories();
   els.categorySelect.value = state.categoryId;
+  els.search.value = state.query;
   syncCategoryButtons();
   resetAndRender();
 }
@@ -56,6 +58,7 @@ function bindEvents() {
   els.search.addEventListener("input", debounce(() => {
     state.query = els.search.value.trim().toLowerCase();
     state.modeLimit = INITIAL_LIMIT;
+    updateSearchUrl();
     scrollToTop();
     resetAndRender();
   }, 120));
@@ -230,10 +233,21 @@ function categoryIdFromUrl() {
   return new URLSearchParams(window.location.search).get("category") || "";
 }
 
+function queryFromUrl() {
+  return new URLSearchParams(window.location.search).get("q")?.trim().toLowerCase() || "";
+}
+
 function updateCategoryUrl() {
   const url = new URL(window.location.href);
   if (state.categoryId) url.searchParams.set("category", state.categoryId);
   else url.searchParams.delete("category");
+  window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+}
+
+function updateSearchUrl() {
+  const url = new URL(window.location.href);
+  if (state.query) url.searchParams.set("q", state.query);
+  else url.searchParams.delete("q");
   window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
 }
 
