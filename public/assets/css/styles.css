@@ -1388,6 +1388,7 @@ h2 {
   transition: transform 120ms ease;
   user-select: none;
   -webkit-user-drag: none;
+  will-change: transform;
   box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22);
 }
 
@@ -1399,7 +1400,8 @@ h2 {
   cursor: grab;
 }
 
-.image-lightbox.is-panning .lightbox-stage img {
+.image-lightbox.is-panning .lightbox-stage img,
+.image-lightbox.is-pinching .lightbox-stage img {
   cursor: grabbing;
   transition: none;
 }

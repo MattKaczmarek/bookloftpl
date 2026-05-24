@@ -195,8 +195,8 @@ function openImageLightbox(images, startIndex, productName) {
     dialog.remove();
   }
 
-  function updateZoom() {
-    if (zoomScale <= 1.01) {
+  function updateZoom(options = {}) {
+    if (zoomScale <= 1.01 && !options.keepPanAtMin) {
       panX = 0;
       panY = 0;
     }
@@ -218,16 +218,16 @@ function openImageLightbox(images, startIndex, productName) {
     if (!stage || event.touches.length !== 2) return;
     event.preventDefault();
     const center = touchCenter(event.touches, stage);
+    const startZoom = Math.max(zoomScale, 1);
     pinchStart = {
       distance: touchDistance(event.touches),
-      centerX: center.x,
-      centerY: center.y,
-      zoomScale,
-      panX,
-      panY
+      anchorX: (center.x - panX) / startZoom,
+      anchorY: (center.y - panY) / startZoom,
+      zoomScale: startZoom
     };
     panStart = null;
     didPan = true;
+    dialog.classList.add("is-pinching");
     dialog.classList.remove("is-panning");
   }
 
@@ -238,10 +238,10 @@ function openImageLightbox(images, startIndex, productName) {
     const distance = touchDistance(event.touches);
     const ratio = distance / Math.max(1, pinchStart.distance);
     zoomScale = clamp(pinchStart.zoomScale * ratio, 1, 2.6);
-    panX = pinchStart.panX + center.x - pinchStart.centerX;
-    panY = pinchStart.panY + center.y - pinchStart.centerY;
+    panX = center.x - pinchStart.anchorX * zoomScale;
+    panY = center.y - pinchStart.anchorY * zoomScale;
     didPan = true;
-    updateZoom();
+    updateZoom({ keepPanAtMin: true });
   }
 
   function stopPinch(event) {
@@ -251,6 +251,7 @@ function openImageLightbox(images, startIndex, productName) {
       return;
     }
     pinchStart = null;
+    dialog.classList.remove("is-pinching");
     updateZoom();
   }
 
