@@ -1,7 +1,7 @@
 # BookLoft sklep
 
-Wersja sklepu: `1.10.2`.
-Branch tej wersji: `ver-1.10`.
+Wersja sklepu: `1.11.0`.
+Branch tej wersji: `ver-1.11`.
 
 Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://bookloft.pl/`. Katalog jest oparty bezposrednio o aktywne oferty Allegro konta BookLoft.
 
@@ -90,9 +90,11 @@ Zasady:
 - strona glowna startuje od 50 najnowszych aktywnych ofert i automatycznie dociaga kolejne paczki po 50 podczas scrollowania,
 - strona glowna jest katalogiem bez sekcji `O nas`; linki informacyjne sa dyskretne i prowadza do `/o-nas` oraz `/informacje-prawne`,
 - gorny obszar strony glownej ma loftowy banner graficzny z logo i haslem `Przestrzen pelna ksiazek`; na waskich ekranach banner jest nizszy, szerszy i bardziej dopasowany do szerokosci ekranu,
+- tlo strony i panele uzywaja subtelnej papierowej tekstury bez pionowych linii ani ciezkich dekoracji,
 - lista ofert pokazuje dwie karty w rzedzie rowniez na bardzo waskich ekranach mobilnych,
 - pelny katalog mozna przeszukiwac po tytule, SKU i kategorii,
-- karty listingu pokazuja zdjecie, kategorie, tytul, cene i link `Zobacz`,
+- karty listingu pokazuja zdjecie, kategorie, tytul, cene i link `Zobacz`; okladki maja delikatne papierowe passe-partout i subtelny hover na desktopie,
+- katalog co pewien dystans scrollowania wplata niskie notki `Standard BookLoft` / `Drugi obieg`, ktore porzadkuja scroll bez robienia landing page'a,
 - pole wyszukiwania uzywa tekstu pomocniczego `Sprawdz czy mamy to czego szukasz ...` bez osobnego widocznego naglowka `Szukaj`,
 - strona oferty pokazuje przycisk `Kup na Allegro`, pasek zalet BookLoft, galerie ze strzalkami bez tla i przewijaniem swipem, lekki podglad zdjec z przewijaniem swipem, zoomem kolkiem myszy i przesuwaniem po powiekszeniu oraz stopke `O nas`,
 - favicon i ikona Apple Touch korzystaja z monogramu `B` z transparentnymi rogami,
@@ -136,7 +138,7 @@ Standard:
 
 1. zmiana lokalna,
 2. `git push`,
-3. na Hetznerze: `cd /home/bookloftpl && git fetch && git switch ver-1.10 && git pull --ff-only`,
+3. na Hetznerze: `cd /home/bookloftpl && git fetch && git switch ver-1.11 && git pull --ff-only`,
 4. uzupelnienie ENV Allegro w `/etc/bookloft-shop/bookloft-shop.env`,
 5. `npm ci --omit=dev`,
 6. restart uslugi sklepu,

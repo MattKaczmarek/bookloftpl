@@ -1,5 +1,17 @@
 const INITIAL_LIMIT = 50;
 const PAGE_SIZE = 50;
+const SHELF_NOTES = [
+  {
+    label: "Standard BookLoft",
+    text: "Każdy egzemplarz fotografujemy i opisujemy tak, żeby było jasne, co dokładnie trafia do kolejnego czytelnika.",
+    aside: "zdjęcia + opis stanu"
+  },
+  {
+    label: "Drugi obieg",
+    text: "Książki z charakterem dostają kolejną drogę, a Ty wybierasz tytuł z realnych zdjęć konkretnego egzemplarza.",
+    aside: "mniej marnowania"
+  }
+];
 
 const state = {
   products: [],
@@ -133,7 +145,11 @@ function renderProducts() {
   const fragment = document.createDocumentFragment();
 
   for (const [index, product] of next.entries()) {
-    fragment.appendChild(renderProduct(product, state.rendered + index));
+    const absoluteIndex = state.rendered + index;
+    fragment.appendChild(renderProduct(product, absoluteIndex));
+    if (shouldRenderShelfNote(absoluteIndex, products.length)) {
+      fragment.appendChild(renderShelfNote(absoluteIndex));
+    }
   }
 
   els.grid.appendChild(fragment);
@@ -221,6 +237,27 @@ function renderProduct(product, index = 0) {
   }
 
   return card;
+}
+
+function shouldRenderShelfNote(index, total) {
+  const position = index + 1;
+  if (total < 14) return false;
+  return position === 8 || position === 32 || (position > 64 && position % 72 === 0);
+}
+
+function renderShelfNote(index) {
+  const note = SHELF_NOTES[Math.floor(index / 24) % SHELF_NOTES.length];
+  const article = document.createElement("article");
+  article.className = "shelf-note";
+  article.setAttribute("aria-label", note.label);
+  article.innerHTML = `
+    <div>
+      <small>${escapeHtml(note.label)}</small>
+      <p>${escapeHtml(note.text)}</p>
+    </div>
+    <span>${escapeHtml(note.aside)}</span>
+  `;
+  return article;
 }
 
 function syncCategoryButtons() {

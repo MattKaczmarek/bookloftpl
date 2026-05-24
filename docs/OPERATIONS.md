@@ -1,8 +1,8 @@
 # Operacje BookLoft sklep
 
 Stan dokumentu: `2026-05-24`.
-Wersja sklepu: `1.10.2`.
-Branch wersji: `ver-1.10`.
+Wersja sklepu: `1.11.0`.
+Branch wersji: `ver-1.11`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
 
@@ -76,7 +76,7 @@ Jesli token wygasnie albo zostanie cofniety, w panelu pojawi sie blad i trzeba p
 ```bash
 cd /home/bookloftpl
 git fetch
-git switch ver-1.10
+git switch ver-1.11
 git pull --ff-only
 npm ci --omit=dev
 systemctl restart bookloft-shop.service
@@ -116,7 +116,9 @@ Oczekiwane publicznie, dopoki katalog jest za haslem:
 - ekran logowania pokazuje komunikat `Strona w renowacji`,
 - po zalogowaniu strona glowna pokazuje nowosci i katalog, a kolejne oferty dociagaja sie automatycznie podczas scrollowania,
 - gorny banner strony glownej uzywa statycznego assetu `public/assets/img/loft-hero.jpg`; na waskich ekranach ma szerszy i nizszy layout z logo dopasowanym do mobilnego kadru,
+- tlo strony ma subtelna papierowa teksture bez pionowych linii; karty i panele maja lekka fakture oraz oprawe okladek,
 - lista ofert na mobile zachowuje dwie karty w rzedzie rowniez na ekranach okolo 320 px szerokosci,
+- katalog moze wyswietlac pelnoszerokie notki `Standard BookLoft` / `Drugi obieg` miedzy ofertami,
 - pole wyszukiwania pokazuje tekst pomocniczy w samym polu zamiast widocznego naglowka `Szukaj`,
 - strona produktu ma galerie z subtelnymi strzalkami bez tla, przewijanie zdjec swipem, lekki podglad zdjec po kliknieciu, swipe w podgladzie, zoom kolkiem myszy, przesuwanie zdjecia lewym przyciskiem po powiekszeniu oraz obsluge `ArrowLeft`, `ArrowRight` i `Escape` w otwartym podgladzie,
 - strona glowna linkuje subtelnie do `/o-nas` oraz `/informacje-prawne`, ale nie wyswietla sekcji `O nas`,
@@ -139,6 +141,6 @@ Prawidlowe branche repo:
 - `ver-1.07`,
 - `ver-1.08`,
 - `ver-1.09`,
-- `ver-1.10`.
+- `ver-1.11`.
 
 Robocze branche z prefiksem `codex/` nie sa linia wersji sklepu i po przeniesieniu zmian do aktualnego brancha `ver-*` powinny byc usuniete lokalnie oraz z GitHuba.
