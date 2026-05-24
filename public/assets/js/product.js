@@ -116,6 +116,7 @@ function initProductGallery(images, productName) {
   const previousButton = page.querySelector("[data-gallery-prev]");
   const nextButton = page.querySelector("[data-gallery-next]");
   const openButton = page.querySelector("[data-gallery-open]");
+  const mainStage = page.querySelector(".gallery-main");
 
   function setImage(nextIndex) {
     currentIndex = wrapImageIndex(nextIndex, images.length);
@@ -136,6 +137,10 @@ function initProductGallery(images, productName) {
   previousButton?.addEventListener("click", () => setImage(currentIndex - 1));
   nextButton?.addEventListener("click", () => setImage(currentIndex + 1));
   openButton?.addEventListener("click", () => openImageLightbox(images, currentIndex, productName));
+  attachSwipe(mainStage, {
+    onNext: () => setImage(currentIndex + 1),
+    onPrevious: () => setImage(currentIndex - 1)
+  });
   setImage(0);
 }
 
@@ -147,6 +152,7 @@ function openImageLightbox(images, startIndex, productName) {
   let panX = 0;
   let panY = 0;
   let panStart = null;
+  let didPan = false;
   const dialog = document.createElement("div");
   dialog.className = "image-lightbox";
   dialog.tabIndex = -1;
@@ -226,6 +232,9 @@ function openImageLightbox(images, startIndex, productName) {
     event.preventDefault();
     panX = panStart.panX + event.clientX - panStart.x;
     panY = panStart.panY + event.clientY - panStart.y;
+    if (Math.abs(event.clientX - panStart.x) > 6 || Math.abs(event.clientY - panStart.y) > 6) {
+      didPan = true;
+    }
     clampPan();
     dialog.style.setProperty("--lightbox-pan-x", `${panX.toFixed(1)}px`);
     dialog.style.setProperty("--lightbox-pan-y", `${panY.toFixed(1)}px`);
@@ -257,12 +266,22 @@ function openImageLightbox(images, startIndex, productName) {
   dialog.querySelector("[data-lightbox-prev]")?.addEventListener("click", () => setLightboxImage(currentIndex - 1));
   dialog.querySelector("[data-lightbox-next]")?.addEventListener("click", () => setLightboxImage(currentIndex + 1));
   stage?.addEventListener("wheel", zoomWithWheel, { passive: false });
+  attachSwipe(stage, {
+    onNext: () => setLightboxImage(currentIndex + 1),
+    onPrevious: () => setLightboxImage(currentIndex - 1),
+    shouldHandle: () => zoomScale <= 1.01
+  });
   image?.addEventListener("pointerdown", startPan);
   image?.addEventListener("pointermove", movePan);
   image?.addEventListener("pointerup", stopPan);
   image?.addEventListener("pointercancel", stopPan);
   image?.addEventListener("lostpointercapture", stopPan);
   dialog.addEventListener("click", (event) => {
+    if (didPan) {
+      didPan = false;
+      event.preventDefault();
+      return;
+    }
     if (event.target === dialog) close();
   });
   document.addEventListener("keydown", onKeyDown);
@@ -278,6 +297,136 @@ function wrapImageIndex(index, length) {
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
+}
+
+function attachSwipe(element, { onNext, onPrevious, shouldHandle = () => true }) {
+  if (!element || !onNext || !onPrevious) return;
+
+  let start = null;
+  let suppressClick = false;
+  let activeSource = null;
+  const minDistance = 48;
+  const maxVerticalDrift = 72;
+  const intentDistance = 12;
+
+  function beginSwipe(event, source, pointerId, clientX, clientY) {
+    if (activeSource && activeSource !== source) return;
+    if (!shouldHandle(event)) {
+      start = null;
+      activeSource = null;
+      return;
+    }
+    activeSource = source;
+    start = {
+      pointerId,
+      x: clientX,
+      y: clientY,
+      swiping: false
+    };
+  }
+
+  function moveSwipe(event, source, pointerId, clientX, clientY) {
+    if (!start || activeSource !== source || pointerId !== start.pointerId || !shouldHandle(event)) return;
+
+    const deltaX = clientX - start.x;
+    const deltaY = clientY - start.y;
+    if (Math.abs(deltaX) > intentDistance && Math.abs(deltaX) > Math.abs(deltaY) * 1.15) {
+      start.swiping = true;
+    }
+    if (start.swiping) {
+      event.preventDefault();
+    }
+  }
+
+  function finishSwipe(event, source, pointerId, clientX, clientY) {
+    if (!start || activeSource !== source || pointerId !== start.pointerId || !shouldHandle(event)) {
+      start = null;
+      activeSource = null;
+      return;
+    }
+
+    const deltaX = clientX - start.x;
+    const deltaY = clientY - start.y;
+    const wasSwipe = Math.abs(deltaX) >= minDistance && Math.abs(deltaY) <= maxVerticalDrift;
+    start = null;
+    activeSource = null;
+
+    if (!wasSwipe) return;
+
+    suppressClick = true;
+    window.setTimeout(() => {
+      suppressClick = false;
+    }, 180);
+    event.preventDefault();
+    event.stopPropagation();
+    if (deltaX < 0) onNext();
+    else onPrevious();
+  }
+
+  element.addEventListener("pointerdown", (event) => {
+    if (event.button !== 0) {
+      start = null;
+      activeSource = null;
+      return;
+    }
+    beginSwipe(event, "pointer", event.pointerId, event.clientX, event.clientY);
+    if (!start) return;
+    element.setPointerCapture?.(event.pointerId);
+  });
+
+  element.addEventListener("pointermove", (event) => {
+    moveSwipe(event, "pointer", event.pointerId, event.clientX, event.clientY);
+  });
+
+  element.addEventListener("pointerup", (event) => {
+    if (start && event.pointerId === start.pointerId) {
+      element.releasePointerCapture?.(event.pointerId);
+    }
+    finishSwipe(event, "pointer", event.pointerId, event.clientX, event.clientY);
+  });
+
+  element.addEventListener("pointercancel", () => {
+    start = null;
+    activeSource = null;
+  });
+
+  element.addEventListener("touchstart", (event) => {
+    if (activeSource && activeSource !== "touch") return;
+    if (event.touches.length !== 1) {
+      start = null;
+      activeSource = null;
+      return;
+    }
+    const touch = event.touches[0];
+    beginSwipe(event, "touch", touch.identifier, touch.clientX, touch.clientY);
+  }, { passive: true });
+
+  element.addEventListener("touchmove", (event) => {
+    if (!event.touches.length) return;
+    const touch = event.touches[0];
+    moveSwipe(event, "touch", touch.identifier, touch.clientX, touch.clientY);
+  }, { passive: false });
+
+  element.addEventListener("touchend", (event) => {
+    const touch = [...event.changedTouches].find((item) => start && item.identifier === start.pointerId);
+    if (!touch) {
+      start = null;
+      activeSource = null;
+      return;
+    }
+    finishSwipe(event, "touch", touch.identifier, touch.clientX, touch.clientY);
+  }, { passive: false });
+
+  element.addEventListener("touchcancel", () => {
+    start = null;
+    activeSource = null;
+  });
+
+  element.addEventListener("click", (event) => {
+    if (!suppressClick) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }, true);
 }
 
 async function renderProductCategories(activeCategoryId) {

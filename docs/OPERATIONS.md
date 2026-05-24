@@ -1,7 +1,7 @@
 # Operacje BookLoft sklep
 
-Stan dokumentu: `2026-05-23`.
-Wersja sklepu: `1.10.1`.
+Stan dokumentu: `2026-05-24`.
+Wersja sklepu: `1.10.2`.
 Branch wersji: `ver-1.10`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
@@ -118,7 +118,7 @@ Oczekiwane publicznie, dopoki katalog jest za haslem:
 - gorny banner strony glownej uzywa statycznego assetu `public/assets/img/loft-hero.jpg`; na waskich ekranach ma szerszy i nizszy layout z logo dopasowanym do mobilnego kadru,
 - lista ofert na mobile zachowuje dwie karty w rzedzie rowniez na ekranach okolo 320 px szerokosci,
 - pole wyszukiwania pokazuje tekst pomocniczy w samym polu zamiast widocznego naglowka `Szukaj`,
-- strona produktu ma galerie z subtelnymi strzalkami bez tla, lekki podglad zdjec po kliknieciu, zoom kolkiem myszy, przesuwanie zdjecia lewym przyciskiem po powiekszeniu oraz obsluge `ArrowLeft`, `ArrowRight` i `Escape` w otwartym podgladzie,
+- strona produktu ma galerie z subtelnymi strzalkami bez tla, przewijanie zdjec swipem, lekki podglad zdjec po kliknieciu, swipe w podgladzie, zoom kolkiem myszy, przesuwanie zdjecia lewym przyciskiem po powiekszeniu oraz obsluge `ArrowLeft`, `ArrowRight` i `Escape` w otwartym podgladzie,
 - strona glowna linkuje subtelnie do `/o-nas` oraz `/informacje-prawne`, ale nie wyswietla sekcji `O nas`,
 - strona produktu wyswietla stopke `O nas` pod sekcja powiazanych ofert,
 - `/panel` pokazuje status polaczenia Allegro,

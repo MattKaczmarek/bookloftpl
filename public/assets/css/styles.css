@@ -1115,6 +1115,7 @@ h2 {
 .gallery-main {
   position: relative;
   display: grid;
+  touch-action: pan-y;
 }
 
 .detail-main-trigger {
