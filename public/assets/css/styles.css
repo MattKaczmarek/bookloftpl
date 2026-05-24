@@ -39,9 +39,7 @@ body {
   min-height: 100%;
   margin: 0;
   color: var(--ink);
-  background:
-    repeating-linear-gradient(90deg, rgba(31, 111, 85, 0.016) 0 1px, transparent 1px 88px),
-    linear-gradient(180deg, #fbf6ed 0%, #f6fbf3 48%, #fffdf8 100%);
+  background: linear-gradient(180deg, #fbf6ed 0%, #f6fbf3 48%, #fffdf8 100%);
   line-height: 1.35;
 }
 
@@ -220,9 +218,7 @@ a {
   display: grid;
   place-items: center;
   padding: 28px;
-  background:
-    repeating-linear-gradient(90deg, rgba(31, 111, 85, 0.018) 0 1px, transparent 1px 92px),
-    linear-gradient(180deg, #fffdf8 0%, #fbf6ed 54%, #f6fbf3 100%);
+  background: linear-gradient(180deg, #fffdf8 0%, #fbf6ed 54%, #f6fbf3 100%);
   opacity: 0;
   pointer-events: none;
   transition: opacity 620ms ease;
@@ -1168,11 +1164,11 @@ h2 {
 }
 
 .gallery-arrow-prev {
-  left: 12px;
+  left: 4px;
 }
 
 .gallery-arrow-next {
-  right: 12px;
+  right: 4px;
 }
 
 .gallery-arrow:hover,
@@ -1284,11 +1280,11 @@ h2 {
 }
 
 .lightbox-arrow-prev {
-  left: clamp(12px, 3vw, 34px);
+  left: clamp(6px, 1.4vw, 18px);
 }
 
 .lightbox-arrow-next {
-  right: clamp(12px, 3vw, 34px);
+  right: clamp(6px, 1.4vw, 18px);
 }
 
 .lightbox-close {
@@ -2062,17 +2058,25 @@ h2 {
 
   .gallery-arrow,
   .lightbox-arrow {
-    width: 38px;
+    width: 34px;
     height: 38px;
     font-size: 1.78rem;
   }
 
   .gallery-arrow-prev {
-    left: 8px;
+    left: 1px;
   }
 
   .gallery-arrow-next {
-    right: 8px;
+    right: 1px;
+  }
+
+  .lightbox-arrow-prev {
+    left: 4px;
+  }
+
+  .lightbox-arrow-next {
+    right: 4px;
   }
 
   .lightbox-stage {
@@ -2096,11 +2100,37 @@ h2 {
 
 @media (max-width: 380px) {
   .product-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
   }
 
   .product-media {
-    aspect-ratio: 1 / 1.08;
+    aspect-ratio: 4 / 5.2;
+  }
+
+  .product-body {
+    gap: 6px;
+    padding: 8px;
+  }
+
+  .product-category {
+    padding: 3px 6px;
+    font-size: 0.62rem;
+  }
+
+  .product-card h2 {
+    min-height: 3.64em;
+    font-size: 0.8rem;
+    line-height: 1.18;
+  }
+
+  .price-row strong {
+    font-size: 0.96rem;
+  }
+
+  .details-action {
+    min-height: 34px;
+    font-size: 0.82rem;
   }
 }
 
