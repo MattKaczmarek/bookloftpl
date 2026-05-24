@@ -1,7 +1,7 @@
 # BookLoft sklep
 
-Wersja sklepu: `1.09.1`.
-Branch tej wersji: `ver-1.09`.
+Wersja sklepu: `1.10.0`.
+Branch tej wersji: `ver-1.10`.
 
 Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://bookloft.pl/`. Katalog jest oparty bezposrednio o aktywne oferty Allegro konta BookLoft.
 
@@ -89,7 +89,7 @@ Zasady:
 
 - strona glowna startuje od 50 najnowszych aktywnych ofert i automatycznie dociaga kolejne paczki po 50 podczas scrollowania,
 - strona glowna jest katalogiem bez sekcji `O nas`; linki informacyjne sa dyskretne i prowadza do `/o-nas` oraz `/informacje-prawne`,
-- gorny obszar strony glownej ma loftowy banner graficzny z logo i haslem `Przestrzen pelna ksiazek`; na waskich ekranach banner jest zwezony, z mniejszym logo przesunietym w lewo,
+- gorny obszar strony glownej ma loftowy banner graficzny z logo i haslem `Przestrzen pelna ksiazek`; na waskich ekranach banner jest nizszy, szerszy i bardziej dopasowany do szerokosci ekranu,
 - pelny katalog mozna przeszukiwac po tytule, SKU i kategorii,
 - karty listingu pokazuja zdjecie, kategorie, tytul, cene i link `Zobacz`,
 - pole wyszukiwania uzywa tekstu pomocniczego `Sprawdz czy mamy to czego szukasz ...` bez osobnego widocznego naglowka `Szukaj`,
@@ -135,7 +135,7 @@ Standard:
 
 1. zmiana lokalna,
 2. `git push`,
-3. na Hetznerze: `cd /home/bookloftpl && git fetch && git switch ver-1.09 && git pull --ff-only`,
+3. na Hetznerze: `cd /home/bookloftpl && git fetch && git switch ver-1.10 && git pull --ff-only`,
 4. uzupelnienie ENV Allegro w `/etc/bookloft-shop/bookloft-shop.env`,
 5. `npm ci --omit=dev`,
 6. restart uslugi sklepu,

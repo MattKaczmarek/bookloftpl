@@ -695,6 +695,8 @@ h2 {
 }
 
 .product-media img {
+  position: absolute;
+  inset: 11px;
   width: calc(100% - 22px);
   height: calc(100% - 22px);
   object-fit: contain;
@@ -1903,62 +1905,84 @@ h2 {
   .shop-layout,
   .product-page,
   .panel-layout {
-    padding-top: 20px;
-    padding-right: 16px;
-    padding-left: 16px;
+    padding-top: 12px;
+    padding-right: 12px;
+    padding-left: 12px;
   }
 
   .product-visual-shell {
-    padding: 20px 16px 0;
+    padding: 12px 12px 0;
   }
 
   .shop-brand-hero {
-    width: min(92%, 330px);
-    min-height: 176px;
+    width: 100%;
+    min-height: 0;
+    height: clamp(126px, 38vw, 148px);
+    margin: 0 0 16px;
     margin-right: auto;
     background:
-      linear-gradient(90deg, rgba(255, 250, 241, 0.99) 0%, rgba(255, 250, 241, 0.94) 58%, rgba(255, 250, 241, 0.2) 100%),
+      linear-gradient(90deg, rgba(255, 250, 241, 0.99) 0%, rgba(255, 250, 241, 0.94) 52%, rgba(255, 250, 241, 0.24) 78%, rgba(255, 250, 241, 0.04) 100%),
       url("/assets/img/loft-hero.jpg") 72% center / cover no-repeat;
   }
 
   .hero-brand-copy {
-    --hero-logo-width: min(52vw, 198px);
-    width: 74%;
-    padding: 12px 10px;
+    --hero-logo-width: clamp(170px, 50vw, 206px);
+    width: min(68%, 250px);
+    gap: 2px;
+    padding: 10px 10px 8px;
     justify-items: start;
   }
 
   .hero-brand-copy p {
-    font-size: clamp(0.82rem, 3.25vw, 0.94rem);
+    font-size: clamp(0.74rem, 2.95vw, 0.88rem);
+    line-height: 0.98;
   }
 
   .search-box input {
+    min-height: 44px;
     padding-right: 11px;
     padding-left: 11px;
     font-size: 0.94rem;
   }
 
+  .shop-toolbar {
+    gap: 14px;
+    margin-bottom: 12px;
+  }
+
+  .eyebrow {
+    margin-bottom: 5px;
+    font-size: 0.74rem;
+  }
+
   .shop-toolbar h1 {
-    font-size: 1.86rem;
+    font-size: 1.72rem;
     line-height: 1.08;
   }
 
   .hero-copy {
-    margin-top: 7px;
-    font-size: 0.94rem;
-    line-height: 1.45;
+    margin-top: 6px;
+    font-size: 0.92rem;
+    line-height: 1.4;
   }
 
   .shop-hero-side {
     grid-template-columns: 1fr;
-    gap: 10px;
+    gap: 8px;
+  }
+
+  .shop-side-links {
+    gap: 8px;
   }
 
   .shop-side-links a,
   .page-top-links a,
   .product-about-links a {
     flex: 1 1 auto;
+    min-height: 34px;
+    padding: 8px 10px;
     justify-content: center;
+    box-shadow: none;
     text-align: center;
   }
 
@@ -1977,12 +2001,14 @@ h2 {
   }
 
   .product-media {
-    aspect-ratio: 1 / 1.2;
+    aspect-ratio: 4 / 5.15;
   }
 
   .product-media img {
-    width: calc(100% - 14px);
-    height: calc(100% - 14px);
+    inset: 8px 8px 10px;
+    width: calc(100% - 16px);
+    height: calc(100% - 18px);
+    object-position: center center;
   }
 
   .product-body {
@@ -2068,9 +2094,13 @@ h2 {
   }
 }
 
-@media (max-width: 360px) {
+@media (max-width: 380px) {
   .product-grid {
     grid-template-columns: 1fr;
+  }
+
+  .product-media {
+    aspect-ratio: 1 / 1.08;
   }
 }
 
