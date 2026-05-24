@@ -152,6 +152,7 @@ function openImageLightbox(images, startIndex, productName) {
   let panX = 0;
   let panY = 0;
   let panStart = null;
+  let pinchStart = null;
   let didPan = false;
   const dialog = document.createElement("div");
   dialog.className = "image-lightbox";
@@ -213,8 +214,48 @@ function openImageLightbox(images, startIndex, productName) {
     updateZoom();
   }
 
+  function startPinch(event) {
+    if (!stage || event.touches.length !== 2) return;
+    event.preventDefault();
+    const center = touchCenter(event.touches, stage);
+    pinchStart = {
+      distance: touchDistance(event.touches),
+      centerX: center.x,
+      centerY: center.y,
+      zoomScale,
+      panX,
+      panY
+    };
+    panStart = null;
+    didPan = true;
+    dialog.classList.remove("is-panning");
+  }
+
+  function movePinch(event) {
+    if (!pinchStart || event.touches.length !== 2) return;
+    event.preventDefault();
+    const center = touchCenter(event.touches, stage);
+    const distance = touchDistance(event.touches);
+    const ratio = distance / Math.max(1, pinchStart.distance);
+    zoomScale = clamp(pinchStart.zoomScale * ratio, 1, 2.6);
+    panX = pinchStart.panX + center.x - pinchStart.centerX;
+    panY = pinchStart.panY + center.y - pinchStart.centerY;
+    didPan = true;
+    updateZoom();
+  }
+
+  function stopPinch(event) {
+    if (!pinchStart) return;
+    if (event.touches.length === 2) {
+      startPinch(event);
+      return;
+    }
+    pinchStart = null;
+    updateZoom();
+  }
+
   function startPan(event) {
-    if (zoomScale <= 1.01 || event.button !== 0) return;
+    if (pinchStart || zoomScale <= 1.01 || event.button !== 0) return;
     event.preventDefault();
     panStart = {
       pointerId: event.pointerId,
@@ -266,6 +307,10 @@ function openImageLightbox(images, startIndex, productName) {
   dialog.querySelector("[data-lightbox-prev]")?.addEventListener("click", () => setLightboxImage(currentIndex - 1));
   dialog.querySelector("[data-lightbox-next]")?.addEventListener("click", () => setLightboxImage(currentIndex + 1));
   stage?.addEventListener("wheel", zoomWithWheel, { passive: false });
+  stage?.addEventListener("touchstart", startPinch, { passive: false });
+  stage?.addEventListener("touchmove", movePinch, { passive: false });
+  stage?.addEventListener("touchend", stopPinch, { passive: false });
+  stage?.addEventListener("touchcancel", stopPinch, { passive: false });
   attachSwipe(stage, {
     onNext: () => setLightboxImage(currentIndex + 1),
     onPrevious: () => setLightboxImage(currentIndex - 1),
@@ -297,6 +342,20 @@ function wrapImageIndex(index, length) {
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
+}
+
+function touchDistance(touches) {
+  const first = touches[0];
+  const second = touches[1];
+  return Math.hypot(second.clientX - first.clientX, second.clientY - first.clientY);
+}
+
+function touchCenter(touches, element) {
+  const rect = element.getBoundingClientRect();
+  return {
+    x: (touches[0].clientX + touches[1].clientX) / 2 - rect.left - rect.width / 2,
+    y: (touches[0].clientY + touches[1].clientY) / 2 - rect.top - rect.height / 2
+  };
 }
 
 function attachSwipe(element, { onNext, onPrevious, shouldHandle = () => true }) {
