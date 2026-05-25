@@ -1,7 +1,7 @@
 # Operacje BookLoft sklep
 
 Stan dokumentu: `2026-05-24`.
-Wersja sklepu: `1.11.3`.
+Wersja sklepu: `1.11.4`.
 Branch wersji: `ver-1.11`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.

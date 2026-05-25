@@ -25,7 +25,7 @@
     applyConsent("granted");
   } else if (storedConsent === "denied") {
     applyConsent("denied");
-  } else if (storedConsent !== "denied") {
+  } else if (storedConsent !== "denied" && !shouldSuppressConsentBanner()) {
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", renderConsentBanner, { once: true });
     } else {
@@ -94,6 +94,7 @@
   }
 
   function renderConsentBanner() {
+    if (shouldSuppressConsentBanner()) return;
     const existing = document.querySelector(".cookie-consent");
     if (existing) {
       existing.hidden = false;
@@ -124,6 +125,10 @@
     });
 
     document.body.appendChild(banner);
+  }
+
+  function shouldSuppressConsentBanner() {
+    return window.location.pathname === "/login";
   }
 
   function readConsent() {

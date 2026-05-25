@@ -424,6 +424,10 @@ function attachSwipe(element, { onNext, onPrevious, shouldHandle = () => true })
   const maxVerticalDrift = 72;
   const intentDistance = 12;
 
+  function isInteractiveTarget(target) {
+    return Boolean(target?.closest?.("button, a, input, textarea, select, label"));
+  }
+
   function beginSwipe(event, source, pointerId, clientX, clientY) {
     if (activeSource && activeSource !== source) return;
     if (!shouldHandle(event)) {
@@ -480,6 +484,11 @@ function attachSwipe(element, { onNext, onPrevious, shouldHandle = () => true })
 
   element.addEventListener("pointerdown", (event) => {
     if (event.pointerType === "touch") return;
+    if (isInteractiveTarget(event.target)) {
+      start = null;
+      activeSource = null;
+      return;
+    }
     if (event.button !== 0) {
       start = null;
       activeSource = null;
