@@ -14,7 +14,10 @@ export function createPageRouter(config, storeCache) {
   router.get(
     "/",
     asyncHandler(async (req, res) => {
-      const storefront = await storeCache.getStorefront();
+      const [storefront, newestProducts] = await Promise.all([
+        storeCache.getStorefront(),
+        storeCache.getNewestProducts(SSR_PRODUCT_LIMIT)
+      ]);
       const query = String(req.query.q || "").trim();
       const categoryId = String(req.query.category || "").trim();
 
@@ -27,7 +30,11 @@ export function createPageRouter(config, storeCache) {
       }
 
       const category = categoryId ? findCategoryById(storefront.categories, categoryId) : null;
-      res.type("html").send(renderStorePage(config, storefront, { category, query }));
+      res.type("html").send(renderStorePage(config, storefront, {
+        category,
+        query,
+        newestProducts: !category && !query ? newestProducts : []
+      }));
     })
   );
 
@@ -123,9 +130,13 @@ export function createPageRouter(config, storeCache) {
   return router;
 }
 
-function renderStorePage(config, storefront, { category = null, query = "" } = {}) {
+function renderStorePage(config, storefront, { category = null, query = "", newestProducts = [] } = {}) {
   const normalizedQuery = query.trim().toLowerCase();
-  const products = listingProducts(storefront.products, { categoryId: category?.id || "", query: normalizedQuery });
+  const products = listingProducts(storefront.products, {
+    categoryId: category?.id || "",
+    query: normalizedQuery,
+    newestProducts
+  });
   const visibleProducts = products.slice(0, SSR_PRODUCT_LIMIT);
   const pageMeta = storePageMeta(config, { category, query: normalizedQuery, productCount: products.length });
   const categoryOptions = visibleCategories(storefront.categories);
@@ -609,7 +620,7 @@ function storePageMeta(config, { category, query, productCount }) {
       robots: "noindex,follow,max-image-preview:large",
       eyebrow: category ? category.displayName || category.name : "Wyszukiwanie",
       h1: "Wyniki wyszukiwania w BookLoft",
-      copy: `${productCount} wyników dla wpisanej frazy. Jeśli nie widzisz szukanej książki, spróbuj krótszego zapytania albo nazwiska autora.`,
+      copy: "Dopasowane oferty z katalogu BookLoft. Jeśli nie widzisz szukanej książki, spróbuj krótszej frazy albo nazwiska autora.",
       listingTitle: `Wyniki: ${query}`
     };
   }
@@ -623,7 +634,7 @@ function storePageMeta(config, { category, query, productCount }) {
       robots: "index,follow,max-image-preview:large",
       eyebrow: "Kategoria",
       h1: `${name} w BookLoft`,
-      copy: `Przeglądaj ${productCount} ofert z tej kategorii. Każda oferta pokazuje konkretny egzemplarz i jego najważniejsze szczegóły.`,
+      copy: "Przeglądaj książki z tej kategorii. Każda oferta pokazuje konkretny egzemplarz i jego najważniejsze szczegóły.",
       listingTitle: name,
       categoryNote: categorySeoNote(category)
     };
@@ -878,7 +889,7 @@ function isGenericUsedCondition(value) {
   return key === "uzywany" || key === "uzywana" || key === "uzywane";
 }
 
-function listingProducts(products, { categoryId = "", query = "" } = {}) {
+function listingProducts(products, { categoryId = "", query = "", newestProducts = [] } = {}) {
   const normalizedQuery = query.trim().toLowerCase();
   const filtered = products.filter((product) => {
     const matchesQuery = !normalizedQuery || String(product.searchText || "").includes(normalizedQuery);
@@ -888,6 +899,18 @@ function listingProducts(products, { categoryId = "", query = "" } = {}) {
   });
 
   if (categoryId || normalizedQuery) return filtered;
+
+  if (newestProducts.length) {
+    const newestIds = new Set(newestProducts.map((product) => String(product.id)));
+    const remaining = filtered
+      .filter((product) => !newestIds.has(String(product.id)))
+      .sort((a, b) => {
+        const dateDiff = productFreshnessTime(b) - productFreshnessTime(a);
+        if (dateDiff) return dateDiff;
+        return sortProductIdDesc(a.id, b.id);
+      });
+    return [...newestProducts, ...remaining];
+  }
 
   return [...filtered].sort((a, b) => {
     const dateDiff = productFreshnessTime(b) - productFreshnessTime(a);

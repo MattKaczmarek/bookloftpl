@@ -1150,6 +1150,11 @@ h2 {
   background-size: 46px 46px, auto;
 }
 
+.empty-state[hidden],
+.load-sentinel[hidden] {
+  display: none !important;
+}
+
 .empty-state h2 {
   margin: 0;
   font-family: var(--font-heading);
