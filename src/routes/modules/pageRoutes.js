@@ -633,10 +633,9 @@ function storePageMeta(config, { category, query, productCount }) {
       canonical: absoluteUrl(config, categoryPath(category)),
       robots: "index,follow,max-image-preview:large",
       eyebrow: "Kategoria",
-      h1: `${name} w BookLoft`,
-      copy: "Przeglądaj książki z tej kategorii. Każda oferta pokazuje konkretny egzemplarz i jego najważniejsze szczegóły.",
-      listingTitle: name,
-      categoryNote: categorySeoNote(category)
+      h1: name,
+      copy: categoryIntroCopy(category),
+      listingTitle: "Dostępne oferty"
     };
   }
 
@@ -862,11 +861,11 @@ function selectedProductFeatures(features, limit = 8) {
   return selected;
 }
 
-function categorySeoNote(category) {
+function categoryIntroCopy(category) {
   const name = category.displayName || category.name || "Książki";
   const note = CATEGORY_SEO_NOTES.get(normalizeCategoryName(name)) ||
     `Kategoria ${name} zawiera używane książki z realnymi zdjęciami egzemplarzy i opisem stanu przed zakupem.`;
-  return `${note} Każda karta prowadzi do szczegółów oferty i zakupu na Allegro.`;
+  return note;
 }
 
 function productImageAlt(product) {

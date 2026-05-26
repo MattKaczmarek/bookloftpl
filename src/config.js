@@ -49,7 +49,7 @@ export function appPath(basePath, relativePath = "") {
 const resolvedBasePath = normalizeBasePath(env("BOOKLOFT_BASE_PATH") || "/");
 
 export const config = {
-  version: "1.13.6",
+  version: "1.13.7",
   appRoot,
   publicDir: path.join(appRoot, "public"),
   port: intEnv("BOOKLOFT_PORT", 3205),

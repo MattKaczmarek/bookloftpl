@@ -401,10 +401,10 @@ function syncPageText(_count) {
   if (category) {
     const name = category.displayName || category.name || "Kategoria";
     setText(els.introEyebrow, "Kategoria");
-    setText(els.introTitle, `${name} w BookLoft`);
-    setText(els.introCopy, "Przeglądaj książki z tej kategorii. Każda oferta pokazuje konkretny egzemplarz i jego najważniejsze szczegóły.");
-    els.listingTitle.textContent = name;
-    setCategoryNote(categorySeoNote(category));
+    setText(els.introTitle, name);
+    setText(els.introCopy, categoryIntroCopy(category));
+    els.listingTitle.textContent = "Dostępne oferty";
+    setCategoryNote("");
     return;
   }
   setText(els.introEyebrow, "Nowości z regału");
@@ -430,11 +430,11 @@ function setCategoryNote(text) {
   els.categoryNote.style.display = text ? "" : "none";
 }
 
-function categorySeoNote(category) {
+function categoryIntroCopy(category) {
   const name = category.displayName || category.name || "Książki";
   const note = CATEGORY_SEO_NOTES.get(normalizeCategoryName(name)) ||
     `Kategoria ${name} zawiera używane książki z realnymi zdjęciami egzemplarzy i opisem stanu przed zakupem.`;
-  return `${note} Każda karta prowadzi do szczegółów oferty i zakupu na Allegro.`;
+  return note;
 }
 
 function setupInfiniteScroll() {
@@ -541,8 +541,19 @@ function sortProductIdDesc(a, b) {
 function setupBrandIntro() {
   const intro = document.querySelector("#brand-intro");
   if (!intro) return;
-
   const storageKey = "bookloft_intro_seen";
+
+  if (!isHomeIntroPage()) {
+    try {
+      window.sessionStorage.setItem(storageKey, "1");
+    } catch {
+      // sessionStorage may be unavailable in restricted webviews.
+    }
+    intro.hidden = true;
+    intro.classList.remove("is-visible", "is-ready", "is-hiding");
+    return;
+  }
+
   let shouldShow = true;
   try {
     shouldShow = window.sessionStorage.getItem(storageKey) !== "1";
@@ -573,6 +584,13 @@ function setupBrandIntro() {
       }, fadeFor);
     }, visibleFor);
   });
+}
+
+function isHomeIntroPage() {
+  const path = window.location.pathname.replace(/\/+$/, "") || "/";
+  if (path !== "/") return false;
+  const params = new URLSearchParams(window.location.search);
+  return !params.get("q") && !params.get("category");
 }
 
 function waitForIntroFont() {
