@@ -628,8 +628,8 @@ function storePageMeta(config, { category, query, productCount }) {
   if (category) {
     const name = category.displayName || category.name;
     return {
-      title: `${name} - używane książki | BookLoft`,
-      description: `${name} w BookLoft: używane książki z realnymi zdjęciami, rzetelnym opisem stanu i zakupem przez Allegro.`,
+      title: `${name} - używane produkty | BookLoft`,
+      description: `${name} w BookLoft: używane produkty z realnymi zdjęciami, rzetelnym opisem stanu i zakupem przez Allegro.`,
       canonical: absoluteUrl(config, categoryPath(category)),
       robots: "index,follow,max-image-preview:large",
       eyebrow: "Kategoria",
@@ -744,29 +744,6 @@ function breadcrumbJsonLd(items) {
   };
 }
 
-const CATEGORY_SEO_NOTES = new Map([
-  ["fantasy", "Fantasy w BookLoft to używane egzemplarze z realnymi zdjęciami: od klasycznych cykli po pojedyncze tomy do uzupełnienia domowej biblioteczki."],
-  ["kryminal", "Kryminały zbieramy tak, żeby łatwo było znaleźć sprawdzone serie, pojedyncze śledztwa i książki z wyraźnie opisanym stanem."],
-  ["komiksy", "Komiksy pokazujemy jako konkretne egzemplarze, dlatego zdjęcia i opis stanu są ważniejsze niż katalogowa okładka."],
-  ["dzieciece", "Książki dziecięce wybieramy z myślą o kolejnych czytelnikach: pokazujemy ślady używania, kompletność i najważniejsze detale egzemplarza."],
-  ["ksiazki dla mlodziezy", "Książki dla młodzieży obejmują serie, powieści przygodowe i tytuły do szkolnej lub domowej półki, zawsze opisane jako konkretny egzemplarz."],
-  ["mlodziezowe", "Książki młodzieżowe obejmują serie, powieści przygodowe i tytuły do szkolnej lub domowej półki, zawsze opisane jako konkretny egzemplarz."],
-  ["literatura piekna", "Literatura piękna w drugim obiegu to powieści, klasyka i współczesne tytuły, które mogą trafić do kolejnego czytelnika bez niedomówień co do stanu."],
-  ["filmy", "W tej kategorii znajdziesz wydania filmowe i okołofilmowe, opisane z naciskiem na stan konkretnego egzemplarza."],
-  ["poradniki", "Poradniki porządkujemy tak, żeby szybko sprawdzić temat, wydanie i stan książki przed przejściem do zakupu na Allegro."],
-  ["czasopisma", "Czasopisma i wydania kolekcjonerskie pokazujemy ze zdjęciami egzemplarza, bo kompletność i stan mają tu szczególne znaczenie."],
-  ["biografie", "Biografie w BookLoft to używane książki o ludziach, historii i twórczości, opisane z realnymi zdjęciami danego egzemplarza."],
-  ["obyczajowe", "Książki obyczajowe wybieramy z myślą o spokojnym przeglądaniu: tytuł, zdjęcia, cena i stan są widoczne przed zakupem."],
-  ["obyczajowe i przygodowe", "Książki obyczajowe i przygodowe w BookLoft to konkretne egzemplarze z realnymi zdjęciami i opisem stanu, od spokojnych powieści po lżejsze historie na kolejny wieczór."],
-  ["naukowe", "Książki naukowe i popularnonaukowe opisujemy konkretnie, z uwzględnieniem wydania, tematu i stanu egzemplarza."],
-  ["historia", "Historia w BookLoft obejmuje tytuły popularne, specjalistyczne i wspomnieniowe, zawsze prezentowane jako konkretny używany egzemplarz."],
-  ["reportaz", "Reportaże pokazujemy z realnymi zdjęciami i opisem stanu, żeby łatwo ocenić książkę przed zakupem na Allegro."],
-  ["kuchnia", "Książki kucharskie wymagają dobrego pokazania wnętrza i okładki, dlatego stawiamy na zdjęcia oraz jasny opis śladów używania."],
-  ["hobbystyczne", "Książki hobbystyczne i tematyczne opisujemy praktycznie: najważniejsze dane, stan egzemplarza i przejście do zakupu przez Allegro."],
-  ["gry", "Publikacje o grach i wydania kolekcjonerskie pokazujemy z realnymi zdjęciami, żeby łatwo ocenić stan konkretnego egzemplarza."],
-  ["planszowe", "Gry i publikacje planszowe prezentujemy z naciskiem na kompletność, zdjęcia i stan widoczny w ofercie."]
-]);
-
 const PRODUCT_SPEC_FIELDS = [
   { label: "Autor", keys: ["autor", "autorzy", "autorka"] },
   { label: "Wydawnictwo", keys: ["wydawnictwo", "producent"] },
@@ -862,10 +839,8 @@ function selectedProductFeatures(features, limit = 8) {
 }
 
 function categoryIntroCopy(category) {
-  const name = category.displayName || category.name || "Książki";
-  const note = CATEGORY_SEO_NOTES.get(normalizeCategoryName(name)) ||
-    `Kategoria ${name} zawiera używane książki z realnymi zdjęciami egzemplarzy i opisem stanu przed zakupem.`;
-  return note;
+  const name = category.displayName || category.name || "Kategoria";
+  return `Kategoria ${name} zawiera używane produkty z realnymi zdjęciami konkretnych egzemplarzy i opisem stanu przed zakupem.`;
 }
 
 function productImageAlt(product) {
