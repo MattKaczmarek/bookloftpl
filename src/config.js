@@ -1,4 +1,4 @@
-﻿import crypto from "node:crypto";
+import crypto from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -49,7 +49,7 @@ export function appPath(basePath, relativePath = "") {
 const resolvedBasePath = normalizeBasePath(env("BOOKLOFT_BASE_PATH") || "/");
 
 export const config = {
-  version: "1.13.8",
+  version: "1.13.9",
   appRoot,
   publicDir: path.join(appRoot, "public"),
   port: intEnv("BOOKLOFT_PORT", 3205),

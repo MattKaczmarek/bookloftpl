@@ -840,7 +840,7 @@ function selectedProductFeatures(features, limit = 8) {
 
 function categoryIntroCopy(category) {
   const name = category.displayName || category.name || "Kategoria";
-  return `Kategoria ${name} zawiera używane produkty z realnymi zdjęciami konkretnych egzemplarzy i opisem stanu przed zakupem.`;
+  return `Kategoria ${name} zawiera używane produkty z realnymi zdjęciami konkretnych egzemplarzy oraz opisem stanu.`;
 }
 
 function productImageAlt(product) {
