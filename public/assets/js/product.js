@@ -1,6 +1,18 @@
 const page = document.querySelector("#product-page");
 const productSearchForm = document.querySelector("#product-search-form");
 const productSearchInput = document.querySelector("#product-page-search");
+const PRODUCT_SPEC_FIELDS = [
+  { label: "Autor", keys: ["autor", "autorzy", "autorka"] },
+  { label: "Wydawnictwo", keys: ["wydawnictwo", "producent"] },
+  { label: "Rok wydania", keys: ["rok wydania", "data wydania"] },
+  { label: "Seria", keys: ["seria"] },
+  { label: "ISBN", keys: ["isbn"] },
+  { label: "EAN", keys: ["ean", "kod producenta"] },
+  { label: "Oprawa", keys: ["oprawa"] },
+  { label: "Liczba stron", keys: ["liczba stron", "ilosc stron"] },
+  { label: "Język", keys: ["jezyk"] },
+  { label: "Stan", keys: ["stan"] }
+];
 
 productSearchForm?.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -44,6 +56,7 @@ function renderProduct(product) {
     : "Bez kategorii";
   const stock = Number(product.stock || 0);
   const allegroUrl = product.allegroUrl || `https://allegro.pl/oferta/${encodeURIComponent(product.id)}`;
+  const specs = renderProductSpecs(product);
 
   page.innerHTML = `
     <div class="product-layout">
@@ -54,16 +67,14 @@ function renderProduct(product) {
         <div id="product-category-tree" class="category-tree"></div>
       </aside>
       <div class="product-content">
-        <nav class="breadcrumbs" aria-label="Ścieżka">
-          <span>${escapeHtml(category)}</span>
-        </nav>
+        ${renderProductBreadcrumbs(product, category)}
         <article class="product-detail" itemscope itemtype="https://schema.org/Product">
           <section class="detail-gallery">
             <div class="gallery-main">
               ${images.length > 1 ? '<button class="gallery-arrow gallery-arrow-prev" type="button" data-gallery-prev aria-label="Poprzednie zdjęcie">&lsaquo;</button>' : ""}
               ${image ? `
                 <button class="detail-main-trigger" type="button" data-gallery-open aria-label="Otwórz zdjęcie produktu">
-                  <img class="detail-main-image" src="${escapeAttribute(allegroImageVariant(image, "s720"))}" ${imageSrcset(image, ["s512", "s720", "s1024"])} sizes="(max-width: 760px) 92vw, 520px" alt="${escapeAttribute(product.name)}" itemprop="image" data-gallery-main>
+                  <img class="detail-main-image" src="${escapeAttribute(allegroImageVariant(image, "s720"))}" ${imageSrcset(image, ["s512", "s720", "s1024"])} sizes="(max-width: 760px) 92vw, 520px" alt="${escapeAttribute(productImageAlt(product))}" itemprop="image" data-gallery-main>
                 </button>
               ` : '<div class="image-fallback">BookLoft</div>'}
               ${images.length > 1 ? '<button class="gallery-arrow gallery-arrow-next" type="button" data-gallery-next aria-label="Następne zdjęcie">&rsaquo;</button>' : ""}
@@ -89,6 +100,7 @@ function renderProduct(product) {
           <a class="buy-action" href="${escapeAttribute(allegroUrl)}" target="_blank" rel="noopener noreferrer">Kup na Allegro</a>
         </div>
         <p class="purchase-note">Finalizacja zakupu oraz obsługa płatności, dostawy, zwrotu i reklamacji odbywają się w Allegro.</p>
+        ${specs}
       </section>
     </article>
         <section class="detail-description">
@@ -675,7 +687,7 @@ function renderRelatedCard(product) {
   return `
     <a class="related-card" href="/product/${encodeURIComponent(product.id)}/${encodeURIComponent(product.slug || "produkt")}" itemscope itemtype="https://schema.org/Product">
       <span class="related-thumb">
-        ${image ? `<img src="${escapeAttribute(image)}" loading="lazy" decoding="async" alt="" itemprop="image">` : "<span>BookLoft</span>"}
+        ${image ? `<img src="${escapeAttribute(image)}" loading="lazy" decoding="async" alt="${escapeAttribute(productImageAlt(product))}" itemprop="image">` : "<span>BookLoft</span>"}
       </span>
       <span class="related-copy">
         <span itemprop="name">${escapeHtml(product.name)}</span>
@@ -688,6 +700,66 @@ function renderRelatedCard(product) {
       </span>
     </a>
   `;
+}
+
+function renderProductSpecs(product) {
+  const specs = selectedProductFeatures(product.features || [], 8);
+  if (!specs.length) return "";
+  return `
+    <section class="product-specs" aria-label="Najważniejsze informacje o książce">
+      <h2>Najważniejsze informacje</h2>
+      <dl>
+        ${specs.map((spec) => `
+          <div>
+            <dt>${escapeHtml(spec.name)}</dt>
+            <dd>${escapeHtml(spec.value)}</dd>
+          </div>
+        `).join("")}
+      </dl>
+    </section>`;
+}
+
+function renderProductBreadcrumbs(product, fallbackCategory) {
+  const pathItems = visibleCategoryPath(product.categoryPath || []);
+  const leaf = pathItems[pathItems.length - 1];
+  return `
+    <nav class="breadcrumbs" aria-label="Ścieżka">
+      <a href="/">BookLoft</a>
+      ${leaf ? `<span aria-hidden="true">/</span><a href="${categoryUrl(leaf)}">${escapeHtml(leaf.displayName || leaf.name)}</a>` : `<span aria-hidden="true">/</span><span>${escapeHtml(fallbackCategory)}</span>`}
+      <span aria-hidden="true">/</span>
+      <span>${escapeHtml(product.name)}</span>
+    </nav>`;
+}
+
+function selectedProductFeatures(features, limit = 8) {
+  const normalizedFeatures = (features || [])
+    .map((feature) => ({
+      key: normalizeCategoryName(feature.name),
+      value: cleanSpecValue(feature.value)
+    }))
+    .filter((feature) => feature.key && feature.value);
+
+  const selected = [];
+  const usedKeys = new Set();
+  for (const field of PRODUCT_SPEC_FIELDS) {
+    const feature = normalizedFeatures.find((item) => field.keys.includes(item.key) && !usedKeys.has(item.key));
+    if (!feature) continue;
+    selected.push({ name: field.label, value: feature.value });
+    usedKeys.add(feature.key);
+    if (selected.length >= limit) break;
+  }
+  return selected;
+}
+
+function productImageAlt(product) {
+  return `Zdjęcie egzemplarza: ${product.name}`;
+}
+
+function cleanSpecValue(value) {
+  return String(value || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 140);
 }
 
 function renderProductAbout() {

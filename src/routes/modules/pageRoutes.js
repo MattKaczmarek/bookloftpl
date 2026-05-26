@@ -136,6 +136,12 @@ function renderStorePage(config, storefront, { category = null, query = "" } = {
   const categorySelect = renderCategorySelect(categoryOptions, category?.id || "");
   const itemListSchema = JSON.stringify(itemListJsonLd(config, visibleProducts)).replaceAll("</", "<\\/");
   const siteSchema = JSON.stringify(siteJsonLd(config)).replaceAll("</", "<\\/");
+  const breadcrumbSchema = category
+    ? JSON.stringify(breadcrumbJsonLd([
+        { name: "BookLoft", url: absoluteUrl(config, "/") },
+        { name: category.displayName || category.name, url: absoluteUrl(config, categoryPath(category)) }
+      ])).replaceAll("</", "<\\/")
+    : "";
 
   return `<!doctype html>
 <html lang="pl">
@@ -155,6 +161,7 @@ function renderStorePage(config, storefront, { category = null, query = "" } = {
   <title>${escapeHtml(pageMeta.title)}</title>
   <script type="application/ld+json">${siteSchema}</script>
   <script type="application/ld+json">${itemListSchema}</script>
+  ${breadcrumbSchema ? `<script type="application/ld+json">${breadcrumbSchema}</script>` : ""}
   <link rel="preload" as="image" href="${appPath(config.basePath, `/assets/img/loft-hero.jpg?v=${config.version}`)}" fetchpriority="high">
   <link rel="preload" as="image" href="${appPath(config.basePath, `/assets/img/logo.png?v=${config.version}`)}" fetchpriority="high">
   <link rel="stylesheet" href="${appPath(config.basePath, `/assets/css/fonts.css?v=${config.version}`)}">
@@ -221,6 +228,7 @@ function renderStorePage(config, storefront, { category = null, query = "" } = {
       </div>
 
       <h2 class="listing-title" id="listing-title">${escapeHtml(pageMeta.listingTitle)}</h2>
+      ${pageMeta.categoryNote ? `<p class="category-seo-note">${escapeHtml(pageMeta.categoryNote)}</p>` : ""}
 
       <div class="product-grid" id="product-grid" aria-busy="false">
         ${visibleProducts.map((product, index) => renderProductCard(product, index)).join("\n")}
@@ -232,6 +240,7 @@ function renderStorePage(config, storefront, { category = null, query = "" } = {
         <p>Spróbuj krótszej frazy, nazwiska autora albo wybierz inną kategorię.</p>
         <button class="secondary-action" id="empty-reset" type="button">Pokaż wszystkie oferty</button>
       </div>
+      ${renderCatalogTrustNote(config)}
     </section>
   </main>
 </body>
@@ -248,6 +257,7 @@ function renderProductPage(config, product, storefront) {
   const image = product.images?.[0] || absoluteUrl(config, "/assets/img/logo.png");
   const categoryOptions = visibleCategories(storefront.categories);
   const jsonLd = JSON.stringify(productJsonLd(product, productUrl, image, description, category)).replaceAll("</", "<\\/");
+  const breadcrumbSchema = JSON.stringify(breadcrumbJsonLd(productBreadcrumbItems(config, product, productUrl))).replaceAll("</", "<\\/");
   const bootstrap = JSON.stringify(product).replaceAll("</", "<\\/");
 
   return `<!doctype html>
@@ -272,6 +282,7 @@ function renderProductPage(config, product, storefront) {
   <meta name="twitter:description" content="${escapeAttribute(description)}">
   <meta name="twitter:image" content="${escapeAttribute(image)}">
   <script type="application/ld+json">${jsonLd}</script>
+  <script type="application/ld+json">${breadcrumbSchema}</script>
   <link rel="preload" as="image" href="${appPath(config.basePath, `/assets/img/loft-hero.jpg?v=${config.version}`)}" fetchpriority="high">
   <link rel="preload" as="image" href="${appPath(config.basePath, `/assets/img/logo.png?v=${config.version}`)}" fetchpriority="high">
   <link rel="stylesheet" href="${appPath(config.basePath, `/assets/css/fonts.css?v=${config.version}`)}">
@@ -324,6 +335,7 @@ function renderProductBody(config, product, category, categoryOptions, totalCoun
   const price = product.price === null ? "Cena do ustalenia" : formatPrice(product.price, product.currency);
   const stock = Number(product.stock || 0);
   const allegroUrl = product.allegroUrl || `https://allegro.pl/oferta/${encodeURIComponent(product.id)}`;
+  const specs = renderProductSpecs(product);
 
   return `
     <div class="product-layout">
@@ -337,16 +349,14 @@ function renderProductBody(config, product, category, categoryOptions, totalCoun
         })}</div>
       </aside>
       <div class="product-content">
-        <nav class="breadcrumbs" aria-label="Ścieżka">
-          <span>${escapeHtml(category)}</span>
-        </nav>
+        ${renderProductBreadcrumbs(config, product, category)}
         <article class="product-detail" itemscope itemtype="https://schema.org/Product">
           <section class="detail-gallery">
             <div class="gallery-main">
               ${images.length > 1 ? '<button class="gallery-arrow gallery-arrow-prev" type="button" data-gallery-prev aria-label="Poprzednie zdjęcie">&lsaquo;</button>' : ""}
               ${image ? `
                 <button class="detail-main-trigger" type="button" data-gallery-open aria-label="Otwórz zdjęcie produktu">
-                  <img class="detail-main-image" src="${escapeAttribute(allegroImageVariant(image, "s720"))}" ${imageSrcset(image, ["s512", "s720", "s1024"])} sizes="(max-width: 760px) 92vw, 520px" alt="${escapeAttribute(product.name)}" itemprop="image" data-gallery-main>
+                  <img class="detail-main-image" src="${escapeAttribute(allegroImageVariant(image, "s720"))}" ${imageSrcset(image, ["s512", "s720", "s1024"])} sizes="(max-width: 760px) 92vw, 520px" alt="${escapeAttribute(productImageAlt(product))}" itemprop="image" data-gallery-main>
                 </button>
               ` : '<div class="image-fallback">BookLoft</div>'}
               ${images.length > 1 ? '<button class="gallery-arrow gallery-arrow-next" type="button" data-gallery-next aria-label="Następne zdjęcie">&rsaquo;</button>' : ""}
@@ -372,6 +382,7 @@ function renderProductBody(config, product, category, categoryOptions, totalCoun
               <a class="buy-action" href="${escapeAttribute(allegroUrl)}" target="_blank" rel="noopener noreferrer">Kup na Allegro</a>
             </div>
             <p class="purchase-note">Finalizacja zakupu oraz obsługa płatności, dostawy, zwrotu i reklamacji odbywają się w Allegro.</p>
+            ${specs}
           </section>
         </article>
         <section class="detail-description">
@@ -423,7 +434,7 @@ function renderProductCard(product, index = 0) {
 
   return `<article class="product-card" itemscope itemtype="https://schema.org/Product" style="--card-delay: ${Math.min(index, 16) * 28}ms">
     <a class="product-media${image ? " is-loaded" : " is-loaded"}" href="${link}" aria-label="${escapeAttribute(product.name)}" itemprop="url">
-      ${image ? `<img src="${escapeAttribute(image)}" ${srcset} sizes="(max-width: 520px) 45vw, (max-width: 980px) 30vw, 240px" ${imagePriority} decoding="async" alt="${escapeAttribute(product.name)}" itemprop="image">` : '<div class="image-fallback">BookLoft</div>'}
+      ${image ? `<img src="${escapeAttribute(image)}" ${srcset} sizes="(max-width: 520px) 45vw, (max-width: 980px) 30vw, 240px" ${imagePriority} decoding="async" alt="${escapeAttribute(productImageAlt(product))}" itemprop="image">` : '<div class="image-fallback">BookLoft</div>'}
     </a>
     <div class="product-body">
       <span class="product-category">${escapeHtml(product.categoryName || leafCategoryName(product) || "Książka")}</span>
@@ -457,7 +468,7 @@ function renderRelatedCard(product) {
   return `
     <a class="related-card" href="${productPath(product)}" itemscope itemtype="https://schema.org/Product">
       <span class="related-thumb">
-        ${image ? `<img src="${escapeAttribute(image)}" loading="lazy" decoding="async" alt="" itemprop="image">` : "<span>BookLoft</span>"}
+        ${image ? `<img src="${escapeAttribute(image)}" loading="lazy" decoding="async" alt="${escapeAttribute(productImageAlt(product))}" itemprop="image">` : "<span>BookLoft</span>"}
       </span>
       <span class="related-copy">
         <span itemprop="name">${escapeHtml(product.name)}</span>
@@ -612,7 +623,8 @@ function storePageMeta(config, { category, query, productCount }) {
       eyebrow: "Kategoria",
       h1: `${name} w BookLoft`,
       copy: `Przeglądaj ${productCount} ofert z tej kategorii. Każda oferta pokazuje konkretny egzemplarz i jego najważniejsze szczegóły.`,
-      listingTitle: name
+      listingTitle: name,
+      categoryNote: categorySeoNote(category, productCount)
     };
   }
 
@@ -629,6 +641,11 @@ function storePageMeta(config, { category, query, productCount }) {
 }
 
 function productJsonLd(product, url, image, description, category) {
+  const additionalProperty = selectedProductFeatures(product.features || [], 10).map((feature) => ({
+    "@type": "PropertyValue",
+    name: feature.name,
+    value: feature.value
+  }));
   const offer = product.price === null
     ? undefined
     : {
@@ -656,6 +673,7 @@ function productJsonLd(product, url, image, description, category) {
       "@type": "Brand",
       name: "BookLoft"
     },
+    additionalProperty,
     offers: offer
   };
 }
@@ -700,6 +718,160 @@ function itemListJsonLd(config, products) {
       name: product.name
     }))
   };
+}
+
+function breadcrumbJsonLd(items) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: item.url
+    }))
+  };
+}
+
+const CATEGORY_SEO_NOTES = new Map([
+  ["fantasy", "Fantasy w BookLoft to używane egzemplarze z realnymi zdjęciami: od klasycznych cykli po pojedyncze tomy do uzupełnienia domowej biblioteczki."],
+  ["kryminal", "Kryminały zbieramy tak, żeby łatwo było znaleźć sprawdzone serie, pojedyncze śledztwa i książki z wyraźnie opisanym stanem."],
+  ["komiksy", "Komiksy pokazujemy jako konkretne egzemplarze, dlatego zdjęcia i opis stanu są ważniejsze niż katalogowa okładka."],
+  ["dzieciece", "Książki dziecięce wybieramy z myślą o kolejnych czytelnikach: pokazujemy ślady używania, kompletność i najważniejsze detale egzemplarza."],
+  ["ksiazki dla mlodziezy", "Książki dla młodzieży obejmują serie, powieści przygodowe i tytuły do szkolnej lub domowej półki, zawsze opisane jako konkretny egzemplarz."],
+  ["mlodziezowe", "Książki młodzieżowe obejmują serie, powieści przygodowe i tytuły do szkolnej lub domowej półki, zawsze opisane jako konkretny egzemplarz."],
+  ["literatura piekna", "Literatura piękna w drugim obiegu to powieści, klasyka i współczesne tytuły, które mogą trafić do kolejnego czytelnika bez niedomówień co do stanu."],
+  ["filmy", "W tej kategorii znajdziesz wydania filmowe i okołofilmowe, opisane z naciskiem na stan konkretnego egzemplarza."],
+  ["poradniki", "Poradniki porządkujemy tak, żeby szybko sprawdzić temat, wydanie i stan książki przed przejściem do zakupu na Allegro."],
+  ["czasopisma", "Czasopisma i wydania kolekcjonerskie pokazujemy ze zdjęciami egzemplarza, bo kompletność i stan mają tu szczególne znaczenie."],
+  ["biografie", "Biografie w BookLoft to używane książki o ludziach, historii i twórczości, opisane z realnymi zdjęciami danego egzemplarza."],
+  ["obyczajowe", "Książki obyczajowe wybieramy z myślą o spokojnym przeglądaniu: tytuł, zdjęcia, cena i stan są widoczne przed zakupem."],
+  ["obyczajowe i przygodowe", "Książki obyczajowe i przygodowe łączą lekkie historie, serie i pojedyncze tomy, które mogą dostać drugie życie u kolejnego czytelnika."],
+  ["naukowe", "Książki naukowe i popularnonaukowe opisujemy konkretnie, z uwzględnieniem wydania, tematu i stanu egzemplarza."],
+  ["historia", "Historia w BookLoft obejmuje tytuły popularne, specjalistyczne i wspomnieniowe, zawsze prezentowane jako konkretny używany egzemplarz."],
+  ["reportaz", "Reportaże pokazujemy z realnymi zdjęciami i opisem stanu, żeby łatwo ocenić książkę przed zakupem na Allegro."],
+  ["kuchnia", "Książki kucharskie wymagają dobrego pokazania wnętrza i okładki, dlatego stawiamy na zdjęcia oraz jasny opis śladów używania."],
+  ["hobbystyczne", "Książki hobbystyczne i tematyczne opisujemy praktycznie: najważniejsze dane, stan egzemplarza i przejście do zakupu przez Allegro."],
+  ["gry", "Publikacje o grach i wydania kolekcjonerskie pokazujemy z realnymi zdjęciami, żeby łatwo ocenić stan konkretnego egzemplarza."],
+  ["planszowe", "Gry i publikacje planszowe prezentujemy z naciskiem na kompletność, zdjęcia i stan widoczny w ofercie."]
+]);
+
+const PRODUCT_SPEC_FIELDS = [
+  { label: "Autor", keys: ["autor", "autorzy", "autorka"] },
+  { label: "Wydawnictwo", keys: ["wydawnictwo", "producent"] },
+  { label: "Rok wydania", keys: ["rok wydania", "data wydania"] },
+  { label: "Seria", keys: ["seria"] },
+  { label: "ISBN", keys: ["isbn"] },
+  { label: "EAN", keys: ["ean", "kod producenta"] },
+  { label: "Oprawa", keys: ["oprawa"] },
+  { label: "Liczba stron", keys: ["liczba stron", "ilosc stron"] },
+  { label: "Język", keys: ["jezyk"] },
+  { label: "Stan", keys: ["stan"] }
+];
+
+function renderCatalogTrustNote(config) {
+  return `
+    <section class="catalog-trust-note" aria-label="Informacje o katalogu BookLoft">
+      <div>
+        <h2>Katalog używanych książek BookLoft</h2>
+        <p>
+          Pokazujemy konkretne egzemplarze z naszego regału: realne zdjęcia, rzetelny opis stanu
+          i cenę pobraną bezpośrednio z Allegro. Zakup finalizujesz na Allegro, a katalog pomaga
+          szybciej znaleźć książkę po tytule, autorze lub kategorii.
+        </p>
+      </div>
+      <nav aria-label="Więcej informacji">
+        <a href="${appPath(config.basePath, "/o-nas")}">O BookLoft</a>
+        <a href="${appPath(config.basePath, "/informacje-prawne")}">Informacje prawne</a>
+      </nav>
+    </section>`;
+}
+
+function renderProductBreadcrumbs(config, product, fallbackCategory) {
+  const pathItems = visibleCategoryPath(product.categoryPath || []);
+  const leaf = pathItems[pathItems.length - 1];
+  return `
+    <nav class="breadcrumbs" aria-label="Ścieżka">
+      <a href="${appPath(config.basePath, "/")}">BookLoft</a>
+      ${leaf ? `<span aria-hidden="true">/</span><a href="${appPath(config.basePath, categoryPath(leaf))}">${escapeHtml(leaf.displayName || leaf.name)}</a>` : `<span aria-hidden="true">/</span><span>${escapeHtml(fallbackCategory)}</span>`}
+      <span aria-hidden="true">/</span>
+      <span>${escapeHtml(product.name)}</span>
+    </nav>`;
+}
+
+function productBreadcrumbItems(config, product, productUrl) {
+  const items = [{ name: "BookLoft", url: absoluteUrl(config, "/") }];
+  const pathItems = visibleCategoryPath(product.categoryPath || []);
+  const leaf = pathItems[pathItems.length - 1];
+  if (leaf) {
+    items.push({
+      name: leaf.displayName || leaf.name,
+      url: absoluteUrl(config, categoryPath(leaf))
+    });
+  }
+  items.push({ name: product.name, url: productUrl });
+  return items;
+}
+
+function renderProductSpecs(product) {
+  const specs = selectedProductFeatures(product.features || [], 8);
+  if (!specs.length) return "";
+  return `
+    <section class="product-specs" aria-label="Najważniejsze informacje o książce">
+      <h2>Najważniejsze informacje</h2>
+      <dl>
+        ${specs.map((spec) => `
+          <div>
+            <dt>${escapeHtml(spec.name)}</dt>
+            <dd>${escapeHtml(spec.value)}</dd>
+          </div>
+        `).join("")}
+      </dl>
+    </section>`;
+}
+
+function selectedProductFeatures(features, limit = 8) {
+  const normalizedFeatures = (features || [])
+    .map((feature) => ({
+      key: normalizeFeatureName(feature.name),
+      name: String(feature.name || "").trim(),
+      value: cleanSpecValue(feature.value)
+    }))
+    .filter((feature) => feature.key && feature.value);
+
+  const selected = [];
+  const usedKeys = new Set();
+  for (const field of PRODUCT_SPEC_FIELDS) {
+    const feature = normalizedFeatures.find((item) => field.keys.includes(item.key) && !usedKeys.has(item.key));
+    if (!feature) continue;
+    selected.push({ name: field.label, value: feature.value });
+    usedKeys.add(feature.key);
+    if (selected.length >= limit) break;
+  }
+  return selected;
+}
+
+function categorySeoNote(category, productCount) {
+  const name = category.displayName || category.name || "Książki";
+  const note = CATEGORY_SEO_NOTES.get(normalizeCategoryName(name)) ||
+    `Kategoria ${name} zawiera używane książki z realnymi zdjęciami egzemplarzy i opisem stanu przed zakupem.`;
+  const countText = productCount === 1 ? "jedną aktualną ofertę" : `${productCount} aktualnych ofert`;
+  return `${note} Aktualnie widzisz ${countText}, a każda karta prowadzi do szczegółów i zakupu na Allegro.`;
+}
+
+function productImageAlt(product) {
+  return `Zdjęcie egzemplarza: ${product.name}`;
+}
+
+function cleanSpecValue(value) {
+  return String(value || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 140);
+}
+
+function normalizeFeatureName(value) {
+  return normalizeCategoryName(value);
 }
 
 function listingProducts(products, { categoryId = "", query = "" } = {}) {
@@ -808,10 +980,31 @@ function absoluteUrl(config, relativePath) {
 }
 
 function metaDescription(product) {
-  const text = stripHtml(product.descriptionHtml || product.searchText || "");
-  const suffix = "Używana książka dostępna w BookLoft, z opisem stanu i zakupem przez Allegro.";
-  const combined = `${product.name}. ${text || suffix}`;
-  return combined.replace(/\s+/g, " ").slice(0, 158);
+  const category = leafCategoryName(product) || "książka używana";
+  const condition = productFeatureValue(product, ["stan"]) || descriptionCondition(product.descriptionHtml);
+  const conditionText = condition ? `Stan: ${condition}. ` : "";
+  return truncateText(
+    `${product.name}. ${conditionText}${category} w BookLoft z realnymi zdjęciami, rzetelnym opisem i zakupem przez Allegro.`,
+    158
+  );
+}
+
+function productFeatureValue(product, keys) {
+  const wanted = new Set(keys.map(normalizeFeatureName));
+  return cleanSpecValue((product.features || []).find((feature) => wanted.has(normalizeFeatureName(feature.name)))?.value || "");
+}
+
+function descriptionCondition(descriptionHtml) {
+  const text = stripHtml(descriptionHtml || "");
+  const match = text.match(/stan\s*:\s*([^\n.]{2,80}?)(?=\s+(?:dodatkowe uwagi|książki|ksiazki|zdjęcia|zdjecia|zapraszamy)|\.|$)/i) ||
+    text.match(/stan\s*:\s*([^\n.]{2,40})/i);
+  return match ? cleanSpecValue(match[1]) : "";
+}
+
+function truncateText(value, limit) {
+  const text = String(value || "").replace(/\s+/g, " ").trim();
+  if (text.length <= limit) return text;
+  return `${text.slice(0, limit - 1).replace(/\s+\S*$/, "")}…`;
 }
 
 function formatPrice(value, currency) {

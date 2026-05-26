@@ -1,7 +1,7 @@
 ﻿# Operacje BookLoft sklep
 
 Stan dokumentu: `2026-05-26`.
-Wersja sklepu: `1.13.3`.
+Wersja sklepu: `1.13.4`.
 Branch wersji: `ver-1.13`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
@@ -70,6 +70,14 @@ Jesli token wygasnie albo zostanie cofniety, w panelu pojawi sie blad i trzeba p
 - BookLoft.pl nie ma koszyka ani platnosci; zakup, dostawa, zwroty i reklamacje odbywaja sie w Allegro.
 - Google Analytics jest osadzony przez `public/assets/js/analytics.js` i włącza się dopiero po zgodzie na cookies analityczne; cofnięcie zgody jest dostępne na `/informacje-prawne`, wysyła `analytics_storage=denied` i usuwa cookies GA.
 - Identyfikator GA jest domyslnie taki jak na dotychczasowym landingu (`G-NQH5FFJ8Y4`), ale moze byc nadpisany przez `BOOKLOFT_GA_ID`.
+
+## SEO i rendering publiczny
+
+- SSR listingu zostaje ograniczony do pierwszych 50 produktow; kolejne produkty laduja sie po scrollowaniu po stronie klienta.
+- Strony kategorii maja publiczne canonicale, opisy tematyczne SEO, `BreadcrumbList`, wpisy w sitemap oraz realne linki do pierwszych 50 ofert z danej kategorii.
+- Strony produktow maja `Product`/`Offer`, `BreadcrumbList` oraz `PropertyValue` budowane z parametrow Allegro, jesli sa dostepne w cache.
+- Meta description produktu jest skladane kontrolowanie z nazwy, kategorii, stanu i informacji o zakupie przez Allegro, bez wklejania surowego opisu z Allegro.
+- Blok informacyjny pod katalogiem przypomina, ze BookLoft.pl jest katalogiem ofert, a finalizacja zakupu odbywa sie na Allegro.
 
 ## Deploy
 

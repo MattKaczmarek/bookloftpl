@@ -1,6 +1,6 @@
 ﻿# BookLoft sklep
 
-Wersja sklepu: `1.13.3`.
+Wersja sklepu: `1.13.4`.
 Branch tej wersji: `ver-1.13`.
 
 Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://bookloft.pl/`. Katalog jest oparty bezposrednio o aktywne oferty Allegro konta BookLoft.
@@ -92,6 +92,7 @@ Zasady:
 
 - strona glowna startuje od 50 najnowszych aktywnych ofert i automatycznie dociaga kolejne paczki po 50 podczas scrollowania,
 - kategorie maja publiczne adresy `/kategoria/:id/:slug`, sa linkowane w HTML i trafiaja do sitemap,
+- strony kategorii maja krotkie opisy tematyczne SEO oraz blok zaufania wyjasniajacy, ze katalog pokazuje realne egzemplarze i prowadzi do zakupu na Allegro,
 - strona glowna jest katalogiem bez sekcji `O nas`; linki informacyjne sa dyskretne i prowadza do `/o-nas` oraz `/informacje-prawne`,
 - gorny obszar strony glownej ma loftowy banner graficzny z logo i haslem `Przestrzen pelna ksiazek`; na waskich ekranach banner jest nizszy, szerszy i bardziej dopasowany do szerokosci ekranu,
 - tlo strony i panele uzywaja subtelnej papierowej tekstury bez pionowych linii ani ciezkich dekoracji,
@@ -105,6 +106,7 @@ Zasady:
 - pusty wynik wyszukiwania pokazuje dopracowany pusty stan z przyciskiem powrotu do wszystkich ofert,
 - pierwsze ladowanie katalogu pokazuje lekkie skeletony kart,
 - strona oferty pokazuje przycisk `Kup na Allegro`, informacje ze zakup, platnosc, dostawa, zwrot i reklamacja odbywaja sie w Allegro, pasek zalet BookLoft, galerie ze strzalkami bez tla i przewijaniem swipem, lekki podglad zdjec z przewijaniem swipem, zoomem kolkiem myszy, plynniejszym pinch-to-zoom na mobile i przesuwaniem po powiekszeniu oraz stopke `O nas`,
+- strona oferty pokazuje najwazniejsze parametry z Allegro, jesli sa dostepne w cache, np. autora, wydawnictwo, rok wydania, serie, ISBN/EAN, oprawe, liczbe stron, jezyk i stan,
 - strona oferty nie pokazuje liczby dostepnych egzemplarzy, bo katalog zaklada pojedyncze egzemplarze ksiazek uzywanych,
 - favicon i ikona Apple Touch korzystaja z monogramu `B` z transparentnymi rogami,
 - opisy szczegolowe sa dociagane z Allegro na stronie oferty, jesli nie ma ich jeszcze w cache,
@@ -114,10 +116,12 @@ Zasady:
 ## SEO
 
 - `/`, `/kategoria/:id/:slug` i `/product/:id/:slug` sa renderowane po stronie serwera, z realnymi linkami do ofert bez wymagania JavaScriptu.
+- SSR listingu pozostaje ograniczony do pierwszych 50 produktow, a reszta katalogu dociaga sie podczas scrollowania; to utrzymuje lekki HTML bez utraty publicznych adresow kategorii i produktow.
 - Stare lub bledne slugi produktu i kategorii przekierowuja 301 na adres kanoniczny.
 - Niedostepne historyczne oferty zwracaja `410 Gone`, a nieznane identyfikatory `404 Not Found`; obie odpowiedzi sa `noindex`.
 - Nieznane publiczne sciezki HTML zwracaja `404` z `noindex`, zamiast przekierowywac crawlera na strone glowna.
 - `/sitemap.xml` zawiera strone glowna, strony informacyjne, publiczne kategorie i aktywne produkty.
+- Dane strukturalne obejmuja `Organization`, `WebSite`, `ItemList`, `Product`, `Offer`, `PropertyValue` dla parametrow produktu oraz `BreadcrumbList` dla kategorii i kart ofert.
 - Publiczne API listingu zwraca tylko pierwsze zdjecie produktu, zeby ograniczyc wage `/api/storefront`; pelna galeria zostaje na `/api/products/:id`.
 - Miniatury i karty uzywaja mniejszych wariantow obrazow Allegro, a pelny podglad zdjecia nadal korzysta z pelnego adresu obrazu.
 
