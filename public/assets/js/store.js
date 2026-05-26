@@ -231,12 +231,14 @@ function renderProduct(product, index = 0) {
   card.setAttribute("itemtype", "https://schema.org/Product");
   card.style.setProperty("--card-delay", `${Math.min(index, 16) * 28}ms`);
 
-  const image = product.images && product.images.length ? product.images[0] : "";
+  const rawImage = product.images && product.images.length ? product.images[0] : "";
+  const image = rawImage ? allegroImageVariant(rawImage, "s512") : "";
   const price = product.price === null ? "Cena do ustalenia" : formatPrice(product.price, product.currency);
-  const imagePriority = index < 6 ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"';
+  const imagePriority = index < 2 ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"';
+  const srcset = rawImage ? imageSrcset(rawImage, ["s256", "s400", "s512", "s720"]) : "";
   card.innerHTML = `
     <a class="product-media${image ? "" : " is-loaded"}" href="${link}" aria-label="${escapeAttribute(product.name)}" itemprop="url">
-      ${image ? `<img src="${escapeAttribute(image)}" ${imagePriority} decoding="async" alt="${escapeAttribute(product.name)}" itemprop="image">` : '<div class="image-fallback">BookLoft</div>'}
+      ${image ? `<img src="${escapeAttribute(image)}" ${srcset} sizes="(max-width: 520px) 45vw, (max-width: 980px) 30vw, 240px" ${imagePriority} decoding="async" alt="${escapeAttribute(product.name)}" itemprop="image">` : '<div class="image-fallback">BookLoft</div>'}
     </a>
     <div class="product-body">
       <span class="product-category">${escapeHtml(product.categoryName || "Książka")}</span>
@@ -503,6 +505,17 @@ function waitForIntroFont() {
 
 function productUrl(product) {
   return `/product/${encodeURIComponent(product.id)}/${encodeURIComponent(product.slug || "produkt")}`;
+}
+
+function imageSrcset(src, sizes) {
+  if (!/^https:\/\/a\.allegroimg\.com\//i.test(String(src || ""))) return "";
+  return `srcset="${sizes.map((size) => `${escapeAttribute(allegroImageVariant(src, size))} ${size.replace("s", "")}w`).join(", ")}"`;
+}
+
+function allegroImageVariant(value, size) {
+  const url = String(value || "");
+  if (!/^https:\/\/a\.allegroimg\.com\//i.test(url)) return url;
+  return url.replace(/\/(?:original|s\d{2,4})\//i, `/${size}/`);
 }
 
 function slugify(value) {

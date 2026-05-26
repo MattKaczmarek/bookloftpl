@@ -64,7 +64,7 @@ function renderProduct(product) {
               ${images.length > 1 ? '<button class="gallery-arrow gallery-arrow-prev" type="button" data-gallery-prev aria-label="Poprzednie zdjęcie">&lsaquo;</button>' : ""}
               ${image ? `
                 <button class="detail-main-trigger" type="button" data-gallery-open aria-label="Otwórz zdjęcie produktu">
-                  <img class="detail-main-image" src="${escapeAttribute(image)}" alt="${escapeAttribute(product.name)}" itemprop="image" data-gallery-main>
+                  <img class="detail-main-image" src="${escapeAttribute(allegroImageVariant(image, "s720"))}" ${imageSrcset(image, ["s512", "s720", "s1024"])} sizes="(max-width: 760px) 92vw, 520px" alt="${escapeAttribute(product.name)}" itemprop="image" data-gallery-main>
                 </button>
               ` : '<div class="image-fallback">BookLoft</div>'}
               ${images.length > 1 ? '<button class="gallery-arrow gallery-arrow-next" type="button" data-gallery-next aria-label="Następne zdjęcie">&rsaquo;</button>' : ""}
@@ -72,7 +72,7 @@ function renderProduct(product) {
             <div class="thumb-strip">
               ${images.slice(0, 8).map((src, index) => `
                 <button class="thumb-button${index === 0 ? " active" : ""}" type="button" data-image-index="${index}" aria-label="Pokaż zdjęcie ${index + 1}">
-                  <img src="${escapeAttribute(src)}" alt="">
+                  <img src="${escapeAttribute(allegroImageVariant(src, "s256"))}" alt="">
                 </button>
               `).join("")}
             </div>
@@ -121,7 +121,10 @@ function initProductGallery(images, productName) {
   function setImage(nextIndex) {
     currentIndex = wrapImageIndex(nextIndex, images.length);
     if (mainImage) {
-      mainImage.src = images[currentIndex];
+      mainImage.src = allegroImageVariant(images[currentIndex], "s720");
+      const srcset = imageSrcset(images[currentIndex], ["s512", "s720", "s1024"]).match(/^srcset="(.+)"$/)?.[1] || "";
+      if (srcset) mainImage.srcset = srcset;
+      else mainImage.removeAttribute("srcset");
       mainImage.alt = `${productName} - zdjęcie ${currentIndex + 1}`;
     }
     thumbButtons.forEach((button) => {
@@ -647,6 +650,17 @@ function categoryUrl(category) {
   return `/kategoria/${encodeURIComponent(category.id)}/${encodeURIComponent(slugify(category.displayName || category.name))}`;
 }
 
+function imageSrcset(src, sizes) {
+  if (!/^https:\/\/a\.allegroimg\.com\//i.test(String(src || ""))) return "";
+  return `srcset="${sizes.map((size) => `${escapeAttribute(allegroImageVariant(src, size))} ${size.replace("s", "")}w`).join(", ")}"`;
+}
+
+function allegroImageVariant(value, size) {
+  const url = String(value || "");
+  if (!/^https:\/\/a\.allegroimg\.com\//i.test(url)) return url;
+  return url.replace(/\/(?:original|s\d{2,4})\//i, `/${size}/`);
+}
+
 function renderRelated(products) {
   if (!products.length) return "";
   return `
@@ -659,7 +673,7 @@ function renderRelated(products) {
 }
 
 function renderRelatedCard(product) {
-  const image = product.images && product.images.length ? product.images[0] : "";
+  const image = product.images && product.images.length ? allegroImageVariant(product.images[0], "s256") : "";
   return `
     <a class="related-card" href="/product/${encodeURIComponent(product.id)}/${encodeURIComponent(product.slug || "produkt")}" itemscope itemtype="https://schema.org/Product">
       <span class="related-thumb">

@@ -853,7 +853,7 @@ function toListProduct(product) {
     categoryId: product.categoryId,
     categoryName: categoryLeaf,
     categoryPath: product.categoryPath,
-    images: Array.isArray(product.images) ? product.images.slice(0, 1) : [],
+    images: Array.isArray(product.images) ? product.images.slice(0, 1).map((src) => allegroImageVariant(src, "s512")) : [],
     addedAt: product.addedAt || null,
     allegroUrl: product.allegroUrl
   };
@@ -915,4 +915,10 @@ function slugify(value) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 80) || "produkt";
+}
+
+function allegroImageVariant(value, size) {
+  const url = String(value || "");
+  if (!/^https:\/\/a\.allegroimg\.com\//i.test(url)) return url;
+  return url.replace(/\/(?:original|s\d{2,4})\//i, `/${size}/`);
 }

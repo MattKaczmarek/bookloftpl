@@ -343,7 +343,7 @@ function renderProductBody(config, product, category, categoryOptions, totalCoun
               ${images.length > 1 ? '<button class="gallery-arrow gallery-arrow-prev" type="button" data-gallery-prev aria-label="Poprzednie zdjęcie">&lsaquo;</button>' : ""}
               ${image ? `
                 <button class="detail-main-trigger" type="button" data-gallery-open aria-label="Otwórz zdjęcie produktu">
-                  <img class="detail-main-image" src="${escapeAttribute(image)}" alt="${escapeAttribute(product.name)}" itemprop="image" data-gallery-main>
+                  <img class="detail-main-image" src="${escapeAttribute(allegroImageVariant(image, "s720"))}" ${imageSrcset(image, ["s512", "s720", "s1024"])} sizes="(max-width: 760px) 92vw, 520px" alt="${escapeAttribute(product.name)}" itemprop="image" data-gallery-main>
                 </button>
               ` : '<div class="image-fallback">BookLoft</div>'}
               ${images.length > 1 ? '<button class="gallery-arrow gallery-arrow-next" type="button" data-gallery-next aria-label="Następne zdjęcie">&rsaquo;</button>' : ""}
@@ -351,7 +351,7 @@ function renderProductBody(config, product, category, categoryOptions, totalCoun
             <div class="thumb-strip">
               ${images.slice(0, 8).map((src, index) => `
                 <button class="thumb-button${index === 0 ? " active" : ""}" type="button" data-image-index="${index}" aria-label="Pokaż zdjęcie ${index + 1}">
-                  <img src="${escapeAttribute(src)}" alt="">
+                  <img src="${escapeAttribute(allegroImageVariant(src, "s256"))}" alt="">
                 </button>
               `).join("")}
             </div>
@@ -413,13 +413,15 @@ function renderCategorySelect(categories, activeCategoryId) {
 
 function renderProductCard(product, index = 0) {
   const link = productPath(product);
-  const image = product.images && product.images.length ? product.images[0] : "";
+  const rawImage = product.images && product.images.length ? product.images[0] : "";
+  const image = rawImage ? allegroImageVariant(rawImage, "s512") : "";
   const price = product.price === null ? "Cena do ustalenia" : formatPrice(product.price, product.currency);
-  const imagePriority = index < 6 ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"';
+  const imagePriority = index < 2 ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"';
+  const srcset = rawImage ? imageSrcset(rawImage, ["s256", "s400", "s512", "s720"]) : "";
 
   return `<article class="product-card" itemscope itemtype="https://schema.org/Product" style="--card-delay: ${Math.min(index, 16) * 28}ms">
     <a class="product-media${image ? " is-loaded" : " is-loaded"}" href="${link}" aria-label="${escapeAttribute(product.name)}" itemprop="url">
-      ${image ? `<img src="${escapeAttribute(image)}" ${imagePriority} decoding="async" alt="${escapeAttribute(product.name)}" itemprop="image">` : '<div class="image-fallback">BookLoft</div>'}
+      ${image ? `<img src="${escapeAttribute(image)}" ${srcset} sizes="(max-width: 520px) 45vw, (max-width: 980px) 30vw, 240px" ${imagePriority} decoding="async" alt="${escapeAttribute(product.name)}" itemprop="image">` : '<div class="image-fallback">BookLoft</div>'}
     </a>
     <div class="product-body">
       <span class="product-category">${escapeHtml(product.categoryName || leafCategoryName(product) || "Książka")}</span>
@@ -449,7 +451,7 @@ function renderRelated(products) {
 }
 
 function renderRelatedCard(product) {
-  const image = product.images && product.images.length ? product.images[0] : "";
+  const image = product.images && product.images.length ? allegroImageVariant(product.images[0], "s256") : "";
   return `
     <a class="related-card" href="${productPath(product)}" itemscope itemtype="https://schema.org/Product">
       <span class="related-thumb">
@@ -466,6 +468,17 @@ function renderRelatedCard(product) {
       </span>
     </a>
   `;
+}
+
+function imageSrcset(src, sizes) {
+  if (!/^https:\/\/a\.allegroimg\.com\//i.test(String(src || ""))) return "";
+  return `srcset="${sizes.map((size) => `${escapeAttribute(allegroImageVariant(src, size))} ${size.replace("s", "")}w`).join(", ")}"`;
+}
+
+function allegroImageVariant(value, size) {
+  const url = String(value || "");
+  if (!/^https:\/\/a\.allegroimg\.com\//i.test(url)) return url;
+  return url.replace(/\/(?:original|s\d{2,4})\//i, `/${size}/`);
 }
 
 function renderProductAbout(config) {
