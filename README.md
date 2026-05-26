@@ -1,6 +1,6 @@
 # BookLoft sklep
 
-Wersja sklepu: `1.11.4`.
+Wersja sklepu: `1.11.5`.
 Branch tej wersji: `ver-1.11`.
 
 Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://bookloft.pl/`. Katalog jest oparty bezposrednio o aktywne oferty Allegro konta BookLoft.
