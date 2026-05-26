@@ -16,4 +16,5 @@ if (data.status !== "ok") {
   process.exit(1);
 }
 
-console.log(`ok version=${data.version} visible=${data.cache.visibleProductCount}`);
+const visible = data.cache?.visibleProductCount ?? "n/a";
+console.log(`ok version=${data.version} visible=${visible}`);

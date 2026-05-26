@@ -1,6 +1,6 @@
 # BookLoft sklep
 
-Wersja sklepu: `1.13.9`.
+Wersja sklepu: `1.13.10`.
 Branch tej wersji: `ver-1.13`.
 
 Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://bookloft.pl/`. Katalog jest oparty bezposrednio o aktywne oferty Allegro konta BookLoft.
@@ -63,6 +63,12 @@ BOOKLOFT_CATALOG_REFRESH_MS=10800000
 ALLEGRO_REQUEST_TIMEOUT_MS=30000
 ALLEGRO_SCOPE=allegro:api:sale:offers:read
 ```
+
+## Bezpieczenstwo
+
+- aplikacja wysyla podstawowe naglowki hardeningu: CSP, HSTS, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` i `Permissions-Policy`,
+- publiczne `/health` zwraca tylko minimalny status i wersje; szczegolowy payload cache jest dostepny tylko przy lokalnym wywolaniu na `127.0.0.1` albo `localhost`,
+- `POST /login` ma prosty limit nieudanych prob per IP w pamieci procesu.
 
 ## Polaczenie Allegro
 

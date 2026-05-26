@@ -6,10 +6,21 @@ export function createHealthRouter(config, storeCache) {
 
   router.get(
     "/health",
-    asyncHandler(async (_req, res) => {
+    asyncHandler(async (req, res) => {
+      res.setHeader("Cache-Control", "no-store");
+      if (!isLocalHealthRequest(req)) {
+        res.json({
+          status: "ok",
+          service: "bookloft-shop",
+          version: config.version
+        });
+        return;
+      }
+
       const status = await storeCache.getStatus();
       res.json({
         status: "ok",
+        service: "bookloft-shop",
         version: config.version,
         adminPasswordConfigured: Boolean(config.adminPassword),
         cache: {
@@ -24,4 +35,10 @@ export function createHealthRouter(config, storeCache) {
   );
 
   return router;
+}
+
+function isLocalHealthRequest(req) {
+  const hostHeader = String(req.headers.host || "").toLowerCase();
+  const host = hostHeader.startsWith("[::1]") ? "::1" : hostHeader.split(":")[0];
+  return host === "127.0.0.1" || host === "localhost" || host === "::1" || host === "[::1]";
 }

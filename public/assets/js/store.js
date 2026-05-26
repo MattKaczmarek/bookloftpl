@@ -547,8 +547,8 @@ function setupBrandIntro() {
   intro.hidden = false;
   intro.classList.add("is-visible");
 
-  const visibleFor = prefersReducedMotion ? 450 : 1850;
-  const fadeFor = prefersReducedMotion ? 120 : 650;
+  const visibleFor = prefersReducedMotion ? 338 : 1388;
+  const fadeFor = prefersReducedMotion ? 90 : 488;
   waitForIntroFont().then(() => {
     intro.classList.add("is-ready");
     window.setTimeout(() => {

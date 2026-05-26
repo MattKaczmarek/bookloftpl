@@ -1,7 +1,7 @@
 # Operacje BookLoft sklep
 
 Stan dokumentu: `2026-05-26`.
-Wersja sklepu: `1.13.9`.
+Wersja sklepu: `1.13.10`.
 Branch wersji: `ver-1.13`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
@@ -52,6 +52,12 @@ BOOKLOFT_CATALOG_REFRESH_MS=10800000
 ALLEGRO_REQUEST_TIMEOUT_MS=30000
 ALLEGRO_SCOPE=allegro:api:sale:offers:read
 ```
+
+## Hardening
+
+- publiczne `/health` powinno pokazywac tylko minimalny status i wersje; szczegolowy status cache sprawdzaj lokalnie przez `curl http://127.0.0.1:3205/health`,
+- odpowiedzi HTTP maja naglowki CSP, HSTS, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` i `Permissions-Policy`,
+- endpoint `POST /login` ogranicza nieudane proby logowania per IP; po przekroczeniu limitu zwraca `429` i naglowek `Retry-After`.
 
 ## OAuth Allegro
 
