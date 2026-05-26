@@ -162,6 +162,11 @@ export class StoreCache {
     };
   }
 
+  async getMissingProductStatus(productId) {
+    const published = await this.readPublished();
+    return published.removedByUnavailable?.[String(productId)] ? 410 : 404;
+  }
+
   async getStatus() {
     const [published, storefront, meta, catalog, auth] = await Promise.all([
       this.readPublished(),
@@ -377,6 +382,7 @@ export class StoreCache {
       const descriptionHtml = normalizeDescriptionHtml(offer.descriptionHtml);
       visibleProducts.push({
         ...offer,
+        slug: slugify(offer.name),
         descriptionHtml,
         searchText: productSearchText(offer, descriptionHtml),
         categoryPath: getCategoryPath(catalog.categories, offer.categoryId)
@@ -847,7 +853,7 @@ function toListProduct(product) {
     categoryId: product.categoryId,
     categoryName: categoryLeaf,
     categoryPath: product.categoryPath,
-    images: product.images,
+    images: Array.isArray(product.images) ? product.images.slice(0, 1) : [],
     addedAt: product.addedAt || null,
     allegroUrl: product.allegroUrl
   };
@@ -895,6 +901,14 @@ function shortCategoryName(name) {
 
 function slugify(value) {
   return String(value || "")
+    .replace(/[ąĄ]/g, "a")
+    .replace(/[ćĆ]/g, "c")
+    .replace(/[ęĘ]/g, "e")
+    .replace(/[łŁ]/g, "l")
+    .replace(/[ńŃ]/g, "n")
+    .replace(/[óÓ]/g, "o")
+    .replace(/[śŚ]/g, "s")
+    .replace(/[źŹżŻ]/g, "z")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()

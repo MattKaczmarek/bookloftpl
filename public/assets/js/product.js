@@ -21,13 +21,12 @@ async function init() {
   const product = window.__BOOKLOFT_PRODUCT__ || await fetchProduct(productId);
   if (!product) return;
   document.title = `${product.name} | BookLoft`;
-  updateMeta(product);
   renderProduct(product);
 }
 
 async function fetchProduct(productId) {
   const response = await fetch(`/api/products/${encodeURIComponent(productId)}`, { credentials: "same-origin" });
-  if (response.status === 404) {
+  if (response.status === 404 || response.status === 410) {
     page.innerHTML = '<div class="empty-state"><h1>Produkt niedostępny</h1><p>Ten tytuł nie jest teraz na regale.</p></div>';
     return null;
   }
@@ -585,7 +584,7 @@ function productCategoryList(categories, activeCategoryId) {
     const item = document.createElement("li");
     const link = document.createElement("a");
     link.className = "category-button";
-    link.href = category.id ? `/?category=${encodeURIComponent(category.id)}` : "/";
+    link.href = categoryUrl(category);
     link.classList.toggle("active", String(category.id || "") === String(activeCategoryId || ""));
     link.innerHTML = `<span>${escapeHtml(category.displayName || category.name)}</span><small>${category.totalProductCount || category.productCount || ""}</small>`;
     item.appendChild(link);
@@ -629,10 +628,23 @@ function isGenericAllegroCategory(category) {
 
 function normalizeCategoryName(value) {
   return String(value || "")
+    .replace(/[ąĄ]/g, "a")
+    .replace(/[ćĆ]/g, "c")
+    .replace(/[ęĘ]/g, "e")
+    .replace(/[łŁ]/g, "l")
+    .replace(/[ńŃ]/g, "n")
+    .replace(/[óÓ]/g, "o")
+    .replace(/[śŚ]/g, "s")
+    .replace(/[źŹżŻ]/g, "z")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .trim()
     .toLowerCase();
+}
+
+function categoryUrl(category) {
+  if (!category?.id) return "/";
+  return `/kategoria/${encodeURIComponent(category.id)}/${encodeURIComponent(slugify(category.displayName || category.name))}`;
 }
 
 function renderRelated(products) {
@@ -706,6 +718,24 @@ function productIdFromPath() {
   const parts = location.pathname.split("/").filter(Boolean);
   const productIndex = parts.indexOf("product");
   return productIndex >= 0 ? parts[productIndex + 1] : "";
+}
+
+function slugify(value) {
+  return String(value || "")
+    .replace(/[ąĄ]/g, "a")
+    .replace(/[ćĆ]/g, "c")
+    .replace(/[ęĘ]/g, "e")
+    .replace(/[łŁ]/g, "l")
+    .replace(/[ńŃ]/g, "n")
+    .replace(/[óÓ]/g, "o")
+    .replace(/[śŚ]/g, "s")
+    .replace(/[źŹżŻ]/g, "z")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80) || "kategoria";
 }
 
 function setMeta(name, content, attribute = "name") {

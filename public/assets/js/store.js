@@ -111,6 +111,7 @@ function bindEvents() {
 
 function renderCategories() {
   els.categoryTree.innerHTML = "";
+  els.categorySelect.innerHTML = '<option value="">Wszystkie oferty</option>';
 
   const flat = visibleCategories(state.categories);
   els.categoryTree.appendChild(categoryList([
@@ -184,7 +185,7 @@ function renderProducts() {
   els.empty.hidden = products.length > 0;
   if (els.emptyReset) els.emptyReset.hidden = !state.query && !state.categoryId;
   els.loadSentinel.hidden = products.length === 0 || state.rendered >= products.length;
-  els.listingTitle.textContent = "Nowości";
+  updateListingTitle(products.length);
   queueAutoLoadIfNeeded();
 }
 
@@ -300,17 +301,22 @@ function syncSearchClear() {
 }
 
 function categoryIdFromUrl() {
-  return new URLSearchParams(window.location.search).get("category") || "";
+  if (typeof window.BOOKLOFT_INITIAL_CATEGORY_ID === "string") return window.BOOKLOFT_INITIAL_CATEGORY_ID;
+  const fromQuery = new URLSearchParams(window.location.search).get("category");
+  if (fromQuery) return fromQuery;
+  const match = window.location.pathname.match(/\/kategoria\/([^/]+)/);
+  return match ? decodeURIComponent(match[1]) : "";
 }
 
 function queryFromUrl() {
+  if (typeof window.BOOKLOFT_INITIAL_QUERY === "string") return window.BOOKLOFT_INITIAL_QUERY.trim().toLowerCase();
   return new URLSearchParams(window.location.search).get("q")?.trim().toLowerCase() || "";
 }
 
 function updateCategoryUrl() {
   const url = new URL(window.location.href);
-  if (state.categoryId) url.searchParams.set("category", state.categoryId);
-  else url.searchParams.delete("category");
+  url.pathname = state.categoryId ? categoryUrl(findCategory(state.categoryId)) : "/";
+  url.searchParams.delete("category");
   window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
 }
 
@@ -330,6 +336,19 @@ function scrollToTop() {
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
   });
+}
+
+function updateListingTitle(count) {
+  const category = state.categoryId ? findCategory(state.categoryId) : null;
+  if (state.query) {
+    els.listingTitle.textContent = `Wyniki: ${state.query}`;
+    return;
+  }
+  if (category) {
+    els.listingTitle.textContent = category.displayName || category.name || "Kategoria";
+    return;
+  }
+  els.listingTitle.textContent = count ? "Nowości" : "Nowości";
 }
 
 function setupInfiniteScroll() {
@@ -396,10 +415,27 @@ function isGenericAllegroCategory(category) {
 
 function normalizeCategoryName(value) {
   return String(value || "")
+    .replace(/[ąĄ]/g, "a")
+    .replace(/[ćĆ]/g, "c")
+    .replace(/[ęĘ]/g, "e")
+    .replace(/[łŁ]/g, "l")
+    .replace(/[ńŃ]/g, "n")
+    .replace(/[óÓ]/g, "o")
+    .replace(/[śŚ]/g, "s")
+    .replace(/[źŹżŻ]/g, "z")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .trim()
     .toLowerCase();
+}
+
+function findCategory(categoryId) {
+  return flattenCategories(state.categories).find((category) => String(category.id) === String(categoryId)) || null;
+}
+
+function categoryUrl(category) {
+  if (!category?.id) return "/";
+  return `/kategoria/${encodeURIComponent(category.id)}/${encodeURIComponent(slugify(category.displayName || category.name))}`;
 }
 
 function productFreshnessTime(product) {
@@ -467,6 +503,24 @@ function waitForIntroFont() {
 
 function productUrl(product) {
   return `/product/${encodeURIComponent(product.id)}/${encodeURIComponent(product.slug || "produkt")}`;
+}
+
+function slugify(value) {
+  return String(value || "")
+    .replace(/[ąĄ]/g, "a")
+    .replace(/[ćĆ]/g, "c")
+    .replace(/[ęĘ]/g, "e")
+    .replace(/[łŁ]/g, "l")
+    .replace(/[ńŃ]/g, "n")
+    .replace(/[óÓ]/g, "o")
+    .replace(/[śŚ]/g, "s")
+    .replace(/[źŹżŻ]/g, "z")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80) || "kategoria";
 }
 
 function formatPrice(value, currency) {

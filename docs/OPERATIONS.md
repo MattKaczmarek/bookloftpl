@@ -1,8 +1,8 @@
-# Operacje BookLoft sklep
+﻿# Operacje BookLoft sklep
 
 Stan dokumentu: `2026-05-26`.
-Wersja sklepu: `1.12.0`.
-Branch wersji: `ver-1.12`.
+Wersja sklepu: `1.13.0`.
+Branch wersji: `ver-1.13`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
 
@@ -76,7 +76,7 @@ Jesli token wygasnie albo zostanie cofniety, w panelu pojawi sie blad i trzeba p
 ```bash
 cd /home/bookloftpl
 git fetch
-git switch ver-1.12
+git switch ver-1.13
 git pull --ff-only
 npm ci --omit=dev
 systemctl restart bookloft-shop.service
@@ -89,6 +89,18 @@ Reload Nginx jest potrzebny tylko po zmianie konfiguracji reverse proxy. Zwykle 
 Root domeny powinien byc proxy do procesu Node:
 
 ```nginx
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name www.bookloft.pl;
+    return 301 https://bookloft.pl$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name bookloft.pl;
+
 location / {
     proxy_pass http://127.0.0.1:3205;
     proxy_http_version 1.1;
@@ -97,6 +109,17 @@ location / {
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
 }
+}
+```
+
+W `nginx.conf` powinien byc wlaczony gzip dla tekstowych assetow i JSON:
+
+```nginx
+gzip on;
+gzip_vary on;
+gzip_proxied any;
+gzip_comp_level 6;
+gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss image/svg+xml;
 ```
 
 ## Weryfikacja
@@ -117,8 +140,11 @@ Oczekiwane publicznie:
 - publiczne API katalogu `/api/storefront`, `/api/newest` i `/api/products/:id` dziala bez sesji,
 - `/api/status` i `/api/admin/*` wymagaja sesji administratora,
 - strona glowna pokazuje nowosci i katalog, a kolejne oferty dociagaja sie automatycznie podczas scrollowania,
+- strona glowna, kategorie i produkty maja server-rendered HTML z realnymi linkami widocznymi bez JavaScriptu,
 - `robots.txt` dopuszcza katalog, blokuje panel/login/admin API i wskazuje publiczny `/sitemap.xml`,
-- `/sitemap.xml` jest publiczne i zawiera strone glowna, strony informacyjne oraz produkty,
+- `/sitemap.xml` jest publiczne i zawiera strone glowna, strony informacyjne, kategorie oraz produkty,
+- niedostepna historyczna oferta zwraca `410 Gone`, a nieznany produkt `404 Not Found`,
+- nieznane publiczne sciezki HTML zwracaja `404` z `noindex` zamiast przekierowania na strone glowna,
 - fonty sa serwowane lokalnie z `public/assets/fonts` przez `public/assets/css/fonts.css`,
 - gorny banner strony glownej uzywa statycznego assetu `public/assets/img/loft-hero.jpg`; na waskich ekranach ma szerszy i nizszy layout z logo dopasowanym do mobilnego kadru,
 - tlo strony ma subtelna papierowa teksture bez pionowych linii; karty i panele maja lekka fakture oraz oprawe okladek,
@@ -148,6 +174,7 @@ Prawidlowe branche repo:
 - `ver-1.08`,
 - `ver-1.09`,
 - `ver-1.11`,
-- `ver-1.12`.
+- `ver-1.12`,
+- `ver-1.13`.
 
 Robocze branche z prefiksem `codex/` nie sa linia wersji sklepu i po przeniesieniu zmian do aktualnego brancha `ver-*` powinny byc usuniete lokalnie oraz z GitHuba.

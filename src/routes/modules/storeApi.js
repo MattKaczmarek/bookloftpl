@@ -29,7 +29,8 @@ export function createStoreApiRouter(config, storeCache) {
     asyncHandler(async (req, res) => {
       const product = await storeCache.getProduct(req.params.productId);
       if (!product) {
-        res.status(404).json({ status: "not_found" });
+        const status = await storeCache.getMissingProductStatus(req.params.productId);
+        res.status(status).json({ status: status === 410 ? "gone" : "not_found" });
         return;
       }
       res.setHeader("Cache-Control", "public, max-age=60");

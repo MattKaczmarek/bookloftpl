@@ -1,13 +1,14 @@
-# BookLoft sklep
+﻿# BookLoft sklep
 
-Wersja sklepu: `1.12.0`.
-Branch tej wersji: `ver-1.12`.
+Wersja sklepu: `1.13.0`.
+Branch tej wersji: `ver-1.13`.
 
 Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://bookloft.pl/`. Katalog jest oparty bezposrednio o aktywne oferty Allegro konta BookLoft.
 
 ## Zakres
 
 - katalog pod `/`,
+- strony kategorii pod `/kategoria/:id/:slug`,
 - panel administratora pod `/panel`,
 - strony ofert pod `/product/:id/:slug`,
 - API katalogu pod `/api`,
@@ -19,7 +20,8 @@ Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://booklo
 - strona informacyjna `/informacje-prawne` z danymi firmy, prywatnoscia, cookies i wyjasnieniem modelu zakupu przez Allegro,
 - Google Analytics z obecnego bookloft.pl, uruchamiany po zgodzie na cookies analityczne,
 - lokalnie hostowane fonty w `public/assets/fonts`,
-- meta tagi, canonicale, Open Graph, Twitter Card, dane strukturalne Product/Offer/WebSite/Organization, `robots.txt` i publiczna sitemap.
+- server-rendered HTML dla strony glownej, kategorii i kart ofert,
+- meta tagi, canonicale, Open Graph, Twitter Card, dane strukturalne Product/Offer/ItemList/WebSite/Organization, `robots.txt` i publiczna sitemap.
 
 Katalog jest publiczny i gotowy do indeksowania. Logowanie dotyczy tylko `/panel` oraz endpointow `/api/admin/*`; panel i ekran logowania pozostaja `noindex`.
 
@@ -89,6 +91,7 @@ Zasady:
 ## Frontend
 
 - strona glowna startuje od 50 najnowszych aktywnych ofert i automatycznie dociaga kolejne paczki po 50 podczas scrollowania,
+- kategorie maja publiczne adresy `/kategoria/:id/:slug`, sa linkowane w HTML i trafiaja do sitemap,
 - strona glowna jest katalogiem bez sekcji `O nas`; linki informacyjne sa dyskretne i prowadza do `/o-nas` oraz `/informacje-prawne`,
 - gorny obszar strony glownej ma loftowy banner graficzny z logo i haslem `Przestrzen pelna ksiazek`; na waskich ekranach banner jest nizszy, szerszy i bardziej dopasowany do szerokosci ekranu,
 - tlo strony i panele uzywaja subtelnej papierowej tekstury bez pionowych linii ani ciezkich dekoracji,
@@ -105,6 +108,15 @@ Zasady:
 - opisy szczegolowe sa dociagane z Allegro na stronie oferty, jesli nie ma ich jeszcze w cache,
 - uklad kategorii i filtrowania zostaje zgodny z poprzednia wersja sklepu,
 - sekcja prawno-informacyjna wyjasnia, ze BookLoft.pl jest katalogiem, a zamowienie, platnosc, dostawa, zwrot i reklamacja odbywaja sie w Allegro.
+
+## SEO
+
+- `/`, `/kategoria/:id/:slug` i `/product/:id/:slug` sa renderowane po stronie serwera, z realnymi linkami do ofert bez wymagania JavaScriptu.
+- Stare lub bledne slugi produktu i kategorii przekierowuja 301 na adres kanoniczny.
+- Niedostepne historyczne oferty zwracaja `410 Gone`, a nieznane identyfikatory `404 Not Found`; obie odpowiedzi sa `noindex`.
+- Nieznane publiczne sciezki HTML zwracaja `404` z `noindex`, zamiast przekierowywac crawlera na strone glowna.
+- `/sitemap.xml` zawiera strone glowna, strony informacyjne, publiczne kategorie i aktywne produkty.
+- Publiczne API listingu zwraca tylko pierwsze zdjecie produktu, zeby ograniczyc wage `/api/storefront`; pelna galeria zostaje na `/api/products/:id`.
 
 ## Informacje prawne i analityka
 
@@ -142,7 +154,7 @@ Standard:
 
 1. zmiana lokalna,
 2. `git push`,
-3. na Hetznerze: `cd /home/bookloftpl && git fetch && git switch ver-1.12 && git pull --ff-only`,
+3. na Hetznerze: `cd /home/bookloftpl && git fetch && git switch ver-1.13 && git pull --ff-only`,
 4. uzupelnienie ENV Allegro w `/etc/bookloft-shop/bookloft-shop.env`,
 5. `npm ci --omit=dev`,
 6. restart uslugi sklepu,
