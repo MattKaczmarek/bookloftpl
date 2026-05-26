@@ -323,7 +323,6 @@ function renderProductBody(config, product, category, categoryOptions, totalCoun
   const image = images.length ? images[0] : "";
   const price = product.price === null ? "Cena do ustalenia" : formatPrice(product.price, product.currency);
   const stock = Number(product.stock || 0);
-  const stockLabel = stock > 1 ? `${stock} egz. na półce` : "1 egz. na półce";
   const allegroUrl = product.allegroUrl || `https://allegro.pl/oferta/${encodeURIComponent(product.id)}`;
 
   return `
@@ -368,7 +367,6 @@ function renderProductBody(config, product, category, categoryOptions, totalCoun
               ${product.price === null ? "" : `<meta itemprop="price" content="${escapeAttribute(product.price)}"><meta itemprop="priceCurrency" content="${escapeAttribute(product.currency || "PLN")}">`}
               <link itemprop="availability" href="${stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"}">
               <link itemprop="itemCondition" href="https://schema.org/UsedCondition">
-              <span>${stockLabel}</span>
             </div>
             <div class="detail-actions">
               <a class="buy-action" href="${escapeAttribute(allegroUrl)}" target="_blank" rel="noopener noreferrer">Kup na Allegro</a>

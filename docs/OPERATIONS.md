@@ -1,7 +1,7 @@
 ﻿# Operacje BookLoft sklep
 
 Stan dokumentu: `2026-05-26`.
-Wersja sklepu: `1.13.2`.
+Wersja sklepu: `1.13.3`.
 Branch wersji: `ver-1.13`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
@@ -155,6 +155,7 @@ Oczekiwane publicznie:
 - pole wyszukiwania ma przycisk czyszczenia, pusty wynik ma pusty stan z powrotem do wszystkich ofert, a pierwszy render pokazuje skeletony kart,
 - strona produktu ma galerie z subtelnymi strzalkami bez tla, przewijanie zdjec swipem, lekki podglad zdjec po kliknieciu, swipe w podgladzie, zoom kolkiem myszy, plynniejszy pinch-to-zoom na mobile zakotwiczony miedzy palcami, przesuwanie zdjecia po powiekszeniu oraz obsluge `ArrowLeft`, `ArrowRight` i `Escape` w otwartym podgladzie,
 - strona produktu przy przycisku `Kup na Allegro` informuje, ze zakup, platnosc, dostawa, zwrot i reklamacja odbywaja sie w Allegro,
+- strona produktu nie pokazuje widocznego stanu magazynowego przy cenie; informacja o dostepnosci zostaje tylko w danych strukturalnych,
 - strona glowna linkuje subtelnie do `/o-nas` oraz `/informacje-prawne`, ale nie wyswietla sekcji `O nas`,
 - strona produktu wyswietla stopke `O nas` pod sekcja powiazanych ofert,
 - `/panel` pokazuje status polaczenia Allegro.
