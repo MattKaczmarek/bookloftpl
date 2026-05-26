@@ -69,7 +69,7 @@ async function init() {
   els.search.value = state.query;
   syncSearchClear();
   syncCategoryButtons();
-  resetAndRender();
+  if (!adoptInitialListing()) resetAndRender();
 }
 
 function bindEvents() {
@@ -155,6 +155,28 @@ function resetAndRender() {
   els.grid.classList.remove("is-loading");
   els.grid.removeAttribute("aria-busy");
   renderProducts();
+}
+
+function adoptInitialListing() {
+  const initialIds = Array.isArray(window.BOOKLOFT_INITIAL_PRODUCT_IDS)
+    ? window.BOOKLOFT_INITIAL_PRODUCT_IDS.map(String)
+    : [];
+  if (!initialIds.length || !els.grid?.querySelector(".product-card")) return false;
+
+  const products = currentProducts();
+  const expectedIds = products.slice(0, initialIds.length).map((product) => String(product.id));
+  const matchesServerHtml = initialIds.every((id, index) => id === expectedIds[index]);
+  if (!matchesServerHtml) return false;
+
+  state.rendered = Math.min(initialIds.length, products.length, state.modeLimit);
+  els.grid.classList.remove("is-loading");
+  els.grid.removeAttribute("aria-busy");
+  els.empty.hidden = products.length > 0;
+  if (els.emptyReset) els.emptyReset.hidden = !state.query && !state.categoryId;
+  els.loadSentinel.hidden = products.length === 0 || state.rendered >= products.length;
+  updateListingTitle(products.length);
+  queueAutoLoadIfNeeded();
+  return true;
 }
 
 function selectCategory(categoryId, { scroll = false } = {}) {

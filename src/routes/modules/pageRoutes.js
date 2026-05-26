@@ -172,6 +172,7 @@ function renderStorePage(config, storefront, { category = null, query = "" } = {
   <script>
     window.BOOKLOFT_INITIAL_CATEGORY_ID=${JSON.stringify(category?.id || "")};
     window.BOOKLOFT_INITIAL_QUERY=${JSON.stringify(normalizedQuery)};
+    window.BOOKLOFT_INITIAL_PRODUCT_IDS=${JSON.stringify(visibleProducts.map((product) => String(product.id)))};
     window.BOOKLOFT_ANALYTICS_ID=${JSON.stringify(config.googleAnalyticsId || "")};
   </script>
   <script defer src="${appPath(config.basePath, `/assets/js/analytics.js?v=${config.version}`)}"></script>
@@ -624,7 +625,7 @@ function storePageMeta(config, { category, query, productCount }) {
       h1: `${name} w BookLoft`,
       copy: `Przeglądaj ${productCount} ofert z tej kategorii. Każda oferta pokazuje konkretny egzemplarz i jego najważniejsze szczegóły.`,
       listingTitle: name,
-      categoryNote: categorySeoNote(category, productCount)
+      categoryNote: categorySeoNote(category)
     };
   }
 
@@ -746,7 +747,7 @@ const CATEGORY_SEO_NOTES = new Map([
   ["czasopisma", "Czasopisma i wydania kolekcjonerskie pokazujemy ze zdjęciami egzemplarza, bo kompletność i stan mają tu szczególne znaczenie."],
   ["biografie", "Biografie w BookLoft to używane książki o ludziach, historii i twórczości, opisane z realnymi zdjęciami danego egzemplarza."],
   ["obyczajowe", "Książki obyczajowe wybieramy z myślą o spokojnym przeglądaniu: tytuł, zdjęcia, cena i stan są widoczne przed zakupem."],
-  ["obyczajowe i przygodowe", "Książki obyczajowe i przygodowe łączą lekkie historie, serie i pojedyncze tomy, które mogą dostać drugie życie u kolejnego czytelnika."],
+  ["obyczajowe i przygodowe", "Książki obyczajowe i przygodowe w BookLoft to konkretne egzemplarze z realnymi zdjęciami i opisem stanu, od spokojnych powieści po lżejsze historie na kolejny wieczór."],
   ["naukowe", "Książki naukowe i popularnonaukowe opisujemy konkretnie, z uwzględnieniem wydania, tematu i stanu egzemplarza."],
   ["historia", "Historia w BookLoft obejmuje tytuły popularne, specjalistyczne i wspomnieniowe, zawsze prezentowane jako konkretny używany egzemplarz."],
   ["reportaz", "Reportaże pokazujemy z realnymi zdjęciami i opisem stanu, żeby łatwo ocenić książkę przed zakupem na Allegro."],
@@ -765,8 +766,7 @@ const PRODUCT_SPEC_FIELDS = [
   { label: "EAN", keys: ["ean", "kod producenta"] },
   { label: "Oprawa", keys: ["oprawa"] },
   { label: "Liczba stron", keys: ["liczba stron", "ilosc stron"] },
-  { label: "Język", keys: ["jezyk"] },
-  { label: "Stan", keys: ["stan"] }
+  { label: "Język", keys: ["jezyk"] }
 ];
 
 function renderCatalogTrustNote(config) {
@@ -851,12 +851,11 @@ function selectedProductFeatures(features, limit = 8) {
   return selected;
 }
 
-function categorySeoNote(category, productCount) {
+function categorySeoNote(category) {
   const name = category.displayName || category.name || "Książki";
   const note = CATEGORY_SEO_NOTES.get(normalizeCategoryName(name)) ||
     `Kategoria ${name} zawiera używane książki z realnymi zdjęciami egzemplarzy i opisem stanu przed zakupem.`;
-  const countText = productCount === 1 ? "jedną aktualną ofertę" : `${productCount} aktualnych ofert`;
-  return `${note} Aktualnie widzisz ${countText}, a każda karta prowadzi do szczegółów i zakupu na Allegro.`;
+  return `${note} Każda karta prowadzi do szczegółów oferty i zakupu na Allegro.`;
 }
 
 function productImageAlt(product) {
@@ -872,6 +871,11 @@ function cleanSpecValue(value) {
 
 function normalizeFeatureName(value) {
   return normalizeCategoryName(value);
+}
+
+function isGenericUsedCondition(value) {
+  const key = normalizeCategoryName(value);
+  return key === "uzywany" || key === "uzywana" || key === "uzywane";
 }
 
 function listingProducts(products, { categoryId = "", query = "" } = {}) {
@@ -991,14 +995,16 @@ function metaDescription(product) {
 
 function productFeatureValue(product, keys) {
   const wanted = new Set(keys.map(normalizeFeatureName));
-  return cleanSpecValue((product.features || []).find((feature) => wanted.has(normalizeFeatureName(feature.name)))?.value || "");
+  const value = cleanSpecValue((product.features || []).find((feature) => wanted.has(normalizeFeatureName(feature.name)))?.value || "");
+  return isGenericUsedCondition(value) ? "" : value;
 }
 
 function descriptionCondition(descriptionHtml) {
   const text = stripHtml(descriptionHtml || "");
   const match = text.match(/stan\s*:\s*([^\n.]{2,80}?)(?=\s+(?:dodatkowe uwagi|książki|ksiazki|zdjęcia|zdjecia|zapraszamy)|\.|$)/i) ||
     text.match(/stan\s*:\s*([^\n.]{2,40})/i);
-  return match ? cleanSpecValue(match[1]) : "";
+  const value = match ? cleanSpecValue(match[1]) : "";
+  return isGenericUsedCondition(value) ? "" : value;
 }
 
 function truncateText(value, limit) {

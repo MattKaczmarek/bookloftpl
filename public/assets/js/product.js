@@ -10,8 +10,7 @@ const PRODUCT_SPEC_FIELDS = [
   { label: "EAN", keys: ["ean", "kod producenta"] },
   { label: "Oprawa", keys: ["oprawa"] },
   { label: "Liczba stron", keys: ["liczba stron", "ilosc stron"] },
-  { label: "Język", keys: ["jezyk"] },
-  { label: "Stan", keys: ["stan"] }
+  { label: "Język", keys: ["jezyk"] }
 ];
 
 productSearchForm?.addEventListener("submit", (event) => {
