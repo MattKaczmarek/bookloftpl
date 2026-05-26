@@ -1,8 +1,8 @@
 # Operacje BookLoft sklep
 
-Stan dokumentu: `2026-05-24`.
-Wersja sklepu: `1.11.5`.
-Branch wersji: `ver-1.11`.
+Stan dokumentu: `2026-05-26`.
+Wersja sklepu: `1.12.0`.
+Branch wersji: `ver-1.12`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
 
@@ -76,7 +76,7 @@ Jesli token wygasnie albo zostanie cofniety, w panelu pojawi sie blad i trzeba p
 ```bash
 cd /home/bookloftpl
 git fetch
-git switch ver-1.11
+git switch ver-1.12
 git pull --ff-only
 npm ci --omit=dev
 systemctl restart bookloft-shop.service
@@ -109,22 +109,28 @@ curl -I https://bookloft.pl/
 curl -I https://www.bookloft.pl/
 ```
 
-Oczekiwane publicznie, dopoki katalog jest za haslem:
+Oczekiwane publicznie:
 
-- `/` zwraca przekierowanie do `/login?next=...` albo ekran logowania,
-- odpowiedz ma `X-Robots-Tag: noindex, nofollow, noarchive`,
-- ekran logowania pokazuje komunikat `Strona w renowacji`,
-- po zalogowaniu strona glowna pokazuje nowosci i katalog, a kolejne oferty dociagaja sie automatycznie podczas scrollowania,
+- `/` zwraca katalog bez logowania i nie wysyla `X-Robots-Tag: noindex`,
+- `/panel` przekierowuje niezalogowanego uzytkownika do `/login?next=/panel`,
+- `/login` i `/panel` pozostaja `noindex, nofollow, noarchive`,
+- publiczne API katalogu `/api/storefront`, `/api/newest` i `/api/products/:id` dziala bez sesji,
+- `/api/status` i `/api/admin/*` wymagaja sesji administratora,
+- strona glowna pokazuje nowosci i katalog, a kolejne oferty dociagaja sie automatycznie podczas scrollowania,
+- `robots.txt` dopuszcza katalog, blokuje panel/login/admin API i wskazuje publiczny `/sitemap.xml`,
+- `/sitemap.xml` jest publiczne i zawiera strone glowna, strony informacyjne oraz produkty,
+- fonty sa serwowane lokalnie z `public/assets/fonts` przez `public/assets/css/fonts.css`,
 - gorny banner strony glownej uzywa statycznego assetu `public/assets/img/loft-hero.jpg`; na waskich ekranach ma szerszy i nizszy layout z logo dopasowanym do mobilnego kadru,
 - tlo strony ma subtelna papierowa teksture bez pionowych linii; karty i panele maja lekka fakture oraz oprawe okladek,
 - lista ofert na mobile zachowuje dwie karty w rzedzie rowniez na ekranach okolo 320 px szerokosci,
 - katalog moze wyswietlac pelnoszerokie notki `Standard BookLoft` / `Drugi obieg` miedzy ofertami,
 - pole wyszukiwania pokazuje tekst pomocniczy w samym polu zamiast widocznego naglowka `Szukaj`,
+- pole wyszukiwania ma przycisk czyszczenia, pusty wynik ma pusty stan z powrotem do wszystkich ofert, a pierwszy render pokazuje skeletony kart,
 - strona produktu ma galerie z subtelnymi strzalkami bez tla, przewijanie zdjec swipem, lekki podglad zdjec po kliknieciu, swipe w podgladzie, zoom kolkiem myszy, plynniejszy pinch-to-zoom na mobile zakotwiczony miedzy palcami, przesuwanie zdjecia po powiekszeniu oraz obsluge `ArrowLeft`, `ArrowRight` i `Escape` w otwartym podgladzie,
+- strona produktu przy przycisku `Kup na Allegro` informuje, ze zakup, platnosc, dostawa, zwrot i reklamacja odbywaja sie w Allegro,
 - strona glowna linkuje subtelnie do `/o-nas` oraz `/informacje-prawne`, ale nie wyswietla sekcji `O nas`,
 - strona produktu wyswietla stopke `O nas` pod sekcja powiazanych ofert,
-- `/panel` pokazuje status polaczenia Allegro,
-- `/sitemap.xml` pozostaje za logowaniem do czasu zdjecia blokady indeksowania.
+- `/panel` pokazuje status polaczenia Allegro.
 
 ## Branch cleanup
 
@@ -141,6 +147,7 @@ Prawidlowe branche repo:
 - `ver-1.07`,
 - `ver-1.08`,
 - `ver-1.09`,
-- `ver-1.11`.
+- `ver-1.11`,
+- `ver-1.12`.
 
 Robocze branche z prefiksem `codex/` nie sa linia wersji sklepu i po przeniesieniu zmian do aktualnego brancha `ver-*` powinny byc usuniete lokalnie oraz z GitHuba.

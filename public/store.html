@@ -3,24 +3,58 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex,nofollow,noarchive">
-  <meta name="description" content="BookLoft - sklep z książkami z drugiego obiegu. Sprawdzone tytuły, szybka wysyłka i książki gotowe na kolejną historię.">
-  <title>BookLoft</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&display=swap">
-  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32.png?v=1.11.5">
-  <link rel="icon" type="image/png" sizes="512x512" href="/assets/img/favicon.png?v=1.11.5">
-  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png?v=1.11.5">
-  <link rel="stylesheet" href="/assets/css/styles.css?v=1.11.5">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <meta name="description" content="BookLoft - używane książki z drugiego obiegu. Sprawdzone egzemplarze, realne zdjęcia, dokładne opisy stanu i zakup przez Allegro.">
+  <link rel="canonical" href="https://bookloft.pl/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="BookLoft">
+  <meta property="og:title" content="BookLoft - używane książki z drugiego obiegu">
+  <meta property="og:description" content="Przeglądaj używane książki BookLoft: realne zdjęcia, dokładne opisy stanu, niskie ceny i zakup przez Allegro.">
+  <meta property="og:url" content="https://bookloft.pl/">
+  <meta property="og:image" content="https://bookloft.pl/assets/img/loft-hero.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <title>BookLoft - używane książki z drugiego obiegu</title>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://bookloft.pl/#organization",
+          "name": "BookLoft",
+          "url": "https://bookloft.pl/",
+          "logo": "https://bookloft.pl/assets/img/logo.png",
+          "email": "bookloft.store@gmail.com",
+          "telephone": "+48518104941"
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://bookloft.pl/#website",
+          "url": "https://bookloft.pl/",
+          "name": "BookLoft",
+          "publisher": { "@id": "https://bookloft.pl/#organization" },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://bookloft.pl/?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        }
+      ]
+    }
+  </script>
+  <link rel="stylesheet" href="/assets/css/fonts.css?v=1.12.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32.png?v=1.12.0">
+  <link rel="icon" type="image/png" sizes="512x512" href="/assets/img/favicon.png?v=1.12.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png?v=1.12.0">
+  <link rel="stylesheet" href="/assets/css/styles.css?v=1.12.0">
   <script>window.BOOKLOFT_ANALYTICS_ID="G-NQH5FFJ8Y4";</script>
-  <script defer src="/assets/js/analytics.js?v=1.11.5"></script>
-  <script defer src="/assets/js/store.js?v=1.11.5"></script>
+  <script defer src="/assets/js/analytics.js?v=1.12.0"></script>
+  <script defer src="/assets/js/store.js?v=1.12.0"></script>
 </head>
 <body>
   <div class="brand-intro is-visible" id="brand-intro">
     <div class="brand-intro-inner">
-      <img src="/assets/img/logo.png?v=1.11.5" alt="BookLoft">
+      <img src="/assets/img/logo.png?v=1.12.0" alt="BookLoft">
       <p>Wejdź do przestrzeni pełnej książek</p>
     </div>
   </div>
@@ -36,7 +70,7 @@
     <section class="shop-surface" aria-live="polite">
       <a class="shop-brand-hero" href="/" aria-label="BookLoft - wróć na stronę główną">
         <div class="hero-brand-copy">
-          <img class="hero-logo" src="/assets/img/logo.png?v=1.11.5" alt="BookLoft">
+          <img class="hero-logo" src="/assets/img/logo.png?v=1.12.0" alt="BookLoft">
           <p>Przestrzeń pełna książek</p>
         </div>
       </a>
@@ -51,6 +85,7 @@
           <div class="search-box">
             <label class="visually-hidden" for="product-search">Szukaj</label>
             <input id="product-search" type="search" placeholder="Sprawdź czy mamy to czego szukasz ...">
+            <button class="search-clear" id="clear-search" type="button" aria-label="Wyczyść wyszukiwanie" hidden>&times;</button>
           </div>
           <nav class="shop-side-links" aria-label="Informacje o sklepie">
             <a href="/o-nas">O nas</a>
@@ -68,11 +103,22 @@
 
       <h2 class="listing-title" id="listing-title">Nowości</h2>
 
-      <div class="product-grid" id="product-grid"></div>
+      <div class="product-grid is-loading" id="product-grid" aria-busy="true">
+        <article class="product-card skeleton-card" aria-hidden="true"></article>
+        <article class="product-card skeleton-card" aria-hidden="true"></article>
+        <article class="product-card skeleton-card" aria-hidden="true"></article>
+        <article class="product-card skeleton-card" aria-hidden="true"></article>
+        <article class="product-card skeleton-card" aria-hidden="true"></article>
+        <article class="product-card skeleton-card" aria-hidden="true"></article>
+        <article class="product-card skeleton-card" aria-hidden="true"></article>
+        <article class="product-card skeleton-card" aria-hidden="true"></article>
+      </div>
       <div class="load-sentinel" id="load-sentinel" aria-hidden="true" hidden></div>
       <div class="empty-state" id="empty-state" hidden>
-        <h2>Na tym regale nic nie ma</h2>
-        <p>Spróbuj innej kategorii albo krótszego wyszukiwania.</p>
+        <span class="empty-mark" aria-hidden="true">B</span>
+        <h2>Nie znaleźliśmy tego tytułu</h2>
+        <p>Spróbuj krótszej frazy, innego autora albo wróć do wszystkich ofert.</p>
+        <button class="secondary-action" id="empty-reset" type="button">Pokaż wszystkie oferty</button>
       </div>
     </section>
   </main>

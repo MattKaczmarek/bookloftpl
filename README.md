@@ -1,7 +1,7 @@
 # BookLoft sklep
 
-Wersja sklepu: `1.11.5`.
-Branch tej wersji: `ver-1.11`.
+Wersja sklepu: `1.12.0`.
+Branch tej wersji: `ver-1.12`.
 
 Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://bookloft.pl/`. Katalog jest oparty bezposrednio o aktywne oferty Allegro konta BookLoft.
 
@@ -11,16 +11,17 @@ Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://booklo
 - panel administratora pod `/panel`,
 - strony ofert pod `/product/:id/:slug`,
 - API katalogu pod `/api`,
-- logowanie administracyjne na podstawie zmiennych ENV,
+- publiczny katalog bez logowania oraz panel administratora chroniony logowaniem na podstawie zmiennych ENV,
 - OAuth Allegro dla konta sprzedawcy,
 - cache ofert, cen, zdjec, stanow i kategorii z Allegro,
 - linki `Kup na Allegro` prowadzace bezposrednio do `https://allegro.pl/oferta/:id`,
 - osobna strona `/o-nas` z opisem BookLoft,
 - strona informacyjna `/informacje-prawne` z danymi firmy, prywatnoscia, cookies i wyjasnieniem modelu zakupu przez Allegro,
 - Google Analytics z obecnego bookloft.pl, uruchamiany po zgodzie na cookies analityczne,
-- meta tagi, canonicale, dane strukturalne Product/Offer i sitemap pod przyszle SEO.
+- lokalnie hostowane fonty w `public/assets/fonts`,
+- meta tagi, canonicale, Open Graph, Twitter Card, dane strukturalne Product/Offer/WebSite/Organization, `robots.txt` i publiczna sitemap.
 
-Katalog jest obecnie celowo schowany za logowaniem i wysyla `X-Robots-Tag: noindex, nofollow, noarchive`.
+Katalog jest publiczny i gotowy do indeksowania. Logowanie dotyczy tylko `/panel` oraz endpointow `/api/admin/*`; panel i ekran logowania pozostaja `noindex`.
 
 ## Sekrety
 
@@ -96,7 +97,10 @@ Zasady:
 - karty listingu pokazuja zdjecie, kategorie, tytul, cene i link `Zobacz`; okladki maja delikatne papierowe passe-partout i subtelny hover na desktopie,
 - katalog co pewien dystans scrollowania wplata niskie notki `Standard BookLoft` / `Drugi obieg`, ktore porzadkuja scroll bez robienia landing page'a,
 - pole wyszukiwania uzywa tekstu pomocniczego `Sprawdz czy mamy to czego szukasz ...` bez osobnego widocznego naglowka `Szukaj`,
-- strona oferty pokazuje przycisk `Kup na Allegro`, pasek zalet BookLoft, galerie ze strzalkami bez tla i przewijaniem swipem, lekki podglad zdjec z przewijaniem swipem, zoomem kolkiem myszy, plynniejszym pinch-to-zoom na mobile i przesuwaniem po powiekszeniu oraz stopke `O nas`,
+- pole wyszukiwania ma subtelny przycisk czyszczenia wpisanej frazy,
+- pusty wynik wyszukiwania pokazuje dopracowany pusty stan z przyciskiem powrotu do wszystkich ofert,
+- pierwsze ladowanie katalogu pokazuje lekkie skeletony kart,
+- strona oferty pokazuje przycisk `Kup na Allegro`, informacje ze zakup, platnosc, dostawa, zwrot i reklamacja odbywaja sie w Allegro, pasek zalet BookLoft, galerie ze strzalkami bez tla i przewijaniem swipem, lekki podglad zdjec z przewijaniem swipem, zoomem kolkiem myszy, plynniejszym pinch-to-zoom na mobile i przesuwaniem po powiekszeniu oraz stopke `O nas`,
 - favicon i ikona Apple Touch korzystaja z monogramu `B` z transparentnymi rogami,
 - opisy szczegolowe sa dociagane z Allegro na stronie oferty, jesli nie ma ich jeszcze w cache,
 - uklad kategorii i filtrowania zostaje zgodny z poprzednia wersja sklepu,
@@ -138,7 +142,7 @@ Standard:
 
 1. zmiana lokalna,
 2. `git push`,
-3. na Hetznerze: `cd /home/bookloftpl && git fetch && git switch ver-1.11 && git pull --ff-only`,
+3. na Hetznerze: `cd /home/bookloftpl && git fetch && git switch ver-1.12 && git pull --ff-only`,
 4. uzupelnienie ENV Allegro w `/etc/bookloft-shop/bookloft-shop.env`,
 5. `npm ci --omit=dev`,
 6. restart uslugi sklepu,

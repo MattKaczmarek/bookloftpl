@@ -30,6 +30,8 @@ const els = {
   empty: document.querySelector("#empty-state"),
   listingTitle: document.querySelector("#listing-title"),
   search: document.querySelector("#product-search"),
+  clearSearch: document.querySelector("#clear-search"),
+  emptyReset: document.querySelector("#empty-reset"),
   categoryTree: document.querySelector("#category-tree"),
   categorySelect: document.querySelector("#category-select"),
   clearCategory: document.querySelector("#clear-category"),
@@ -40,6 +42,9 @@ setupBrandIntro();
 
 init().catch((error) => {
   els.listingTitle.textContent = `Nie udało się załadować sklepu: ${error.message}`;
+  els.grid.classList.remove("is-loading");
+  els.grid.removeAttribute("aria-busy");
+  els.grid.innerHTML = "";
 });
 
 async function init() {
@@ -62,6 +67,7 @@ async function init() {
   renderCategories();
   els.categorySelect.value = state.categoryId;
   els.search.value = state.query;
+  syncSearchClear();
   syncCategoryButtons();
   resetAndRender();
 }
@@ -71,9 +77,28 @@ function bindEvents() {
     state.query = els.search.value.trim().toLowerCase();
     state.modeLimit = INITIAL_LIMIT;
     updateSearchUrl();
+    syncSearchClear();
     scrollToTop();
     resetAndRender();
   }, 120));
+
+  els.clearSearch?.addEventListener("click", () => {
+    els.search.value = "";
+    state.query = "";
+    state.modeLimit = INITIAL_LIMIT;
+    updateSearchUrl();
+    syncSearchClear();
+    els.search.focus();
+    resetAndRender();
+  });
+
+  els.emptyReset?.addEventListener("click", () => {
+    els.search.value = "";
+    state.query = "";
+    updateSearchUrl();
+    syncSearchClear();
+    selectCategory("", { scroll: true });
+  });
 
   els.categorySelect.addEventListener("change", () => {
     selectCategory(els.categorySelect.value, { scroll: true });
@@ -126,6 +151,8 @@ function categoryList(categories) {
 function resetAndRender() {
   state.rendered = 0;
   els.grid.innerHTML = "";
+  els.grid.classList.remove("is-loading");
+  els.grid.removeAttribute("aria-busy");
   renderProducts();
 }
 
@@ -155,6 +182,7 @@ function renderProducts() {
   els.grid.appendChild(fragment);
   state.rendered += next.length;
   els.empty.hidden = products.length > 0;
+  if (els.emptyReset) els.emptyReset.hidden = !state.query && !state.categoryId;
   els.loadSentinel.hidden = products.length === 0 || state.rendered >= products.length;
   els.listingTitle.textContent = "Nowości";
   queueAutoLoadIfNeeded();
@@ -264,6 +292,11 @@ function syncCategoryButtons() {
   document.querySelectorAll(".category-button").forEach((button) => {
     button.classList.toggle("active", button.dataset.categoryId === state.categoryId);
   });
+}
+
+function syncSearchClear() {
+  if (!els.clearSearch) return;
+  els.clearSearch.hidden = !els.search.value.trim();
 }
 
 function categoryIdFromUrl() {

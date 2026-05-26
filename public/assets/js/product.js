@@ -91,6 +91,7 @@ function renderProduct(product) {
         <div class="detail-actions">
           <a class="buy-action" href="${escapeAttribute(allegroUrl)}" target="_blank" rel="noopener noreferrer">Kup na Allegro</a>
         </div>
+        <p class="purchase-note">Zakup, płatność, dostawa, zwrot i reklamacja odbywają się bezpośrednio w Allegro.</p>
       </section>
     </article>
         <section class="detail-description">

@@ -7,18 +7,19 @@ export function createAuthRouter(config) {
   const router = express.Router();
 
   router.get("/login", (req, res) => {
-    res.type("html").send(renderLogin(config, req.query.error, safeNextUrl(req.query.next, config.basePath)));
+    res.setHeader("X-Robots-Tag", "noindex, nofollow, noarchive");
+    res.type("html").send(renderLogin(config, req.query.error, safeNextUrl(req.query.next, appPath(config.basePath, "/panel"))));
   });
 
   router.post("/login", express.urlencoded({ extended: false }), (req, res) => {
     if (!isValidLogin(req.body, config)) {
-      const next = encodeURIComponent(safeNextUrl(req.body.next, config.basePath));
+      const next = encodeURIComponent(safeNextUrl(req.body.next, appPath(config.basePath, "/panel")));
       res.redirect(appPath(config.basePath, `/login?error=1&next=${next}`));
       return;
     }
 
     res.setHeader("Set-Cookie", createSessionCookie(config));
-    res.redirect(safeNextUrl(req.body.next, config.basePath));
+    res.redirect(safeNextUrl(req.body.next, appPath(config.basePath, "/panel")));
   });
 
   router.post("/logout", (_req, res) => {

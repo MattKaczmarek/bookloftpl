@@ -8,7 +8,7 @@ export function renderLogin(config, error, next = config.basePath) {
   const faviconPath = appPath(config.basePath, `/assets/img/favicon-32.png?v=${config.version}`);
   const faviconLargePath = appPath(config.basePath, `/assets/img/favicon.png?v=${config.version}`);
   const appleTouchIconPath = appPath(config.basePath, `/assets/img/apple-touch-icon.png?v=${config.version}`);
-  const fontStylesheet = "https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&display=swap";
+  const fontStylesheet = appPath(config.basePath, `/assets/css/fonts.css?v=${config.version}`);
 
   return `<!doctype html>
 <html lang="pl">
@@ -16,9 +16,7 @@ export function renderLogin(config, error, next = config.basePath) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow,noarchive">
-  <title>BookLoft</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <title>Panel BookLoft</title>
   <link rel="stylesheet" href="${fontStylesheet}">
   <link rel="icon" type="image/png" sizes="32x32" href="${faviconPath}">
   <link rel="icon" type="image/png" sizes="512x512" href="${faviconLargePath}">
@@ -33,8 +31,8 @@ export function renderLogin(config, error, next = config.basePath) {
       <div class="login-brand" aria-label="BookLoft">
         <img class="login-logo" src="${logoPath}" alt="BookLoft">
       </div>
-      <h1 id="login-title">Strona w renowacji</h1>
-      <p class="login-note">Zapraszamy później. Sklep jest teraz dopracowywany i pozostaje dostępny tylko dla zespołu BookLoft.</p>
+      <h1 id="login-title">Panel administratora</h1>
+      <p class="login-note">Katalog BookLoft jest publiczny. Logowanie jest potrzebne tylko do panelu technicznego i dodawania ofert.</p>
       <form method="post" action="${loginPath}" class="login-form">
         <input type="hidden" name="next" value="${escapeAttribute(next)}">
         <label>

@@ -9,18 +9,24 @@ import { createStoreApiRouter } from "./modules/storeApi.js";
 export function createRouter(config, storeCache) {
   const router = express.Router();
 
-  router.use((_req, res, next) => {
-    res.setHeader("X-Robots-Tag", "noindex, nofollow, noarchive");
-    next();
-  });
-
   router.get("/favicon.ico", (_req, res) => {
     res.type("image/png").sendFile(`${config.publicDir}/assets/img/favicon-32.png`);
+  });
+  router.get("/robots.txt", (_req, res) => {
+    res.type("text/plain").send([
+      "User-agent: *",
+      "Allow: /",
+      "Disallow: /panel",
+      "Disallow: /login",
+      "Disallow: /api/admin",
+      `Sitemap: ${config.publicOrigin}${config.basePath === "/" ? "" : config.basePath}/sitemap.xml`,
+      ""
+    ].join("\n"));
   });
   router.get("/apple-touch-icon.png", (_req, res) => {
     res.type("image/png").sendFile(`${config.publicDir}/assets/img/apple-touch-icon.png`);
   });
-  router.use("/assets", express.static(`${config.publicDir}/assets`, { maxAge: "10m", etag: true }));
+  router.use("/assets", express.static(`${config.publicDir}/assets`, { maxAge: "30d", etag: true }));
   router.use(createHealthRouter(config, storeCache));
   router.use(createAuthRouter(config));
   router.use(createPageRouter(config, storeCache));
