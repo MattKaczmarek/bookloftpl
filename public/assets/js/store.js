@@ -2,14 +2,14 @@ const INITIAL_LIMIT = 50;
 const PAGE_SIZE = 50;
 const SHELF_NOTES = [
   {
-    label: "Standard BookLoft",
-    text: "Każdy egzemplarz fotografujemy i opisujemy tak, żeby było jasne, co dokładnie trafia do kolejnego czytelnika.",
-    aside: "zdjęcia + opis stanu"
+    label: "Realne zdjęcia",
+    text: "Pokazujemy konkretny egzemplarz: okładkę, grzbiet i detale, które warto zobaczyć przed zakupem.",
+    aside: "konkretny egzemplarz"
   },
   {
-    label: "Drugi obieg",
-    text: "Książki z charakterem dostają kolejną drogę, a Ty wybierasz tytuł z realnych zdjęć konkretnego egzemplarza.",
-    aside: "mniej marnowania"
+    label: "Opis stanu",
+    text: "Zaznaczamy ślady używania i dodatkowe uwagi, żeby decyzja była spokojna i świadoma.",
+    aside: "bez niedomówień"
   }
 ];
 
@@ -350,7 +350,7 @@ function updateListingTitle(count) {
     els.listingTitle.textContent = category.displayName || category.name || "Kategoria";
     return;
   }
-  els.listingTitle.textContent = count ? "Nowości" : "Nowości";
+  els.listingTitle.textContent = "Nowości";
 }
 
 function setupInfiniteScroll() {

@@ -625,7 +625,7 @@ function normalizeOfferFromListing(offer, existing = {}) {
   const images = primaryImage ? [primaryImage, ...(existing.images || []).filter((src) => src !== primaryImage)] : existing.images || [];
   const categoryId = offer.category?.id ? String(offer.category.id) : existing.categoryId || "";
   const sku = offer.external?.id || existing.sku || "";
-  const descriptionHtml = normalizeDescriptionHtml(existing.descriptionHtml) || `<p>Oferta BookLoft dostępna na Allegro. Zakup, płatność i obsługa zamówienia odbywają się w serwisie Allegro.</p>`;
+  const descriptionHtml = normalizeDescriptionHtml(existing.descriptionHtml) || `<p>Oferta BookLoft dostępna na Allegro. Finalizacja zakupu oraz obsługa płatności, dostawy, zwrotu i reklamacji odbywają się w Allegro.</p>`;
   const allegroUrl = `https://allegro.pl/oferta/${encodeURIComponent(String(offer.id))}`;
 
   return {

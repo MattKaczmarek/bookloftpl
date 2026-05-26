@@ -108,7 +108,7 @@ function normalizeLegacyFallback(html) {
     .toLowerCase();
 
   if (key === "oferta bookloft dostepna na allegro. zakup, platnosc i obsluga zamowienia odbywaja sie w serwisie allegro.") {
-    return "<p>Oferta BookLoft dostępna na Allegro. Zakup, płatność i obsługa zamówienia odbywają się w serwisie Allegro.</p>";
+    return "<p>Oferta BookLoft dostępna na Allegro. Finalizacja zakupu oraz obsługa płatności, dostawy, zwrotu i reklamacji odbywają się w Allegro.</p>";
   }
 
   return html;

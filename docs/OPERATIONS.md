@@ -1,7 +1,7 @@
 ﻿# Operacje BookLoft sklep
 
 Stan dokumentu: `2026-05-26`.
-Wersja sklepu: `1.13.1`.
+Wersja sklepu: `1.13.2`.
 Branch wersji: `ver-1.13`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
@@ -151,7 +151,7 @@ Oczekiwane publicznie:
 - lista ofert na mobile zachowuje dwie karty w rzedzie rowniez na ekranach okolo 320 px szerokosci,
 - miniatury listingu i powiazanych ofert powinny uzywac wariantow Allegro `s256`/`s400`/`s512`/`s720`, a nie `/original/`,
 - katalog moze wyswietlac pelnoszerokie notki `Standard BookLoft` / `Drugi obieg` miedzy ofertami,
-- pole wyszukiwania pokazuje tekst pomocniczy w samym polu zamiast widocznego naglowka `Szukaj`,
+- pole wyszukiwania pokazuje tekst pomocniczy `Sprawdz, czy mamy to, czego szukasz` w samym polu zamiast widocznego naglowka `Szukaj`,
 - pole wyszukiwania ma przycisk czyszczenia, pusty wynik ma pusty stan z powrotem do wszystkich ofert, a pierwszy render pokazuje skeletony kart,
 - strona produktu ma galerie z subtelnymi strzalkami bez tla, przewijanie zdjec swipem, lekki podglad zdjec po kliknieciu, swipe w podgladzie, zoom kolkiem myszy, plynniejszy pinch-to-zoom na mobile zakotwiczony miedzy palcami, przesuwanie zdjecia po powiekszeniu oraz obsluge `ArrowLeft`, `ArrowRight` i `Escape` w otwartym podgladzie,
 - strona produktu przy przycisku `Kup na Allegro` informuje, ze zakup, platnosc, dostawa, zwrot i reklamacja odbywaja sie w Allegro,

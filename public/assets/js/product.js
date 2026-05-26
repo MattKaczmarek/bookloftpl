@@ -27,7 +27,7 @@ async function init() {
 async function fetchProduct(productId) {
   const response = await fetch(`/api/products/${encodeURIComponent(productId)}`, { credentials: "same-origin" });
   if (response.status === 404 || response.status === 410) {
-    page.innerHTML = '<div class="empty-state"><h1>Produkt niedostępny</h1><p>Ten tytuł nie jest teraz na regale.</p></div>';
+    page.innerHTML = '<div class="empty-state"><h1>Produkt niedostępny</h1><p>Tego egzemplarza nie ma już w katalogu.</p></div>';
     return null;
   }
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -43,7 +43,7 @@ function renderProduct(product) {
     ? displayCategoryPath.map((item) => item.displayName || item.name).join(" / ")
     : "Bez kategorii";
   const stock = Number(product.stock || 0);
-  const stockLabel = stock > 1 ? `${stock} szt. na półce` : "Dostępna na półce";
+  const stockLabel = stock > 1 ? `${stock} egz. na półce` : "1 egz. na półce";
   const allegroUrl = product.allegroUrl || `https://allegro.pl/oferta/${encodeURIComponent(product.id)}`;
 
   page.innerHTML = `
@@ -90,7 +90,7 @@ function renderProduct(product) {
         <div class="detail-actions">
           <a class="buy-action" href="${escapeAttribute(allegroUrl)}" target="_blank" rel="noopener noreferrer">Kup na Allegro</a>
         </div>
-        <p class="purchase-note">Zakup, płatność, dostawa, zwrot i reklamacja odbywają się bezpośrednio w Allegro.</p>
+        <p class="purchase-note">Finalizacja zakupu oraz obsługa płatności, dostawy, zwrotu i reklamacji odbywają się w Allegro.</p>
       </section>
     </article>
         <section class="detail-description">
@@ -696,21 +696,21 @@ function renderProductAbout() {
   return `
     <section class="shop-about product-about" id="o-nas" aria-labelledby="product-about-title">
       <p class="eyebrow">O BookLoft</p>
-      <h2 id="product-about-title">Książki z drugiego obiegu, gotowe na kolejną historię</h2>
+      <h2 id="product-about-title">Konkretne egzemplarze, pokazane bez niedomówień</h2>
       <div class="shop-about-copy">
         <p>
-          Każdą książkę starannie fotografujemy i pokazujemy realny egzemplarz, który trafia do oferty.
-          Dzięki temu przed zakupem widać okładkę, grzbiet i najważniejsze szczegóły stanu.
+          Każdą książkę fotografujemy jako konkretny egzemplarz: okładkę, grzbiet i detale,
+          które warto zobaczyć przed zakupem.
         </p>
         <p>
-          Dokładnie opisujemy widoczne ślady używania oraz dodatkowe uwagi, żeby klient otrzymał dokładnie to,
-          co widzi w ofercie, a potem bezpiecznie pakujemy zamówienie do wysyłki.
+          Opisujemy widoczne ślady używania i dodatkowe uwagi, żeby klient wiedział, co kupuje.
+          Po zakupie pakujemy zamówienie tak, aby bezpiecznie ruszyło w dalszą drogę.
         </p>
       </div>
       <div class="shop-about-stats" aria-label="BookLoft w liczbach">
-        <span><strong>100 000+</strong> uratowanych książek</span>
-        <span><strong>15 000+</strong> zadowolonych klientów</span>
-        <span><strong>4</strong> lata doświadczenia</span>
+        <span><strong>100 000+</strong> książek w drugim obiegu</span>
+        <span><strong>15 000+</strong> obsłużonych zamówień</span>
+        <span><strong>4</strong> lata pracy z książkami</span>
       </div>
       <nav class="product-about-links" aria-label="Więcej o BookLoft">
         <a href="/o-nas">Więcej o nas</a>
@@ -721,7 +721,7 @@ function renderProductAbout() {
 
 function updateMeta(product) {
   if (!product) return;
-  const description = `${product.name}. Książka z drugiego obiegu dostępna w BookLoft, sprawdzona i gotowa na kolejną historię.`;
+  const description = `${product.name}. Używana książka dostępna w BookLoft, z opisem stanu i zakupem przez Allegro.`;
   setMeta("description", description);
   setMeta("og:title", product.name, "property");
   setMeta("og:description", description, "property");

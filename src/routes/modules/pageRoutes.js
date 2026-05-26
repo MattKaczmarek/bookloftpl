@@ -203,7 +203,7 @@ function renderStorePage(config, storefront, { category = null, query = "" } = {
         <div class="shop-hero-side">
           <div class="search-box">
             <label class="visually-hidden" for="product-search">Szukaj</label>
-            <input id="product-search" type="search" value="${escapeAttribute(query)}" placeholder="Sprawdź czy mamy to czego szukasz ...">
+            <input id="product-search" type="search" value="${escapeAttribute(query)}" placeholder="Sprawdź, czy mamy to, czego szukasz">
             <button class="search-clear" id="clear-search" type="button" aria-label="Wyczyść wyszukiwanie" ${query ? "" : "hidden"}>&times;</button>
           </div>
           <nav class="shop-side-links" aria-label="Informacje o sklepie">
@@ -228,8 +228,8 @@ function renderStorePage(config, storefront, { category = null, query = "" } = {
       <div class="load-sentinel" id="load-sentinel" aria-hidden="true" ${products.length > SSR_PRODUCT_LIMIT ? "" : "hidden"}></div>
       <div class="empty-state" id="empty-state" ${products.length ? "hidden" : ""}>
         <span class="empty-mark" aria-hidden="true">B</span>
-        <h2>Nie znaleźliśmy tego tytułu</h2>
-        <p>Spróbuj krótszej frazy, innego autora albo wróć do wszystkich ofert.</p>
+        <h2>Nie znaleźliśmy pasujących ofert</h2>
+        <p>Spróbuj krótszej frazy, nazwiska autora albo wybierz inną kategorię.</p>
         <button class="secondary-action" id="empty-reset" type="button">Pokaż wszystkie oferty</button>
       </div>
     </section>
@@ -294,21 +294,21 @@ function renderProductPage(config, product, storefront) {
     </a>
     <div class="product-trust-strip" aria-label="Atuty BookLoft">
       <div class="trust-track">
-        <span>Eko przesyłka</span>
-        <span>Szybka wysyłka</span>
-        <span>Niskie ceny</span>
-        <span>Drugie życie książek</span>
-        <span>Książki z charakterem</span>
+        <span>Realne zdjęcia</span>
+        <span>Rzetelny opis stanu</span>
         <span>Zakup przez Allegro</span>
-        <span>Eko przesyłka</span>
-        <span>Szybka wysyłka</span>
-        <span>Niskie ceny</span>
+        <span>Bezpieczna wysyłka</span>
         <span>Drugie życie książek</span>
+        <span>Zakup przez Allegro</span>
+        <span>Realne zdjęcia</span>
+        <span>Rzetelny opis stanu</span>
+        <span>Bezpieczna wysyłka</span>
+        <span>Książki z charakterem</span>
       </div>
     </div>
     <form class="product-search-box search-box" id="product-search-form" action="${appPath(config.basePath, "/")}" role="search">
       <label class="visually-hidden" for="product-page-search">Szukaj</label>
-      <input id="product-page-search" name="q" type="search" placeholder="Sprawdź czy mamy to czego szukasz ...">
+      <input id="product-page-search" name="q" type="search" placeholder="Sprawdź, czy mamy to, czego szukasz">
     </form>
   </section>
   <main class="product-page" id="product-page">
@@ -323,7 +323,7 @@ function renderProductBody(config, product, category, categoryOptions, totalCoun
   const image = images.length ? images[0] : "";
   const price = product.price === null ? "Cena do ustalenia" : formatPrice(product.price, product.currency);
   const stock = Number(product.stock || 0);
-  const stockLabel = stock > 1 ? `${stock} szt. na półce` : "Dostępna na półce";
+  const stockLabel = stock > 1 ? `${stock} egz. na półce` : "1 egz. na półce";
   const allegroUrl = product.allegroUrl || `https://allegro.pl/oferta/${encodeURIComponent(product.id)}`;
 
   return `
@@ -373,7 +373,7 @@ function renderProductBody(config, product, category, categoryOptions, totalCoun
             <div class="detail-actions">
               <a class="buy-action" href="${escapeAttribute(allegroUrl)}" target="_blank" rel="noopener noreferrer">Kup na Allegro</a>
             </div>
-            <p class="purchase-note">Zakup, płatność, dostawa, zwrot i reklamacja odbywają się bezpośrednio w Allegro.</p>
+            <p class="purchase-note">Finalizacja zakupu oraz obsługa płatności, dostawy, zwrotu i reklamacji odbywają się w Allegro.</p>
           </section>
         </article>
         <section class="detail-description">
@@ -489,21 +489,21 @@ function renderProductAbout(config) {
   return `
     <section class="shop-about product-about" id="o-nas" aria-labelledby="product-about-title">
       <p class="eyebrow">O BookLoft</p>
-      <h2 id="product-about-title">Książki z drugiego obiegu, gotowe na kolejną historię</h2>
+      <h2 id="product-about-title">Konkretne egzemplarze, pokazane bez niedomówień</h2>
       <div class="shop-about-copy">
         <p>
-          Każdą książkę starannie fotografujemy i pokazujemy realny egzemplarz, który trafia do oferty.
-          Dzięki temu przed zakupem widać okładkę, grzbiet i najważniejsze szczegóły stanu.
+          Każdą książkę fotografujemy jako konkretny egzemplarz: okładkę, grzbiet i detale,
+          które warto zobaczyć przed zakupem.
         </p>
         <p>
-          Dokładnie opisujemy widoczne ślady używania oraz dodatkowe uwagi, żeby klient otrzymał dokładnie to,
-          co widzi w ofercie, a potem bezpiecznie pakujemy zamówienie do wysyłki.
+          Opisujemy widoczne ślady używania i dodatkowe uwagi, żeby klient wiedział, co kupuje.
+          Po zakupie pakujemy zamówienie tak, aby bezpiecznie ruszyło w dalszą drogę.
         </p>
       </div>
       <div class="shop-about-stats" aria-label="BookLoft w liczbach">
-        <span><strong>100 000+</strong> uratowanych książek</span>
-        <span><strong>15 000+</strong> zadowolonych klientów</span>
-        <span><strong>4</strong> lata doświadczenia</span>
+        <span><strong>100 000+</strong> książek w drugim obiegu</span>
+        <span><strong>15 000+</strong> obsłużonych zamówień</span>
+        <span><strong>4</strong> lata pracy z książkami</span>
       </div>
       <nav class="product-about-links" aria-label="Więcej o BookLoft">
         <a href="${appPath(config.basePath, "/o-nas")}">Więcej o nas</a>
@@ -529,7 +529,7 @@ function renderMissingProductPage(config, status) {
         <div class="empty-state">
           <span class="empty-mark" aria-hidden="true">B</span>
           <h1>${escapeHtml(title)}</h1>
-          <p>Ten tytuł nie jest teraz na regale. Wróć do katalogu i sprawdź inne książki.</p>
+          <p>Tego egzemplarza nie ma już w katalogu. Wróć do aktualnych ofert i wybierz coś z dostępnego regału.</p>
           <a class="secondary-action" href="${appPath(config.basePath, "/")}">Wróć do ofert</a>
         </div>
       </section>
@@ -594,12 +594,12 @@ function storePageMeta(config, { category, query, productCount }) {
   if (query) {
     return {
       title: `Wyniki wyszukiwania: ${query} | BookLoft`,
-      description: `Wyniki wyszukiwania "${query}" w katalogu BookLoft. Sprawdzone używane książki, realne zdjęcia i zakup przez Allegro.`,
+      description: `Wyniki wyszukiwania "${query}" w katalogu BookLoft. Używane książki z rzetelnym opisem stanu i zakupem przez Allegro.`,
       canonical: category ? absoluteUrl(config, categoryPath(category)) : absoluteUrl(config, "/"),
       robots: "noindex,follow,max-image-preview:large",
       eyebrow: category ? category.displayName || category.name : "Wyszukiwanie",
       h1: "Wyniki wyszukiwania w BookLoft",
-      copy: `${productCount} wyników dla wpisanej frazy. Jeśli nie widzisz tytułu, spróbuj krótszego zapytania albo nazwiska autora.`,
+      copy: `${productCount} wyników dla wpisanej frazy. Jeśli nie widzisz szukanej książki, spróbuj krótszego zapytania albo nazwiska autora.`,
       listingTitle: `Wyniki: ${query}`
     };
   }
@@ -608,24 +608,24 @@ function storePageMeta(config, { category, query, productCount }) {
     const name = category.displayName || category.name;
     return {
       title: `${name} - używane książki | BookLoft`,
-      description: `${name} w BookLoft: używane książki z realnymi zdjęciami, dokładnymi opisami stanu i zakupem przez Allegro.`,
+      description: `${name} w BookLoft: używane książki z realnymi zdjęciami, rzetelnym opisem stanu i zakupem przez Allegro.`,
       canonical: absoluteUrl(config, categoryPath(category)),
       robots: "index,follow,max-image-preview:large",
       eyebrow: "Kategoria",
       h1: `${name} w BookLoft`,
-      copy: `Przeglądaj ${productCount} ofert z tej kategorii. Każda książka ma realne zdjęcia i opis konkretnego egzemplarza.`,
+      copy: `Przeglądaj ${productCount} ofert z tej kategorii. Każda oferta pokazuje konkretny egzemplarz i jego najważniejsze szczegóły.`,
       listingTitle: name
     };
   }
 
   return {
     title: "BookLoft - używane książki z drugiego obiegu",
-    description: "BookLoft - używane książki z drugiego obiegu. Sprawdzone egzemplarze, realne zdjęcia, dokładne opisy stanu i zakup przez Allegro.",
+    description: "BookLoft - używane książki z realnymi zdjęciami, rzetelnym opisem stanu i zakupem finalizowanym na Allegro.",
     canonical: absoluteUrl(config, "/"),
     robots: "index,follow,max-image-preview:large",
     eyebrow: "Nowości z regału",
     h1: "Wybierz kolejną historię",
-    copy: "Najświeższe tytuły z naszego regału. Przejrzyj nowości albo wyszukaj książkę po tytule, autorze czy ulubionym gatunku.",
+    copy: "Nowe tytuły z naszego regału. Przeglądaj ostatnio dodane oferty albo wyszukaj książkę po tytule, autorze lub gatunku.",
     listingTitle: "Nowości"
   };
 }
@@ -811,7 +811,7 @@ function absoluteUrl(config, relativePath) {
 
 function metaDescription(product) {
   const text = stripHtml(product.descriptionHtml || product.searchText || "");
-  const suffix = "Książka z drugiego obiegu dostępna w BookLoft, sprawdzona i gotowa na kolejną historię.";
+  const suffix = "Używana książka dostępna w BookLoft, z opisem stanu i zakupem przez Allegro.";
   const combined = `${product.name}. ${text || suffix}`;
   return combined.replace(/\s+/g, " ").slice(0, 158);
 }
