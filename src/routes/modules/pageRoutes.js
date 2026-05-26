@@ -155,6 +155,8 @@ function renderStorePage(config, storefront, { category = null, query = "" } = {
   <title>${escapeHtml(pageMeta.title)}</title>
   <script type="application/ld+json">${siteSchema}</script>
   <script type="application/ld+json">${itemListSchema}</script>
+  <link rel="preload" as="image" href="${appPath(config.basePath, `/assets/img/loft-hero.jpg?v=${config.version}`)}" fetchpriority="high">
+  <link rel="preload" as="image" href="${appPath(config.basePath, `/assets/img/logo.png?v=${config.version}`)}" fetchpriority="high">
   <link rel="stylesheet" href="${appPath(config.basePath, `/assets/css/fonts.css?v=${config.version}`)}">
   <link rel="icon" type="image/png" sizes="32x32" href="${appPath(config.basePath, `/assets/img/favicon-32.png?v=${config.version}`)}">
   <link rel="icon" type="image/png" sizes="512x512" href="${appPath(config.basePath, `/assets/img/favicon.png?v=${config.version}`)}">
@@ -270,6 +272,8 @@ function renderProductPage(config, product, storefront) {
   <meta name="twitter:description" content="${escapeAttribute(description)}">
   <meta name="twitter:image" content="${escapeAttribute(image)}">
   <script type="application/ld+json">${jsonLd}</script>
+  <link rel="preload" as="image" href="${appPath(config.basePath, `/assets/img/loft-hero.jpg?v=${config.version}`)}" fetchpriority="high">
+  <link rel="preload" as="image" href="${appPath(config.basePath, `/assets/img/logo.png?v=${config.version}`)}" fetchpriority="high">
   <link rel="stylesheet" href="${appPath(config.basePath, `/assets/css/fonts.css?v=${config.version}`)}">
   <link rel="icon" type="image/png" sizes="32x32" href="${appPath(config.basePath, `/assets/img/favicon-32.png?v=${config.version}`)}">
   <link rel="icon" type="image/png" sizes="512x512" href="${appPath(config.basePath, `/assets/img/favicon.png?v=${config.version}`)}">
