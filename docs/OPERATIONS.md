@@ -1,7 +1,7 @@
 # Operacje BookLoft sklep
 
 Stan dokumentu: `2026-05-26`.
-Wersja sklepu: `1.13.10`.
+Wersja sklepu: `1.13.11`.
 Branch wersji: `ver-1.13`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
@@ -152,6 +152,7 @@ Oczekiwane publicznie:
 - `/panel` przekierowuje niezalogowanego uzytkownika do `/login?next=/panel`,
 - `/login` i `/panel` pozostaja `noindex, nofollow, noarchive`,
 - publiczne API katalogu `/api/storefront`, `/api/newest` i `/api/products/:id` dziala bez sesji,
+- dynamiczne publiczne API katalogu wysyla `Cache-Control: no-cache`, zeby przegladarka rewalidowala listing po dodaniu ofert bez `Ctrl+F5`,
 - `/api/status` i `/api/admin/*` wymagaja sesji administratora,
 - strona glowna pokazuje nowosci i katalog, a kolejne oferty dociagaja sie automatycznie podczas scrollowania,
 - strona glowna, kategorie i produkty maja server-rendered HTML z realnymi linkami widocznymi bez JavaScriptu,

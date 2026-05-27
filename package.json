@@ -1,6 +1,6 @@
 {
   "name": "bookloft-shop",
-  "version": "1.13.10",
+  "version": "1.13.11",
   "private": true,
   "type": "module",
   "description": "BookLoft catalog backed by Allegro offers.",

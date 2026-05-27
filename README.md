@@ -1,6 +1,6 @@
 # BookLoft sklep
 
-Wersja sklepu: `1.13.10`.
+Wersja sklepu: `1.13.11`.
 Branch tej wersji: `ver-1.13`.
 
 Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://bookloft.pl/`. Katalog jest oparty bezposrednio o aktywne oferty Allegro konta BookLoft.
@@ -129,6 +129,7 @@ Zasady:
 - `/sitemap.xml` zawiera strone glowna, strony informacyjne, publiczne kategorie i aktywne produkty.
 - Dane strukturalne obejmuja `Organization`, `WebSite`, `ItemList`, `Product`, `Offer`, `PropertyValue` dla parametrow produktu oraz `BreadcrumbList` dla kategorii i kart ofert.
 - Publiczne API listingu zwraca tylko pierwsze zdjecie produktu, zeby ograniczyc wage `/api/storefront`; pelna galeria zostaje na `/api/products/:id`.
+- Dynamiczne publiczne API katalogu (`/api/storefront`, `/api/newest`, `/api/products/:id`) wysyla `Cache-Control: no-cache`, zeby zwykle odswiezenie strony po dodaniu ofert rewalidowalo dane bez wymuszania `Ctrl+F5`.
 - Miniatury i karty uzywaja mniejszych wariantow obrazow Allegro, a pelny podglad zdjecia nadal korzysta z pelnego adresu obrazu.
 
 ## Informacje prawne i analityka

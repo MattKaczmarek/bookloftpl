@@ -8,7 +8,7 @@ export function createStoreApiRouter(config, storeCache) {
   router.get(
     "/newest",
     asyncHandler(async (req, res) => {
-      res.setHeader("Cache-Control", "public, max-age=60");
+      setDynamicCatalogCache(res);
       res.json({
         products: await storeCache.getNewestProducts(req.query.limit),
         generatedAt: new Date().toISOString()
@@ -19,7 +19,7 @@ export function createStoreApiRouter(config, storeCache) {
   router.get(
     "/storefront",
     asyncHandler(async (_req, res) => {
-      res.setHeader("Cache-Control", "public, max-age=60");
+      setDynamicCatalogCache(res);
       res.json(await storeCache.getStorefrontList());
     })
   );
@@ -27,13 +27,13 @@ export function createStoreApiRouter(config, storeCache) {
   router.get(
     "/products/:productId",
     asyncHandler(async (req, res) => {
+      setDynamicCatalogCache(res);
       const product = await storeCache.getProduct(req.params.productId);
       if (!product) {
         const status = await storeCache.getMissingProductStatus(req.params.productId);
         res.status(status).json({ status: status === 410 ? "gone" : "not_found" });
         return;
       }
-      res.setHeader("Cache-Control", "public, max-age=60");
       res.json(product);
     })
   );
@@ -47,4 +47,8 @@ export function createStoreApiRouter(config, storeCache) {
   );
 
   return router;
+}
+
+function setDynamicCatalogCache(res) {
+  res.setHeader("Cache-Control", "no-cache");
 }
