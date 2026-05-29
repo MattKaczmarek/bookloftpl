@@ -1,6 +1,6 @@
 # Operacje BookLoft sklep
 
-Stan dokumentu: `2026-05-26`.
+Stan dokumentu: `2026-05-29`.
 Wersja sklepu: `1.14.0`.
 Branch wersji: `ver-1.14`.
 Repo na Hetznerze: `/home/bookloftpl`.
@@ -91,7 +91,7 @@ Jesli token wygasnie albo zostanie cofniety, w panelu pojawi sie blad i trzeba p
 ```bash
 cd /home/bookloftpl
 git fetch
-git switch ver-1.13
+git switch ver-1.14
 git pull --ff-only
 npm ci --omit=dev
 systemctl restart bookloft-shop.service
