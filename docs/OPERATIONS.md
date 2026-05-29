@@ -1,8 +1,8 @@
 # Operacje BookLoft sklep
 
 Stan dokumentu: `2026-05-26`.
-Wersja sklepu: `1.13.11`.
-Branch wersji: `ver-1.13`.
+Wersja sklepu: `1.14.0`.
+Branch wersji: `ver-1.14`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
 
@@ -81,7 +81,8 @@ Jesli token wygasnie albo zostanie cofniety, w panelu pojawi sie blad i trzeba p
 
 - SSR listingu zostaje ograniczony do pierwszych 50 produktow; kolejne produkty laduja sie po scrollowaniu po stronie klienta.
 - Strony kategorii maja publiczne canonicale, opisy tematyczne SEO, `BreadcrumbList`, wpisy w sitemap oraz realne linki do pierwszych 50 ofert z danej kategorii.
-- Strony produktow maja `Product`/`Offer`, `BreadcrumbList` oraz `PropertyValue` budowane z parametrow Allegro, jesli sa dostepne w cache.
+- Listing i kategorie maja tylko `ItemList`/`BreadcrumbList`; karty ofert nie maja microdata `Product`/`Offer`, zeby Search Console nie traktowal miniaturek jako niepelnych produktow.
+- Strony produktow maja pelne JSON-LD `Product`/`Offer`, `BreadcrumbList`, sprzedawce `OnlineStore`, linkowana polityke zwrotow/dostawy oraz `PropertyValue` i ISBN/EAN/GTIN budowane z parametrow Allegro, jesli sa dostepne w cache.
 - Meta description produktu jest skladane kontrolowanie z nazwy, kategorii, stanu i informacji o zakupie przez Allegro, bez wklejania surowego opisu z Allegro.
 - Blok informacyjny pod katalogiem przypomina, ze BookLoft.pl jest katalogiem ofert, a finalizacja zakupu odbywa sie na Allegro.
 

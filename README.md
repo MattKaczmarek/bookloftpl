@@ -1,7 +1,7 @@
 # BookLoft sklep
 
-Wersja sklepu: `1.13.11`.
-Branch tej wersji: `ver-1.13`.
+Wersja sklepu: `1.14.0`.
+Branch tej wersji: `ver-1.14`.
 
 Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://bookloft.pl/`. Katalog jest oparty bezposrednio o aktywne oferty Allegro konta BookLoft.
 
@@ -21,7 +21,7 @@ Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://booklo
 - Google Analytics z obecnego bookloft.pl, uruchamiany po zgodzie na cookies analityczne,
 - lokalnie hostowane fonty w `public/assets/fonts`,
 - server-rendered HTML dla strony glownej, kategorii i kart ofert,
-- meta tagi, canonicale, Open Graph, Twitter Card, dane strukturalne Product/Offer/ItemList/WebSite/Organization, `robots.txt` i publiczna sitemap.
+- meta tagi, canonicale, Open Graph, Twitter Card, dane strukturalne `ItemList`/`WebSite`/`OnlineStore` oraz produktowe `Product`/`Offer` tylko na kartach ofert, `robots.txt` i publiczna sitemap.
 
 Katalog jest publiczny i gotowy do indeksowania. Logowanie dotyczy tylko `/panel` oraz endpointow `/api/admin/*`; panel i ekran logowania pozostaja `noindex`.
 
@@ -127,7 +127,8 @@ Zasady:
 - Niedostepne historyczne oferty zwracaja `410 Gone`, a nieznane identyfikatory `404 Not Found`; obie odpowiedzi sa `noindex`.
 - Nieznane publiczne sciezki HTML zwracaja `404` z `noindex`, zamiast przekierowywac crawlera na strone glowna.
 - `/sitemap.xml` zawiera strone glowna, strony informacyjne, publiczne kategorie i aktywne produkty.
-- Dane strukturalne obejmuja `Organization`, `WebSite`, `ItemList`, `Product`, `Offer`, `PropertyValue` dla parametrow produktu oraz `BreadcrumbList` dla kategorii i kart ofert.
+- Dane strukturalne na listingach obejmuja `Organization`, `WebSite`, `ItemList` oraz `BreadcrumbList`; karty ofert nie udaja osobnych `Product`/`Offer`, zeby Google nie raportowal brakow z miniaturek.
+- Pelne dane `Product`/`Offer` sa tylko na stronach `/product/:id/:slug`; zawieraja sprzedawce `OnlineStore`, linkowana polityke zwrotow/dostawy, opis, cene, dostepnosc, stan oraz ISBN/EAN/GTIN, jesli sa dostepne w parametrach Allegro.
 - Publiczne API listingu zwraca tylko pierwsze zdjecie produktu, zeby ograniczyc wage `/api/storefront`; pelna galeria zostaje na `/api/products/:id`.
 - Dynamiczne publiczne API katalogu (`/api/storefront`, `/api/newest`, `/api/products/:id`) wysyla `Cache-Control: no-cache`, zeby zwykle odswiezenie strony po dodaniu ofert rewalidowalo dane bez wymuszania `Ctrl+F5`.
 - Miniatury i karty uzywaja mniejszych wariantow obrazow Allegro, a pelny podglad zdjecia nadal korzysta z pelnego adresu obrazu.
@@ -136,6 +137,7 @@ Zasady:
 
 - Dane firmy na stronie: `BookLoft Mateusz Kaczmarek`, 334c, 33-152 Pogorska Wola, NIP `9930688202`, REGON `522042224`, `bookloft.store@gmail.com`, `518 104 941`.
 - `/informacje-prawne` nie jest pelnym regulaminem samodzielnego sklepu, bo aplikacja nie ma koszyka ani platnosci.
+- `/informacje-prawne#zwroty-dostawa` opisuje, ze finalne metody, koszty i terminy dostawy oraz zwroty/reklamacje sa potwierdzane w konkretnej ofercie Allegro; nie wpisujemy sztucznych kosztow dostawy w schema.org.
 - Google Analytics używa `BOOKLOFT_GA_ID`; domyślnie jest to identyfikator z dotychczasowego landingu.
 - Skrypt `public/assets/js/analytics.js` startuje GA dopiero po akceptacji cookies analitycznych, obsługuje cofnięcie zgody z poziomu `/informacje-prawne`, czyści cookies GA i wysyła event kliknięcia w ofertę Allegro tylko po zgodzie.
 

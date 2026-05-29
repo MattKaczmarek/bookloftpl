@@ -14,13 +14,54 @@
   <meta property="og:image" content="https://bookloft.pl/assets/img/loft-hero.jpg">
   <meta name="twitter:card" content="summary_large_image">
   <title>Informacje prawne | BookLoft</title>
-  <link rel="stylesheet" href="/assets/css/fonts.css?v=1.13.11">
-  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32.png?v=1.13.11">
-  <link rel="icon" type="image/png" sizes="512x512" href="/assets/img/favicon.png?v=1.13.11">
-  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png?v=1.13.11">
-  <link rel="stylesheet" href="/assets/css/styles.css?v=1.13.11">
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "OnlineStore",
+      "@id": "https://bookloft.pl/#organization",
+      "name": "BookLoft",
+      "legalName": "BookLoft Mateusz Kaczmarek",
+      "url": "https://bookloft.pl/",
+      "logo": "https://bookloft.pl/assets/img/logo.png",
+      "email": "bookloft.store@gmail.com",
+      "telephone": "+48518104941",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "334c",
+        "postalCode": "33-152",
+        "addressLocality": "Pogorska Wola",
+        "addressCountry": "PL"
+      },
+      "vatID": "PL9930688202",
+      "hasMerchantReturnPolicy": {
+        "@type": "MerchantReturnPolicy",
+        "@id": "https://bookloft.pl/informacje-prawne#return-policy",
+        "merchantReturnLink": "https://bookloft.pl/informacje-prawne#zwroty-dostawa"
+      },
+      "hasShippingService": {
+        "@type": "ShippingService",
+        "@id": "https://bookloft.pl/informacje-prawne#shipping-policy",
+        "name": "Dostawa zgodnie z ofertą Allegro",
+        "description": "Metody, koszty i terminy dostawy są wybierane oraz potwierdzane w konkretnej ofercie Allegro.",
+        "url": "https://bookloft.pl/informacje-prawne#zwroty-dostawa",
+        "areaServed": "PL",
+        "shippingConditions": {
+          "@type": "ShippingConditions",
+          "shippingDestination": {
+            "@type": "DefinedRegion",
+            "addressCountry": "PL"
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="/assets/css/fonts.css?v=1.14.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32.png?v=1.14.0">
+  <link rel="icon" type="image/png" sizes="512x512" href="/assets/img/favicon.png?v=1.14.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png?v=1.14.0">
+  <link rel="stylesheet" href="/assets/css/styles.css?v=1.14.0">
   <script>window.BOOKLOFT_ANALYTICS_ID="G-NQH5FFJ8Y4";</script>
-  <script defer src="/assets/js/analytics.js?v=1.13.11"></script>
+  <script defer src="/assets/js/analytics.js?v=1.14.0"></script>
 </head>
 <body>
   <main class="legal-page">
@@ -30,7 +71,7 @@
     </nav>
     <a class="shop-brand-hero page-brand-hero" href="/" aria-label="BookLoft - wróć do katalogu">
       <div class="hero-brand-copy">
-        <img class="hero-logo" src="/assets/img/logo.png?v=1.13.11" alt="BookLoft">
+        <img class="hero-logo" src="/assets/img/logo.png?v=1.14.0" alt="BookLoft">
         <p>Przestrzeń pełna książek</p>
       </div>
     </a>
@@ -48,9 +89,10 @@
           <p><strong>BookLoft Mateusz Kaczmarek</strong><br>334c, 33-152 Pogorska Wola<br>NIP: 9930688202<br>REGON: 522042224</p>
           <p>E-mail: <a href="mailto:bookloft.store@gmail.com">bookloft.store@gmail.com</a><br>Telefon: <a href="tel:+48518104941">518 104 941</a></p>
         </section>
-        <section>
-          <h2>Zakup</h2>
-          <p>Przycisk „Kup na Allegro” prowadzi do konkretnej oferty. Umowa sprzedaży oraz obsługa płatności, dostawy, zwrotu i reklamacji odbywają się w Allegro.</p>
+        <section id="zwroty-dostawa">
+          <h2>Zakup, dostawa i zwroty</h2>
+          <p id="shipping-policy">Przycisk „Kup na Allegro” prowadzi do konkretnej oferty. Metody, koszty i terminy dostawy są wybierane oraz potwierdzane w Allegro przed zakupem.</p>
+          <p id="return-policy">Zwroty i reklamacje są obsługiwane zgodnie z regulaminem Allegro oraz warunkami widocznymi w konkretnej ofercie Allegro. Finalne informacje w Allegro są wiążące dla transakcji.</p>
         </section>
         <section>
           <h2>Ceny i dostępność</h2>

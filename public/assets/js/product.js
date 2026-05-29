@@ -67,13 +67,13 @@ function renderProduct(product) {
       </aside>
       <div class="product-content">
         ${renderProductBreadcrumbs(product, category)}
-        <article class="product-detail" itemscope itemtype="https://schema.org/Product">
+        <article class="product-detail">
           <section class="detail-gallery">
             <div class="gallery-main">
               ${images.length > 1 ? '<button class="gallery-arrow gallery-arrow-prev" type="button" data-gallery-prev aria-label="Poprzednie zdjęcie">&lsaquo;</button>' : ""}
               ${image ? `
                 <button class="detail-main-trigger" type="button" data-gallery-open aria-label="Otwórz zdjęcie produktu">
-                  <img class="detail-main-image" src="${escapeAttribute(allegroImageVariant(image, "s720"))}" ${imageSrcset(image, ["s512", "s720", "s1024"])} sizes="(max-width: 760px) 92vw, 520px" alt="${escapeAttribute(productImageAlt(product))}" itemprop="image" data-gallery-main>
+                  <img class="detail-main-image" src="${escapeAttribute(allegroImageVariant(image, "s720"))}" ${imageSrcset(image, ["s512", "s720", "s1024"])} sizes="(max-width: 760px) 92vw, 520px" alt="${escapeAttribute(productImageAlt(product))}" data-gallery-main>
                 </button>
               ` : '<div class="image-fallback">BookLoft</div>'}
               ${images.length > 1 ? '<button class="gallery-arrow gallery-arrow-next" type="button" data-gallery-next aria-label="Następne zdjęcie">&rsaquo;</button>' : ""}
@@ -88,17 +88,14 @@ function renderProduct(product) {
           </section>
           <section class="detail-info">
             <p class="eyebrow">${escapeHtml(category)}</p>
-            <h1 itemprop="name">${escapeHtml(product.name)}</h1>
-        <div class="detail-purchase" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+            <h1>${escapeHtml(product.name)}</h1>
+        <div class="detail-purchase">
           <strong>${price}</strong>
-          ${product.price === null ? "" : `<meta itemprop="price" content="${escapeAttribute(product.price)}"><meta itemprop="priceCurrency" content="${escapeAttribute(product.currency || "PLN")}">`}
-          <link itemprop="availability" href="${stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"}">
-          <link itemprop="itemCondition" href="https://schema.org/UsedCondition">
         </div>
         <div class="detail-actions">
           <a class="buy-action" href="${escapeAttribute(allegroUrl)}" target="_blank" rel="noopener noreferrer">Kup na Allegro</a>
         </div>
-        <p class="purchase-note">Finalizacja zakupu oraz obsługa płatności, dostawy, zwrotu i reklamacji odbywają się w Allegro.</p>
+        <p class="purchase-note">Finalizacja zakupu oraz obsługa płatności, dostawy, zwrotu i reklamacji odbywają się w Allegro. Szczegóły są dostępne w ofercie Allegro oraz w <a href="/informacje-prawne#zwroty-dostawa">informacjach prawnych BookLoft</a>.</p>
         ${specs}
       </section>
     </article>
@@ -684,17 +681,14 @@ function renderRelated(products) {
 function renderRelatedCard(product) {
   const image = product.images && product.images.length ? allegroImageVariant(product.images[0], "s256") : "";
   return `
-    <a class="related-card" href="/product/${encodeURIComponent(product.id)}/${encodeURIComponent(product.slug || "produkt")}" itemscope itemtype="https://schema.org/Product">
+    <a class="related-card" href="/product/${encodeURIComponent(product.id)}/${encodeURIComponent(product.slug || "produkt")}">
       <span class="related-thumb">
-        ${image ? `<img src="${escapeAttribute(image)}" loading="lazy" decoding="async" alt="${escapeAttribute(productImageAlt(product))}" itemprop="image">` : "<span>BookLoft</span>"}
+        ${image ? `<img src="${escapeAttribute(image)}" loading="lazy" decoding="async" alt="${escapeAttribute(productImageAlt(product))}">` : "<span>BookLoft</span>"}
       </span>
       <span class="related-copy">
-        <span itemprop="name">${escapeHtml(product.name)}</span>
-        <strong itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+        <span>${escapeHtml(product.name)}</span>
+        <strong>
           ${product.price === null ? "Cena do ustalenia" : formatPrice(product.price, product.currency)}
-          ${product.price === null ? "" : `<meta itemprop="price" content="${escapeAttribute(product.price)}"><meta itemprop="priceCurrency" content="${escapeAttribute(product.currency || "PLN")}">`}
-          <link itemprop="availability" href="https://schema.org/InStock">
-          <link itemprop="itemCondition" href="https://schema.org/UsedCondition">
         </strong>
       </span>
     </a>

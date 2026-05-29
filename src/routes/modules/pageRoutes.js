@@ -268,7 +268,7 @@ function renderProductPage(config, product, storefront) {
   const productUrl = absoluteUrl(config, productPath(product));
   const image = product.images?.[0] || absoluteUrl(config, "/assets/img/logo.png");
   const categoryOptions = visibleCategories(storefront.categories);
-  const jsonLd = JSON.stringify(productJsonLd(product, productUrl, image, description, category)).replaceAll("</", "<\\/");
+  const jsonLd = JSON.stringify(productJsonLd(config, product, productUrl, image, description, category)).replaceAll("</", "<\\/");
   const breadcrumbSchema = JSON.stringify(breadcrumbJsonLd(productBreadcrumbItems(config, product, productUrl))).replaceAll("</", "<\\/");
   const bootstrap = JSON.stringify(product).replaceAll("</", "<\\/");
 
@@ -362,13 +362,13 @@ function renderProductBody(config, product, category, categoryOptions, totalCoun
       </aside>
       <div class="product-content">
         ${renderProductBreadcrumbs(config, product, category)}
-        <article class="product-detail" itemscope itemtype="https://schema.org/Product">
+        <article class="product-detail">
           <section class="detail-gallery">
             <div class="gallery-main">
               ${images.length > 1 ? '<button class="gallery-arrow gallery-arrow-prev" type="button" data-gallery-prev aria-label="Poprzednie zdjęcie">&lsaquo;</button>' : ""}
               ${image ? `
                 <button class="detail-main-trigger" type="button" data-gallery-open aria-label="Otwórz zdjęcie produktu">
-                  <img class="detail-main-image" src="${escapeAttribute(allegroImageVariant(image, "s720"))}" ${imageSrcset(image, ["s512", "s720", "s1024"])} sizes="(max-width: 760px) 92vw, 520px" alt="${escapeAttribute(productImageAlt(product))}" itemprop="image" data-gallery-main>
+                  <img class="detail-main-image" src="${escapeAttribute(allegroImageVariant(image, "s720"))}" ${imageSrcset(image, ["s512", "s720", "s1024"])} sizes="(max-width: 760px) 92vw, 520px" alt="${escapeAttribute(productImageAlt(product))}" data-gallery-main>
                 </button>
               ` : '<div class="image-fallback">BookLoft</div>'}
               ${images.length > 1 ? '<button class="gallery-arrow gallery-arrow-next" type="button" data-gallery-next aria-label="Następne zdjęcie">&rsaquo;</button>' : ""}
@@ -383,17 +383,14 @@ function renderProductBody(config, product, category, categoryOptions, totalCoun
           </section>
           <section class="detail-info">
             <p class="eyebrow">${escapeHtml(category)}</p>
-            <h1 itemprop="name">${escapeHtml(product.name)}</h1>
-            <div class="detail-purchase" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+            <h1>${escapeHtml(product.name)}</h1>
+            <div class="detail-purchase">
               <strong>${price}</strong>
-              ${product.price === null ? "" : `<meta itemprop="price" content="${escapeAttribute(product.price)}"><meta itemprop="priceCurrency" content="${escapeAttribute(product.currency || "PLN")}">`}
-              <link itemprop="availability" href="${stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"}">
-              <link itemprop="itemCondition" href="https://schema.org/UsedCondition">
             </div>
             <div class="detail-actions">
               <a class="buy-action" href="${escapeAttribute(allegroUrl)}" target="_blank" rel="noopener noreferrer">Kup na Allegro</a>
             </div>
-            <p class="purchase-note">Finalizacja zakupu oraz obsługa płatności, dostawy, zwrotu i reklamacji odbywają się w Allegro.</p>
+            <p class="purchase-note">Finalizacja zakupu oraz obsługa płatności, dostawy, zwrotu i reklamacji odbywają się w Allegro. Szczegóły są dostępne w ofercie Allegro oraz w <a href="${appPath(config.basePath, "/informacje-prawne#zwroty-dostawa")}">informacjach prawnych BookLoft</a>.</p>
             ${specs}
           </section>
         </article>
@@ -444,18 +441,15 @@ function renderProductCard(product, index = 0) {
   const imagePriority = index < 2 ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"';
   const srcset = rawImage ? imageSrcset(rawImage, ["s256", "s400", "s512", "s720"]) : "";
 
-  return `<article class="product-card" itemscope itemtype="https://schema.org/Product" style="--card-delay: ${Math.min(index, 16) * 28}ms">
-    <a class="product-media${image ? " is-loaded" : " is-loaded"}" href="${link}" aria-label="${escapeAttribute(product.name)}" itemprop="url">
-      ${image ? `<img src="${escapeAttribute(image)}" ${srcset} sizes="(max-width: 520px) 45vw, (max-width: 980px) 30vw, 240px" ${imagePriority} decoding="async" alt="${escapeAttribute(productImageAlt(product))}" itemprop="image">` : '<div class="image-fallback">BookLoft</div>'}
+  return `<article class="product-card" style="--card-delay: ${Math.min(index, 16) * 28}ms">
+    <a class="product-media${image ? " is-loaded" : " is-loaded"}" href="${link}" aria-label="${escapeAttribute(product.name)}">
+      ${image ? `<img src="${escapeAttribute(image)}" ${srcset} sizes="(max-width: 520px) 45vw, (max-width: 980px) 30vw, 240px" ${imagePriority} decoding="async" alt="${escapeAttribute(productImageAlt(product))}">` : '<div class="image-fallback">BookLoft</div>'}
     </a>
     <div class="product-body">
       <span class="product-category">${escapeHtml(product.categoryName || leafCategoryName(product) || "Książka")}</span>
-      <h2><a href="${link}" itemprop="name">${escapeHtml(product.name)}</a></h2>
-      <div class="price-row" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+      <h2><a href="${link}">${escapeHtml(product.name)}</a></h2>
+      <div class="price-row">
         <strong>${price}</strong>
-        ${product.price === null ? "" : `<meta itemprop="price" content="${escapeAttribute(product.price)}"><meta itemprop="priceCurrency" content="${escapeAttribute(product.currency || "PLN")}">`}
-        <link itemprop="availability" href="https://schema.org/InStock">
-        <link itemprop="itemCondition" href="https://schema.org/UsedCondition">
       </div>
       <div class="product-actions">
         <a class="details-action action-full" href="${link}" aria-label="Zobacz ${escapeAttribute(product.name)}">Zobacz</a>
@@ -478,17 +472,14 @@ function renderRelated(products) {
 function renderRelatedCard(product) {
   const image = product.images && product.images.length ? allegroImageVariant(product.images[0], "s256") : "";
   return `
-    <a class="related-card" href="${productPath(product)}" itemscope itemtype="https://schema.org/Product">
+    <a class="related-card" href="${productPath(product)}">
       <span class="related-thumb">
-        ${image ? `<img src="${escapeAttribute(image)}" loading="lazy" decoding="async" alt="${escapeAttribute(productImageAlt(product))}" itemprop="image">` : "<span>BookLoft</span>"}
+        ${image ? `<img src="${escapeAttribute(image)}" loading="lazy" decoding="async" alt="${escapeAttribute(productImageAlt(product))}">` : "<span>BookLoft</span>"}
       </span>
       <span class="related-copy">
-        <span itemprop="name">${escapeHtml(product.name)}</span>
-        <strong itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+        <span>${escapeHtml(product.name)}</span>
+        <strong>
           ${product.price === null ? "Cena do ustalenia" : formatPrice(product.price, product.currency)}
-          ${product.price === null ? "" : `<meta itemprop="price" content="${escapeAttribute(product.price)}"><meta itemprop="priceCurrency" content="${escapeAttribute(product.currency || "PLN")}">`}
-          <link itemprop="availability" href="https://schema.org/InStock">
-          <link itemprop="itemCondition" href="https://schema.org/UsedCondition">
         </strong>
       </span>
     </a>
@@ -651,41 +642,51 @@ function storePageMeta(config, { category, query, productCount }) {
   };
 }
 
-function productJsonLd(product, url, image, description, category) {
+function productJsonLd(config, product, url, image, description, category) {
+  const identifiers = productIdentifiers(product);
+  const publisher = productFeatureValue(product, ["wydawnictwo", "producent"]);
   const additionalProperty = selectedProductFeatures(product.features || [], 10).map((feature) => ({
     "@type": "PropertyValue",
-    name: feature.name,
-    value: feature.value
-  }));
+    name: schemaText(feature.name, "Cecha"),
+    value: schemaText(feature.value, "")
+  })).filter((feature) => feature.name && feature.value);
   const offer = product.price === null
     ? undefined
     : {
         "@type": "Offer",
-        priceCurrency: product.currency || "PLN",
-        price: product.price,
+        "@id": `${url}#offer`,
+        priceCurrency: schemaText(product.currency || "PLN", "PLN"),
+        price: Number(product.price),
         availability: Number(product.stock || 0) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
         itemCondition: "https://schema.org/UsedCondition",
-        url: product.allegroUrl || url,
-        seller: {
-          "@type": "Organization",
-          name: "BookLoft"
-        }
+        url: schemaText(product.allegroUrl || url, url),
+        seller: { "@id": organizationId(config) }
       };
-
-  return {
-    "@context": "https://schema.org",
+  const productData = {
     "@type": "Product",
-    name: product.name,
-    description,
-    image: product.images?.length ? product.images : [image],
-    sku: product.sku || String(product.id),
-    category,
+    "@id": `${url}#product`,
+    name: schemaText(product.name, "Oferta BookLoft"),
+    description: schemaText(description, "Używana książka dostępna w BookLoft."),
+    image: cleanImageList(product.images?.length ? product.images : [image]),
+    sku: schemaText(product.sku || product.id, String(product.id || "")),
+    category: schemaText(category, "Książki używane"),
     brand: {
       "@type": "Brand",
-      name: "BookLoft"
+      name: schemaText(publisher || "BookLoft", "BookLoft")
     },
     additionalProperty,
     offers: offer
+  };
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      storeIdentityJsonLd(config),
+      compactJsonLd({
+        ...productData,
+        ...identifiers
+      })
+    ]
   };
 }
 
@@ -693,21 +694,13 @@ function siteJsonLd(config) {
   return {
     "@context": "https://schema.org",
     "@graph": [
-      {
-        "@type": "Organization",
-        "@id": `${config.publicOrigin}/#organization`,
-        name: "BookLoft",
-        url: `${config.publicOrigin}/`,
-        logo: absoluteUrl(config, "/assets/img/logo.png"),
-        email: "bookloft.store@gmail.com",
-        telephone: "+48518104941"
-      },
+      storeIdentityJsonLd(config),
       {
         "@type": "WebSite",
         "@id": `${config.publicOrigin}/#website`,
         url: `${config.publicOrigin}/`,
         name: "BookLoft",
-        publisher: { "@id": `${config.publicOrigin}/#organization` },
+        publisher: { "@id": organizationId(config) },
         potentialAction: {
           "@type": "SearchAction",
           target: `${config.publicOrigin}/?q={search_term_string}`,
@@ -718,6 +711,63 @@ function siteJsonLd(config) {
   };
 }
 
+function organizationId(config) {
+  return `${config.publicOrigin}/#organization`;
+}
+
+function returnPolicyId(config) {
+  return absoluteUrl(config, "/informacje-prawne#return-policy");
+}
+
+function shippingPolicyId(config) {
+  return absoluteUrl(config, "/informacje-prawne#shipping-policy");
+}
+
+function legalPolicyUrl(config) {
+  return absoluteUrl(config, "/informacje-prawne#zwroty-dostawa");
+}
+
+function storeIdentityJsonLd(config) {
+  return compactJsonLd({
+    "@type": "OnlineStore",
+    "@id": organizationId(config),
+    name: "BookLoft",
+    legalName: "BookLoft Mateusz Kaczmarek",
+    url: `${config.publicOrigin}/`,
+    logo: absoluteUrl(config, "/assets/img/logo.png"),
+    email: "bookloft.store@gmail.com",
+    telephone: "+48518104941",
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: "334c",
+      postalCode: "33-152",
+      addressLocality: "Pogorska Wola",
+      addressCountry: "PL"
+    },
+    vatID: "PL9930688202",
+    hasMerchantReturnPolicy: {
+      "@type": "MerchantReturnPolicy",
+      "@id": returnPolicyId(config),
+      merchantReturnLink: legalPolicyUrl(config)
+    },
+    hasShippingService: {
+      "@type": "ShippingService",
+      "@id": shippingPolicyId(config),
+      name: "Dostawa zgodnie z ofertą Allegro",
+      description: "Metody, koszty i terminy dostawy są wybierane oraz potwierdzane w konkretnej ofercie Allegro.",
+      url: legalPolicyUrl(config),
+      areaServed: "PL",
+      shippingConditions: {
+        "@type": "ShippingConditions",
+        shippingDestination: {
+          "@type": "DefinedRegion",
+          addressCountry: "PL"
+        }
+      }
+    }
+  });
+}
+
 function itemListJsonLd(config, products) {
   return {
     "@context": "https://schema.org",
@@ -726,7 +776,7 @@ function itemListJsonLd(config, products) {
       "@type": "ListItem",
       position: index + 1,
       url: absoluteUrl(config, productPath(product)),
-      name: product.name
+      name: schemaText(product.name, "Oferta BookLoft")
     }))
   };
 }
@@ -994,6 +1044,56 @@ function productFeatureValue(product, keys) {
   const wanted = new Set(keys.map(normalizeFeatureName));
   const value = cleanSpecValue((product.features || []).find((feature) => wanted.has(normalizeFeatureName(feature.name)))?.value || "");
   return isGenericUsedCondition(value) ? "" : value;
+}
+
+function productIdentifiers(product) {
+  const isbn = normalizeIsbn(productFeatureValue(product, ["isbn"]));
+  const ean = normalizeDigits(productFeatureValue(product, ["ean", "kod ean", "kod producenta"]));
+  const gtin = ean || (isbn.length === 13 ? isbn : "");
+  const identifiers = {};
+
+  if (isbn) identifiers.isbn = isbn;
+  if (gtin.length === 8) identifiers.gtin8 = gtin;
+  if (gtin.length === 12) identifiers.gtin12 = gtin;
+  if (gtin.length === 13) identifiers.gtin13 = gtin;
+  if (gtin.length === 14) identifiers.gtin14 = gtin;
+  return identifiers;
+}
+
+function normalizeDigits(value) {
+  return String(value || "").replace(/\D/g, "");
+}
+
+function normalizeIsbn(value) {
+  const normalized = String(value || "").replace(/[^0-9Xx]/g, "").toUpperCase();
+  return normalized.length === 10 || normalized.length === 13 ? normalized : "";
+}
+
+function cleanImageList(images) {
+  return [...new Set((images || []).map((src) => schemaText(src, "")).filter(Boolean))];
+}
+
+function schemaText(value, fallback = "") {
+  const text = String(value ?? "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return text || fallback;
+}
+
+function compactJsonLd(value) {
+  if (Array.isArray(value)) {
+    return value.map(compactJsonLd).filter((item) => item !== undefined);
+  }
+  if (!value || typeof value !== "object") return value;
+
+  const entries = Object.entries(value)
+    .map(([key, item]) => [key, compactJsonLd(item)])
+    .filter(([, item]) => {
+      if (item === undefined || item === null || item === "") return false;
+      if (Array.isArray(item) && item.length === 0) return false;
+      return true;
+    });
+  return Object.fromEntries(entries);
 }
 
 function descriptionCondition(descriptionHtml) {

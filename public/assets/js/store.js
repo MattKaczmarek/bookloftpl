@@ -252,8 +252,6 @@ function renderProduct(product, index = 0) {
   const link = productUrl(product);
   const card = document.createElement("article");
   card.className = "product-card";
-  card.setAttribute("itemscope", "");
-  card.setAttribute("itemtype", "https://schema.org/Product");
   card.style.setProperty("--card-delay", `${Math.min(index, 16) * 28}ms`);
 
   const rawImage = product.images && product.images.length ? product.images[0] : "";
@@ -262,17 +260,14 @@ function renderProduct(product, index = 0) {
   const imagePriority = index < 2 ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"';
   const srcset = rawImage ? imageSrcset(rawImage, ["s256", "s400", "s512", "s720"]) : "";
   card.innerHTML = `
-    <a class="product-media${image ? "" : " is-loaded"}" href="${link}" aria-label="${escapeAttribute(product.name)}" itemprop="url">
-      ${image ? `<img src="${escapeAttribute(image)}" ${srcset} sizes="(max-width: 520px) 45vw, (max-width: 980px) 30vw, 240px" ${imagePriority} decoding="async" alt="${escapeAttribute(product.name)}" itemprop="image">` : '<div class="image-fallback">BookLoft</div>'}
+    <a class="product-media${image ? "" : " is-loaded"}" href="${link}" aria-label="${escapeAttribute(product.name)}">
+      ${image ? `<img src="${escapeAttribute(image)}" ${srcset} sizes="(max-width: 520px) 45vw, (max-width: 980px) 30vw, 240px" ${imagePriority} decoding="async" alt="${escapeAttribute(product.name)}">` : '<div class="image-fallback">BookLoft</div>'}
     </a>
     <div class="product-body">
       <span class="product-category">${escapeHtml(product.categoryName || "Książka")}</span>
-      <h2><a href="${link}" itemprop="name">${escapeHtml(product.name)}</a></h2>
-      <div class="price-row" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+      <h2><a href="${link}">${escapeHtml(product.name)}</a></h2>
+      <div class="price-row">
         <strong>${price}</strong>
-        ${product.price === null ? "" : `<meta itemprop="price" content="${escapeAttribute(product.price)}"><meta itemprop="priceCurrency" content="${escapeAttribute(product.currency || "PLN")}">`}
-        <link itemprop="availability" href="https://schema.org/InStock">
-        <link itemprop="itemCondition" href="https://schema.org/UsedCondition">
       </div>
       <div class="product-actions">
         <a class="details-action action-full" href="${link}" aria-label="Zobacz ${escapeAttribute(product.name)}">Zobacz</a>
