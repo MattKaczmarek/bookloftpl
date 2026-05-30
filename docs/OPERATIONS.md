@@ -193,6 +193,7 @@ Prawidlowe branche repo:
 - `ver-1.09`,
 - `ver-1.11`,
 - `ver-1.12`,
-- `ver-1.13`.
+- `ver-1.13`,
+- `ver-1.14`.
 
 Robocze branche z prefiksem `codex/` nie sa linia wersji sklepu i po przeniesieniu zmian do aktualnego brancha `ver-*` powinny byc usuniete lokalnie oraz z GitHuba.
