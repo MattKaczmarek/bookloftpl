@@ -660,7 +660,8 @@ function productJsonLd(config, product, url, image, description, category) {
         availability: Number(product.stock || 0) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
         itemCondition: "https://schema.org/UsedCondition",
         url: schemaText(product.allegroUrl || url, url),
-        seller: { "@id": organizationId(config) }
+        seller: { "@id": organizationId(config) },
+        hasMerchantReturnPolicy: { "@id": returnPolicyId(config) }
       };
   const productData = {
     "@type": "Product",
