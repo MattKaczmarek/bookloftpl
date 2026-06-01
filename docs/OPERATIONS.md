@@ -72,7 +72,7 @@ Jesli token wygasnie albo zostanie cofniety, w panelu pojawi sie blad i trzeba p
 
 - `/informacje-prawne` jest strona informacyjna dla katalogu prowadzacego do Allegro.
 - `/o-nas` jest osobna strona o BookLoft; strona glowna pozostaje samym katalogiem bez sekcji `O nas`.
-- Dane firmy: BookLoft Mateusz Kaczmarek, 334c, 33-152 Pogorska Wola, NIP 9930688202, REGON 522042224, bookloft.store@gmail.com, 518 104 941.
+- Dane firmy: BookLoft Mateusz Kaczmarek, Pogórska Wola 334c, 33-152 Pogórska Wola, NIP 9930688202, REGON 522042224, bookloft.store@gmail.com, 518 104 941.
 - BookLoft.pl nie ma koszyka ani platnosci; zakup, dostawa, zwroty i reklamacje odbywaja sie w Allegro.
 - Google Analytics jest osadzony przez `public/assets/js/analytics.js` i włącza się dopiero po zgodzie na cookies analityczne; cofnięcie zgody jest dostępne na `/informacje-prawne`, wysyła `analytics_storage=denied` i usuwa cookies GA.
 - Identyfikator GA jest domyslnie taki jak na dotychczasowym landingu (`G-NQH5FFJ8Y4`), ale moze byc nadpisany przez `BOOKLOFT_GA_ID`.

@@ -739,9 +739,9 @@ function storeIdentityJsonLd(config) {
     telephone: "+48518104941",
     address: {
       "@type": "PostalAddress",
-      streetAddress: "334c",
+      streetAddress: "Pogórska Wola 334c",
       postalCode: "33-152",
-      addressLocality: "Pogorska Wola",
+      addressLocality: "Pogórska Wola",
       addressCountry: "PL"
     },
     vatID: "PL9930688202",

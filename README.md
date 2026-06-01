@@ -135,7 +135,7 @@ Zasady:
 
 ## Informacje prawne i analityka
 
-- Dane firmy na stronie: `BookLoft Mateusz Kaczmarek`, 334c, 33-152 Pogorska Wola, NIP `9930688202`, REGON `522042224`, `bookloft.store@gmail.com`, `518 104 941`.
+- Dane firmy na stronie: `BookLoft Mateusz Kaczmarek`, Pogórska Wola 334c, 33-152 Pogórska Wola, NIP `9930688202`, REGON `522042224`, `bookloft.store@gmail.com`, `518 104 941`.
 - `/informacje-prawne` nie jest pelnym regulaminem samodzielnego sklepu, bo aplikacja nie ma koszyka ani platnosci.
 - `/informacje-prawne#zwroty-dostawa` opisuje, ze finalne metody, koszty i terminy dostawy oraz zwroty/reklamacje sa potwierdzane w konkretnej ofercie Allegro; nie wpisujemy sztucznych kosztow dostawy w schema.org.
 - Google Analytics używa `BOOKLOFT_GA_ID`; domyślnie jest to identyfikator z dotychczasowego landingu.
