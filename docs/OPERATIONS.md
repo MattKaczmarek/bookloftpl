@@ -79,8 +79,8 @@ Jesli token wygasnie albo zostanie cofniety, w panelu pojawi sie blad i trzeba p
 
 ## SEO i rendering publiczny
 
-- SSR listingu zostaje ograniczony do pierwszych 50 produktow; kolejne produkty laduja sie po scrollowaniu po stronie klienta.
-- Strony kategorii maja publiczne canonicale, opisy tematyczne SEO, `BreadcrumbList`, wpisy w sitemap oraz realne linki do pierwszych 50 ofert z danej kategorii.
+- SSR listingu zostaje ograniczony do 50 produktow na strone; kolejne produkty laduja sie po scrollowaniu po stronie klienta.
+- Katalog ma indeksowalna paginacje HTML pod `/strona/:page`, a kategorie pod `/kategoria/:id/:slug/strona/:page`, z publicznymi canonicalami, linkami `prev`/`next`, wpisami w sitemap i realnymi linkami do ofert bez JavaScriptu.
 - Listing i kategorie maja tylko `ItemList`/`BreadcrumbList`; karty ofert nie maja microdata `Product`/`Offer`, zeby Search Console nie traktowal miniaturek jako niepelnych produktow.
 - Strony produktow maja pelne JSON-LD `Product`/`Offer`, `BreadcrumbList`, sprzedawce `OnlineStore`, linkowana polityke zwrotow/dostawy oraz `PropertyValue` i ISBN/EAN/GTIN budowane z parametrow Allegro, jesli sa dostepne w cache.
 - Meta description produktu jest skladane kontrolowanie z nazwy, kategorii, stanu i informacji o zakupie przez Allegro, bez wklejania surowego opisu z Allegro.
@@ -158,7 +158,7 @@ Oczekiwane publicznie:
 - strona glowna pokazuje nowosci i katalog, a kolejne oferty dociagaja sie automatycznie podczas scrollowania,
 - strona glowna, kategorie i produkty maja server-rendered HTML z realnymi linkami widocznymi bez JavaScriptu,
 - `robots.txt` dopuszcza katalog, blokuje panel/login/admin API i wskazuje publiczny `/sitemap.xml`,
-- `/sitemap.xml` jest publiczne i zawiera strone glowna, strony informacyjne, kategorie oraz produkty,
+- `/sitemap.xml` jest publiczne i zawiera strone glowna, strony informacyjne, kategorie, strony paginacji oraz produkty,
 - niedostepna historyczna oferta zwraca `410 Gone`, a nieznany produkt `404 Not Found`,
 - nieznane publiczne sciezki HTML zwracaja `404` z `noindex` zamiast przekierowania na strone glowna,
 - fonty sa serwowane lokalnie z `public/assets/fonts` przez `public/assets/css/fonts.css`,

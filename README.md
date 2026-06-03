@@ -121,12 +121,12 @@ Zasady:
 
 ## SEO
 
-- `/`, `/kategoria/:id/:slug` i `/product/:id/:slug` sa renderowane po stronie serwera, z realnymi linkami do ofert bez wymagania JavaScriptu.
-- SSR listingu pozostaje ograniczony do pierwszych 50 produktow, a reszta katalogu dociaga sie podczas scrollowania; to utrzymuje lekki HTML bez utraty publicznych adresow kategorii i produktow.
+- `/`, `/strona/:page`, `/kategoria/:id/:slug`, `/kategoria/:id/:slug/strona/:page` i `/product/:id/:slug` sa renderowane po stronie serwera, z realnymi linkami do ofert bez wymagania JavaScriptu.
+- SSR listingu pozostaje ograniczony do 50 produktow na strone, ale katalog i kategorie maja indeksowalna paginacje HTML. Infinite scroll nadal dociaga kolejne paczki po stronie klienta, a Google moze przejsc przez zwykle linki poprzednia/nastepna.
 - Stare lub bledne slugi produktu i kategorii przekierowuja 301 na adres kanoniczny.
 - Niedostepne historyczne oferty zwracaja `410 Gone`, a nieznane identyfikatory `404 Not Found`; obie odpowiedzi sa `noindex`.
 - Nieznane publiczne sciezki HTML zwracaja `404` z `noindex`, zamiast przekierowywac crawlera na strone glowna.
-- `/sitemap.xml` zawiera strone glowna, strony informacyjne, publiczne kategorie i aktywne produkty.
+- `/sitemap.xml` zawiera strone glowna, strony informacyjne, publiczne kategorie, strony paginacji katalogu/kategorii i aktywne produkty.
 - Dane strukturalne na listingach obejmuja `Organization`, `WebSite`, `ItemList` oraz `BreadcrumbList`; karty ofert nie udaja osobnych `Product`/`Offer`, zeby Google nie raportowal brakow z miniaturek.
 - Pelne dane `Product`/`Offer` sa tylko na stronach `/product/:id/:slug`; zawieraja sprzedawce `OnlineStore`, linkowana polityke zwrotow/dostawy, opis, cene, dostepnosc, stan oraz ISBN/EAN/GTIN, jesli sa dostepne w parametrach Allegro.
 - Publiczne API listingu zwraca tylko pierwsze zdjecie produktu, zeby ograniczyc wage `/api/storefront`; pelna galeria zostaje na `/api/products/:id`.

@@ -39,6 +39,75 @@ export function createPageRouter(config, storeCache) {
   );
 
   router.get(
+    "/strona/:page",
+    asyncHandler(async (req, res) => {
+      const page = parsePageParam(req.params.page);
+      if (!page) {
+        res.status(404).type("html").send(renderNotFoundPage(config, "Nie znaleziono strony katalogu"));
+        return;
+      }
+      if (page === 1) {
+        res.redirect(301, appPath(config.basePath, "/"));
+        return;
+      }
+
+      const [storefront, newestProducts] = await Promise.all([
+        storeCache.getStorefront(),
+        storeCache.getNewestProducts(SSR_PRODUCT_LIMIT)
+      ]);
+      const products = listingProducts(storefront.products, { newestProducts });
+      const totalPages = pageCount(products.length);
+      if (page > totalPages) {
+        res.status(404).type("html").send(renderNotFoundPage(config, "Nie znaleziono strony katalogu"));
+        return;
+      }
+
+      const canonicalPath = catalogPagePath(page);
+      if (req.path !== canonicalPath) {
+        res.redirect(301, appPath(config.basePath, canonicalPath));
+        return;
+      }
+
+      res.type("html").send(renderStorePage(config, storefront, {
+        newestProducts,
+        page
+      }));
+    })
+  );
+
+  router.get(
+    "/kategoria/:categoryId/:slug/strona/:page",
+    asyncHandler(async (req, res) => {
+      const page = parsePageParam(req.params.page);
+      const storefront = await storeCache.getStorefront();
+      const category = findCategoryById(storefront.categories, req.params.categoryId);
+      if (!page || !category) {
+        res.status(404).type("html").send(renderNotFoundPage(config, "Nie znaleziono kategorii"));
+        return;
+      }
+      if (page === 1) {
+        res.redirect(301, appPath(config.basePath, categoryPath(category)));
+        return;
+      }
+
+      const products = listingProducts(storefront.products, { categoryId: category.id });
+      const totalPages = pageCount(products.length);
+      if (page > totalPages) {
+        res.status(404).type("html").send(renderNotFoundPage(config, "Nie znaleziono strony kategorii"));
+        return;
+      }
+
+      const canonicalPath = categoryPagePath(category, page);
+      if (req.path !== canonicalPath) {
+        res.redirect(301, appPath(config.basePath, canonicalPath));
+        return;
+      }
+
+      res.type("html").send(renderStorePage(config, storefront, { category, page }));
+    })
+  );
+
+  router.get(
     "/kategoria/:categoryId/:slug?",
     asyncHandler(async (req, res) => {
       const storefront = await storeCache.getStorefront();
@@ -117,6 +186,8 @@ export function createPageRouter(config, storeCache) {
           loc: absoluteUrl(config, categoryPath(category)),
           priority: "0.7"
         })),
+        ...catalogPaginationUrls(config, storefront.products.length, "0.6"),
+        ...categoryPaginationUrls(config, storefront.products, categories),
         ...storefront.products.map((product) => ({
           loc: absoluteUrl(config, productPath(product)),
           priority: "0.8"
@@ -130,22 +201,37 @@ export function createPageRouter(config, storeCache) {
   return router;
 }
 
-function renderStorePage(config, storefront, { category = null, query = "", newestProducts = [] } = {}) {
+function renderStorePage(config, storefront, { category = null, query = "", newestProducts = [], page = 1 } = {}) {
   const normalizedQuery = query.trim().toLowerCase();
   const products = listingProducts(storefront.products, {
     categoryId: category?.id || "",
     query: normalizedQuery,
     newestProducts
   });
-  const visibleProducts = products.slice(0, SSR_PRODUCT_LIMIT);
-  const pageMeta = storePageMeta(config, { category, query: normalizedQuery, productCount: products.length });
+  const currentPage = normalizedQuery ? 1 : Math.max(1, page);
+  const totalPages = normalizedQuery ? 1 : pageCount(products.length);
+  const pageOffset = (currentPage - 1) * SSR_PRODUCT_LIMIT;
+  const visibleProducts = products.slice(pageOffset, pageOffset + SSR_PRODUCT_LIMIT);
+  const pageMeta = storePageMeta(config, {
+    category,
+    query: normalizedQuery,
+    productCount: products.length,
+    page: currentPage,
+    totalPages
+  });
+  const pagination = normalizedQuery ? null : catalogPagination(config, {
+    category,
+    currentPage,
+    totalPages,
+    productCount: products.length
+  });
   const categoryOptions = visibleCategories(storefront.categories);
   const categoryRail = renderCategoryRail(config, categoryOptions, {
     activeCategoryId: category?.id || "",
     totalCount: storefront.meta?.productCount || storefront.products.length
   });
   const categorySelect = renderCategorySelect(categoryOptions, category?.id || "");
-  const itemListSchema = JSON.stringify(itemListJsonLd(config, visibleProducts)).replaceAll("</", "<\\/");
+  const itemListSchema = JSON.stringify(itemListJsonLd(config, visibleProducts, pageOffset)).replaceAll("</", "<\\/");
   const siteSchema = JSON.stringify(siteJsonLd(config)).replaceAll("</", "<\\/");
   const breadcrumbSchema = category
     ? JSON.stringify(breadcrumbJsonLd([
@@ -168,6 +254,8 @@ function renderStorePage(config, storefront, { category = null, query = "", newe
   <meta property="og:description" content="${escapeAttribute(pageMeta.description)}">
   <meta property="og:url" content="${escapeAttribute(pageMeta.canonical)}">
   <meta property="og:image" content="${escapeAttribute(absoluteUrl(config, "/assets/img/loft-hero.jpg"))}">
+  ${pagination?.prevUrl ? `<link rel="prev" href="${escapeAttribute(pagination.prevUrl)}">` : ""}
+  ${pagination?.nextUrl ? `<link rel="next" href="${escapeAttribute(pagination.nextUrl)}">` : ""}
   <meta name="twitter:card" content="summary_large_image">
   <title>${escapeHtml(pageMeta.title)}</title>
   <script type="application/ld+json">${siteSchema}</script>
@@ -184,6 +272,8 @@ function renderStorePage(config, storefront, { category = null, query = "", newe
     window.BOOKLOFT_INITIAL_CATEGORY_ID=${JSON.stringify(category?.id || "")};
     window.BOOKLOFT_INITIAL_QUERY=${JSON.stringify(normalizedQuery)};
     window.BOOKLOFT_INITIAL_PRODUCT_IDS=${JSON.stringify(visibleProducts.map((product) => String(product.id)))};
+    window.BOOKLOFT_INITIAL_OFFSET=${JSON.stringify(pageOffset)};
+    window.BOOKLOFT_INITIAL_PAGE=${JSON.stringify(currentPage)};
     window.BOOKLOFT_ANALYTICS_ID=${JSON.stringify(config.googleAnalyticsId || "")};
   </script>
   <script defer src="${appPath(config.basePath, `/assets/js/analytics.js?v=${config.version}`)}"></script>
@@ -245,6 +335,7 @@ function renderStorePage(config, storefront, { category = null, query = "", newe
       <div class="product-grid" id="product-grid" aria-busy="false">
         ${visibleProducts.map((product, index) => renderProductCard(product, index)).join("\n")}
       </div>
+      ${pagination ? renderCatalogPagination(pagination) : ""}
       <div class="load-sentinel" id="load-sentinel" aria-hidden="true" ${products.length > SSR_PRODUCT_LIMIT ? "" : "hidden"}></div>
       <div class="empty-state" id="empty-state" ${products.length ? "hidden" : ""}>
         <span class="empty-mark" aria-hidden="true">B</span>
@@ -602,7 +693,77 @@ ${urls
 </urlset>`;
 }
 
-function storePageMeta(config, { category, query, productCount }) {
+function catalogPaginationUrls(config, productCount, priority) {
+  return Array.from({ length: Math.max(0, pageCount(productCount) - 1) }, (_item, index) => ({
+    loc: absoluteUrl(config, catalogPagePath(index + 2)),
+    priority
+  }));
+}
+
+function categoryPaginationUrls(config, products, categories) {
+  return categories.flatMap((category) => {
+    const count = listingProducts(products, { categoryId: category.id }).length;
+    return Array.from({ length: Math.max(0, pageCount(count) - 1) }, (_item, index) => ({
+      loc: absoluteUrl(config, categoryPagePath(category, index + 2)),
+      priority: "0.5"
+    }));
+  });
+}
+
+function catalogPagination(config, { category, currentPage, totalPages, productCount }) {
+  if (totalPages <= 1) return null;
+  const pageUrl = (page) => absoluteUrl(config, category ? categoryPagePath(category, page) : catalogPagePath(page));
+  const start = Math.max(1, (currentPage - 1) * SSR_PRODUCT_LIMIT + 1);
+  const end = Math.min(productCount, currentPage * SSR_PRODUCT_LIMIT);
+  return {
+    currentPage,
+    totalPages,
+    productCount,
+    start,
+    end,
+    prevUrl: currentPage > 1 ? pageUrl(currentPage - 1) : "",
+    nextUrl: currentPage < totalPages ? pageUrl(currentPage + 1) : "",
+    pages: paginationWindow(currentPage, totalPages).map((page) => ({
+      page,
+      url: pageUrl(page),
+      current: page === currentPage
+    }))
+  };
+}
+
+function renderCatalogPagination(pagination) {
+  if (!pagination) return "";
+  return `
+      <nav class="catalog-pagination" aria-label="Strony katalogu">
+        <p>Oferty ${pagination.start}-${pagination.end} z ${pagination.productCount}</p>
+        <div class="catalog-pagination-links">
+          ${pagination.prevUrl ? `<a class="pager-link" href="${escapeAttribute(pagination.prevUrl)}" rel="prev">Poprzednia</a>` : `<span class="pager-link is-disabled">Poprzednia</span>`}
+          ${pagination.pages.map((item) => item.current
+            ? `<span class="pager-number is-current" aria-current="page">${item.page}</span>`
+            : `<a class="pager-number" href="${escapeAttribute(item.url)}">${item.page}</a>`
+          ).join("")}
+          ${pagination.nextUrl ? `<a class="pager-link" href="${escapeAttribute(pagination.nextUrl)}" rel="next">Następna</a>` : `<span class="pager-link is-disabled">Następna</span>`}
+        </div>
+      </nav>`;
+}
+
+function paginationWindow(currentPage, totalPages) {
+  const pages = new Set([1, totalPages, currentPage - 1, currentPage, currentPage + 1]);
+  if (currentPage <= 3) pages.add(2).add(3);
+  if (currentPage >= totalPages - 2) pages.add(totalPages - 1).add(totalPages - 2);
+  return [...pages].filter((page) => page >= 1 && page <= totalPages).sort((a, b) => a - b);
+}
+
+function pageCount(productCount) {
+  return Math.max(1, Math.ceil((Number(productCount) || 0) / SSR_PRODUCT_LIMIT));
+}
+
+function parsePageParam(value) {
+  const page = Number(value);
+  return Number.isInteger(page) && page >= 1 ? page : null;
+}
+
+function storePageMeta(config, { category, query, productCount, page = 1, totalPages = 1 }) {
   if (query) {
     return {
       title: `Wyniki wyszukiwania: ${query} | BookLoft`,
@@ -618,27 +779,31 @@ function storePageMeta(config, { category, query, productCount }) {
 
   if (category) {
     const name = category.displayName || category.name;
+    const pageSuffix = page > 1 ? ` - strona ${page}` : "";
+    const pageCopy = page > 1 ? ` Strona ${page} z ${totalPages}, ${productCount} ofert w kategorii.` : "";
     return {
-      title: `${name} - używane produkty | BookLoft`,
-      description: `${name} w BookLoft: używane produkty z realnymi zdjęciami, rzetelnym opisem stanu i zakupem przez Allegro.`,
-      canonical: absoluteUrl(config, categoryPath(category)),
+      title: `${name} - używane produkty${pageSuffix} | BookLoft`,
+      description: `${name} w BookLoft: używane produkty z realnymi zdjęciami, rzetelnym opisem stanu i zakupem przez Allegro.${pageCopy}`,
+      canonical: absoluteUrl(config, categoryPagePath(category, page)),
       robots: "index,follow,max-image-preview:large",
       eyebrow: "Kategoria",
       h1: name,
       copy: categoryIntroCopy(category),
-      listingTitle: "Dostępne oferty"
+      listingTitle: page > 1 ? `Dostępne oferty - strona ${page}` : "Dostępne oferty"
     };
   }
 
+  const pageSuffix = page > 1 ? ` - strona ${page}` : "";
+  const pageCopy = page > 1 ? ` Strona ${page} z ${totalPages}, ${productCount} ofert w katalogu.` : "";
   return {
-    title: "BookLoft - używane książki z drugiego obiegu",
-    description: "BookLoft - używane książki z realnymi zdjęciami, rzetelnym opisem stanu i zakupem finalizowanym na Allegro.",
-    canonical: absoluteUrl(config, "/"),
+    title: `BookLoft - używane książki z drugiego obiegu${pageSuffix}`,
+    description: `BookLoft - używane książki z realnymi zdjęciami, rzetelnym opisem stanu i zakupem finalizowanym na Allegro.${pageCopy}`,
+    canonical: absoluteUrl(config, catalogPagePath(page)),
     robots: "index,follow,max-image-preview:large",
     eyebrow: "Nowości z regału",
     h1: "Wybierz kolejną historię",
     copy: "Nowe tytuły z naszego regału. Przeglądaj ostatnio dodane oferty albo wyszukaj książkę po tytule, autorze lub gatunku.",
-    listingTitle: "Nowości"
+    listingTitle: page > 1 ? `Nowości - strona ${page}` : "Nowości"
   };
 }
 
@@ -769,13 +934,13 @@ function storeIdentityJsonLd(config) {
   });
 }
 
-function itemListJsonLd(config, products) {
+function itemListJsonLd(config, products, offset = 0) {
   return {
     "@context": "https://schema.org",
     "@type": "ItemList",
     itemListElement: products.slice(0, 24).map((product, index) => ({
       "@type": "ListItem",
-      position: index + 1,
+      position: offset + index + 1,
       url: absoluteUrl(config, productPath(product)),
       name: schemaText(product.name, "Oferta BookLoft")
     }))
@@ -1023,8 +1188,17 @@ function productPath(product) {
   return `/product/${encodeURIComponent(product.id)}/${encodeURIComponent(product.slug || slugify(product.name) || "produkt")}`;
 }
 
+function catalogPagePath(page) {
+  return page <= 1 ? "/" : `/strona/${encodeURIComponent(page)}`;
+}
+
 function categoryPath(category) {
   return `/kategoria/${encodeURIComponent(category.id)}/${encodeURIComponent(slugify(category.displayName || category.name))}`;
+}
+
+function categoryPagePath(category, page) {
+  const basePath = categoryPath(category);
+  return page <= 1 ? basePath : `${basePath}/strona/${encodeURIComponent(page)}`;
 }
 
 function absoluteUrl(config, relativePath) {

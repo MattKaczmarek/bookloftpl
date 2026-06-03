@@ -20,6 +20,7 @@ const state = {
   categoryId: "",
   rendered: 0,
   modeLimit: INITIAL_LIMIT,
+  initialPage: 1,
   autoLoadQueued: false,
   meta: {}
 };
@@ -65,6 +66,7 @@ async function init() {
   state.meta = data.meta || {};
   state.categoryId = categoryIdFromUrl();
   state.query = queryFromUrl();
+  state.initialPage = initialPageFromServer();
 
   bindEvents();
   renderCategories();
@@ -79,6 +81,7 @@ function bindEvents() {
   els.search.addEventListener("input", debounce(() => {
     state.query = els.search.value.trim().toLowerCase();
     state.modeLimit = INITIAL_LIMIT;
+    state.initialPage = 1;
     updateSearchUrl();
     syncSearchClear();
     scrollToTop();
@@ -89,6 +92,7 @@ function bindEvents() {
     els.search.value = "";
     state.query = "";
     state.modeLimit = INITIAL_LIMIT;
+    state.initialPage = 1;
     updateSearchUrl();
     syncSearchClear();
     els.search.focus();
@@ -98,6 +102,7 @@ function bindEvents() {
   els.emptyReset?.addEventListener("click", () => {
     els.search.value = "";
     state.query = "";
+    state.initialPage = 1;
     updateSearchUrl();
     syncSearchClear();
     selectCategory("", { scroll: true });
@@ -167,11 +172,13 @@ function adoptInitialListing() {
   if (!initialIds.length || !els.grid?.querySelector(".product-card")) return false;
 
   const products = currentProducts();
-  const expectedIds = products.slice(0, initialIds.length).map((product) => String(product.id));
+  const offset = initialOffsetFromServer();
+  const expectedIds = products.slice(offset, offset + initialIds.length).map((product) => String(product.id));
   const matchesServerHtml = initialIds.every((id, index) => id === expectedIds[index]);
   if (!matchesServerHtml) return false;
 
-  state.rendered = Math.min(initialIds.length, products.length, state.modeLimit);
+  state.rendered = Math.min(offset + initialIds.length, products.length);
+  state.modeLimit = Math.max(state.modeLimit, state.rendered);
   els.grid.classList.remove("is-loading");
   els.grid.removeAttribute("aria-busy");
   els.empty.hidden = products.length > 0;
@@ -186,6 +193,7 @@ function selectCategory(categoryId, { scroll = false } = {}) {
   state.categoryId = categoryId || "";
   els.categorySelect.value = state.categoryId;
   state.modeLimit = INITIAL_LIMIT;
+  state.initialPage = 1;
   updateCategoryUrl();
   syncCategoryButtons();
   if (scroll) scrollToTop();
@@ -335,6 +343,16 @@ function queryFromUrl() {
   return new URLSearchParams(window.location.search).get("q")?.trim().toLowerCase() || "";
 }
 
+function initialOffsetFromServer() {
+  const value = Number(window.BOOKLOFT_INITIAL_OFFSET || 0);
+  return Number.isFinite(value) && value > 0 ? value : 0;
+}
+
+function initialPageFromServer() {
+  const value = Number(window.BOOKLOFT_INITIAL_PAGE || 1);
+  return Number.isInteger(value) && value > 1 ? value : 1;
+}
+
 function updateCategoryUrl() {
   const url = new URL(window.location.href);
   url.pathname = state.categoryId ? categoryUrl(findCategory(state.categoryId)) : "/";
@@ -344,6 +362,9 @@ function updateCategoryUrl() {
 
 function updateSearchUrl() {
   const url = new URL(window.location.href);
+  if (/\/strona\/\d+\/?$/.test(url.pathname)) {
+    url.pathname = state.categoryId ? categoryUrl(findCategory(state.categoryId)) : "/";
+  }
   if (state.query) url.searchParams.set("q", state.query);
   else url.searchParams.delete("q");
   window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
@@ -375,14 +396,14 @@ function syncPageText(_count) {
     setText(els.introEyebrow, "Kategoria");
     setText(els.introTitle, name);
     setText(els.introCopy, categoryIntroCopy(category));
-    els.listingTitle.textContent = "Dostępne oferty";
+    els.listingTitle.textContent = state.initialPage > 1 ? `Dostępne oferty - strona ${state.initialPage}` : "Dostępne oferty";
     setCategoryNote("");
     return;
   }
   setText(els.introEyebrow, "Nowości z regału");
   setText(els.introTitle, "Wybierz kolejną historię");
   setText(els.introCopy, "Nowe tytuły z naszego regału. Przeglądaj ostatnio dodane oferty albo wyszukaj książkę po tytule, autorze lub gatunku.");
-  els.listingTitle.textContent = "Nowości";
+  els.listingTitle.textContent = state.initialPage > 1 ? `Nowości - strona ${state.initialPage}` : "Nowości";
   setCategoryNote("");
 }
 
