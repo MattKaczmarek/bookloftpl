@@ -734,7 +734,7 @@ function catalogPagination(config, { category, currentPage, totalPages, productC
 function renderCatalogPagination(pagination) {
   if (!pagination) return "";
   return `
-      <nav class="catalog-pagination" aria-label="Strony katalogu">
+      <nav class="catalog-pagination" aria-label="Strony katalogu" hidden>
         <p>Oferty ${pagination.start}-${pagination.end} z ${pagination.productCount}</p>
         <div class="catalog-pagination-links">
           ${pagination.prevUrl ? `<a class="pager-link" href="${escapeAttribute(pagination.prevUrl)}" rel="prev">Poprzednia</a>` : `<span class="pager-link is-disabled">Poprzednia</span>`}

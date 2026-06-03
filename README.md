@@ -122,7 +122,7 @@ Zasady:
 ## SEO
 
 - `/`, `/strona/:page`, `/kategoria/:id/:slug`, `/kategoria/:id/:slug/strona/:page` i `/product/:id/:slug` sa renderowane po stronie serwera, z realnymi linkami do ofert bez wymagania JavaScriptu.
-- SSR listingu pozostaje ograniczony do 50 produktow na strone, ale katalog i kategorie maja indeksowalna paginacje HTML. Infinite scroll nadal dociaga kolejne paczki po stronie klienta, a Google moze przejsc przez zwykle linki poprzednia/nastepna.
+- SSR listingu pozostaje ograniczony do 50 produktow na strone, ale katalog i kategorie maja techniczna, indeksowalna paginacje HTML w sitemapie i `rel=prev/next`. Dla uzytkownikow glowne przegladanie nadal dziala przez infinite scroll po stronie klienta.
 - Stare lub bledne slugi produktu i kategorii przekierowuja 301 na adres kanoniczny.
 - Niedostepne historyczne oferty zwracaja `410 Gone`, a nieznane identyfikatory `404 Not Found`; obie odpowiedzi sa `noindex`.
 - Nieznane publiczne sciezki HTML zwracaja `404` z `noindex`, zamiast przekierowywac crawlera na strone glowna.
