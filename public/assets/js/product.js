@@ -771,8 +771,8 @@ function renderProductAbout() {
         </p>
       </div>
       <div class="shop-about-stats" aria-label="BookLoft w liczbach">
-        <span><strong>100 000+</strong> książek w drugim obiegu</span>
-        <span><strong>15 000+</strong> obsłużonych zamówień</span>
+        <span><strong>200 000+</strong> książek w drugim obiegu</span>
+        <span><strong>25 000+</strong> obsłużonych zamówień</span>
         <span><strong>4</strong> lata pracy z książkami</span>
       </div>
       <nav class="product-about-links" aria-label="Więcej o BookLoft">
