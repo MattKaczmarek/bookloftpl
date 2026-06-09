@@ -330,7 +330,7 @@ function renderStorePage(config, storefront, { category = null, query = "", sort
           </div>
           <div class="sort-box">
             <label for="product-sort">Sortuj</label>
-            <select id="product-sort">
+            <select id="product-sort" data-product-sort>
               ${sortSelect}
             </select>
           </div>
@@ -345,6 +345,12 @@ function renderStorePage(config, storefront, { category = null, query = "", sort
         <label for="category-select">Kategoria</label>
         <select id="category-select">
           ${categorySelect}
+        </select>
+      </div>
+      <div class="sort-box mobile-sort-box">
+        <label for="mobile-product-sort">Sortuj</label>
+        <select id="mobile-product-sort" data-product-sort>
+          ${sortSelect}
         </select>
       </div>
 

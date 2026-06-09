@@ -42,19 +42,19 @@
       ]
     }
   </script>
-  <link rel="stylesheet" href="/assets/css/fonts.css?v=1.14.2">
-  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32.png?v=1.14.2">
-  <link rel="icon" type="image/png" sizes="512x512" href="/assets/img/favicon.png?v=1.14.2">
-  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png?v=1.14.2">
-  <link rel="stylesheet" href="/assets/css/styles.css?v=1.14.2">
+  <link rel="stylesheet" href="/assets/css/fonts.css?v=1.14.3">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32.png?v=1.14.3">
+  <link rel="icon" type="image/png" sizes="512x512" href="/assets/img/favicon.png?v=1.14.3">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png?v=1.14.3">
+  <link rel="stylesheet" href="/assets/css/styles.css?v=1.14.3">
   <script>window.BOOKLOFT_ANALYTICS_ID="G-NQH5FFJ8Y4";</script>
-  <script defer src="/assets/js/analytics.js?v=1.14.2"></script>
-  <script defer src="/assets/js/store.js?v=1.14.2"></script>
+  <script defer src="/assets/js/analytics.js?v=1.14.3"></script>
+  <script defer src="/assets/js/store.js?v=1.14.3"></script>
 </head>
 <body>
   <div class="brand-intro is-visible" id="brand-intro">
     <div class="brand-intro-inner">
-      <img src="/assets/img/logo.png?v=1.14.2" alt="BookLoft">
+      <img src="/assets/img/logo.png?v=1.14.3" alt="BookLoft">
       <p>Wejdź do przestrzeni pełnej książek</p>
     </div>
   </div>
@@ -70,7 +70,7 @@
     <section class="shop-surface" aria-live="polite">
       <a class="shop-brand-hero" href="/" aria-label="BookLoft - wróć na stronę główną">
         <div class="hero-brand-copy">
-          <img class="hero-logo" src="/assets/img/logo.png?v=1.14.2" alt="BookLoft">
+          <img class="hero-logo" src="/assets/img/logo.png?v=1.14.3" alt="BookLoft">
           <p>Przestrzeń pełna książek</p>
         </div>
       </a>
@@ -89,7 +89,7 @@
           </div>
           <div class="sort-box">
             <label for="product-sort">Sortuj</label>
-            <select id="product-sort">
+            <select id="product-sort" data-product-sort>
               <option value="date-desc" selected>Data dodania: najnowsze</option>
               <option value="date-asc">Data dodania: najstarsze</option>
               <option value="price-asc">Cena: rosnąco</option>
@@ -109,6 +109,17 @@
         <label for="category-select">Kategoria</label>
         <select id="category-select">
           <option value="">Wszystkie oferty</option>
+        </select>
+      </div>
+      <div class="sort-box mobile-sort-box">
+        <label for="mobile-product-sort">Sortuj</label>
+        <select id="mobile-product-sort" data-product-sort>
+          <option value="date-desc" selected>Data dodania: najnowsze</option>
+          <option value="date-asc">Data dodania: najstarsze</option>
+          <option value="price-asc">Cena: rosnąco</option>
+          <option value="price-desc">Cena: malejąco</option>
+          <option value="name-asc">Alfabetycznie: A-Z</option>
+          <option value="name-desc">Alfabetycznie: Z-A</option>
         </select>
       </div>
 

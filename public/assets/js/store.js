@@ -73,7 +73,7 @@ const els = {
   categoryTree: document.querySelector("#category-tree"),
   categorySelect: document.querySelector("#category-select"),
   clearCategory: document.querySelector("#clear-category"),
-  sortSelect: document.querySelector("#product-sort"),
+  sortSelects: Array.from(document.querySelectorAll("[data-product-sort]")),
   loadSentinel: document.querySelector("#load-sentinel"),
   introEyebrow: document.querySelector(".shop-intro .eyebrow"),
   introTitle: document.querySelector(".shop-intro h1"),
@@ -112,7 +112,7 @@ async function init() {
   renderCategories();
   els.categorySelect.value = state.categoryId;
   els.search.value = state.query;
-  if (els.sortSelect) els.sortSelect.value = state.sort;
+  syncSortSelects();
   syncSearchClear();
   syncCategoryButtons();
   if (!adoptInitialListing()) resetAndRender();
@@ -154,13 +154,16 @@ function bindEvents() {
   });
 
   els.clearCategory?.addEventListener("click", () => selectCategory("", { scroll: true }));
-  els.sortSelect?.addEventListener("change", () => {
-    state.sort = normalizeSort(els.sortSelect.value);
-    state.modeLimit = INITIAL_LIMIT;
-    state.initialPage = 1;
-    updateListingUrl();
-    scrollToTop();
-    resetAndRender();
+  els.sortSelects.forEach((sortSelect) => {
+    sortSelect.addEventListener("change", () => {
+      state.sort = normalizeSort(sortSelect.value);
+      syncSortSelects(sortSelect);
+      state.modeLimit = INITIAL_LIMIT;
+      state.initialPage = 1;
+      updateListingUrl();
+      scrollToTop();
+      resetAndRender();
+    });
   });
 
   setupInfiniteScroll();
@@ -441,6 +444,12 @@ function currentShelfNoteInterval() {
 function syncCategoryButtons() {
   document.querySelectorAll(".category-button").forEach((button) => {
     button.classList.toggle("active", button.dataset.categoryId === state.categoryId);
+  });
+}
+
+function syncSortSelects(source = null) {
+  els.sortSelects.forEach((sortSelect) => {
+    if (sortSelect !== source) sortSelect.value = state.sort;
   });
 }
 

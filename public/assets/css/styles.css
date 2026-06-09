@@ -659,6 +659,11 @@ h2 {
   margin-bottom: 14px;
 }
 
+.mobile-sort-box {
+  display: none;
+  margin-bottom: 14px;
+}
+
 .listing-title {
   display: flex;
   align-items: center;
@@ -2160,6 +2165,14 @@ h2 {
   }
 
   .mobile-categories {
+    display: grid;
+  }
+
+  .shop-hero-side > .sort-box {
+    display: none;
+  }
+
+  .mobile-sort-box {
     display: grid;
   }
 
