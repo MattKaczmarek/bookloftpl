@@ -7,7 +7,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 const SSR_PRODUCT_LIMIT = 50;
 const DEFAULT_SORT = "date-desc";
-const SORT_OPTIONS = new Set(["date-desc", "date-asc", "price-asc", "price-desc", "name-asc", "name-desc"]);
+const SORT_OPTIONS = new Set(["date-desc", "price-asc", "price-desc", "name-asc", "name-desc"]);
 
 export function createPageRouter(config, storeCache) {
   const router = express.Router();
@@ -31,6 +31,10 @@ export function createPageRouter(config, storeCache) {
           return;
         }
       }
+      if (shouldDropSortParam(req)) {
+        res.redirect(301, appPath(config.basePath, pathWithoutSort(req)));
+        return;
+      }
 
       const category = categoryId ? findCategoryById(storefront.categories, categoryId) : null;
       res.type("html").send(renderStorePage(config, storefront, {
@@ -53,6 +57,10 @@ export function createPageRouter(config, storeCache) {
       const sort = normalizeSort(req.query.sort);
       if (page === 1) {
         res.redirect(301, appPath(config.basePath, pathWithSort("/", sort)));
+        return;
+      }
+      if (shouldDropSortParam(req)) {
+        res.redirect(301, appPath(config.basePath, pathWithoutSort(req)));
         return;
       }
 
@@ -96,6 +104,10 @@ export function createPageRouter(config, storeCache) {
         res.redirect(301, appPath(config.basePath, pathWithSort(categoryPath(category), sort)));
         return;
       }
+      if (shouldDropSortParam(req)) {
+        res.redirect(301, appPath(config.basePath, pathWithoutSort(req)));
+        return;
+      }
 
       const products = listingProducts(storefront.products, { categoryId: category.id, sort });
       const totalPages = pageCount(products.length);
@@ -128,6 +140,10 @@ export function createPageRouter(config, storeCache) {
       const canonicalPath = categoryPath(category);
       if (req.path !== canonicalPath) {
         res.redirect(301, appPath(config.basePath, pathWithSort(canonicalPath, sort)));
+        return;
+      }
+      if (shouldDropSortParam(req)) {
+        res.redirect(301, appPath(config.basePath, pathWithoutSort(req)));
         return;
       }
 
@@ -551,8 +567,7 @@ function renderCategorySelect(categories, activeCategoryId) {
 
 function renderSortSelect(activeSort) {
   const options = [
-    ["date-desc", "Data dodania: najnowsze"],
-    ["date-asc", "Data dodania: najstarsze"],
+    ["date-desc", "Domyślnie: najnowsze"],
     ["price-asc", "Cena: rosnąco"],
     ["price-desc", "Cena: malejąco"],
     ["name-asc", "Alfabetycznie: A-Z"],
@@ -1153,8 +1168,6 @@ function sortProducts(products, sort) {
   const sorted = [...products];
   sorted.sort((a, b) => {
     switch (normalizedSort) {
-      case "date-asc":
-        return compareDate(a, b) || compareName(a, b) || sortProductIdAsc(a.id, b.id);
       case "price-asc":
         return comparePrice(a, b, "asc") || compareName(a, b) || compareDateDesc(a, b);
       case "price-desc":
@@ -1169,10 +1182,6 @@ function sortProducts(products, sort) {
     }
   });
   return sorted;
-}
-
-function compareDate(a, b) {
-  return productFreshnessTime(a) - productFreshnessTime(b);
 }
 
 function compareDateDesc(a, b) {
@@ -1227,6 +1236,24 @@ function pathWithSort(pathname, sort) {
   const normalizedSort = normalizeSort(sort);
   if (normalizedSort === DEFAULT_SORT) return pathname;
   return `${pathname}?sort=${encodeURIComponent(normalizedSort)}`;
+}
+
+function shouldDropSortParam(req) {
+  return Object.prototype.hasOwnProperty.call(req.query || {}, "sort") && normalizeSort(req.query.sort) === DEFAULT_SORT;
+}
+
+function pathWithoutSort(req) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(req.query || {})) {
+    if (key === "sort") continue;
+    if (Array.isArray(value)) {
+      value.forEach((item) => params.append(key, String(item)));
+    } else if (value !== undefined) {
+      params.append(key, String(value));
+    }
+  }
+  const query = params.toString();
+  return query ? `${req.path}?${query}` : req.path;
 }
 
 function visibleCategories(categories) {

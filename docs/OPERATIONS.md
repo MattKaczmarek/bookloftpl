@@ -1,7 +1,7 @@
 # Operacje BookLoft sklep
 
 Stan dokumentu: `2026-05-29`.
-Wersja sklepu: `1.14.3`.
+Wersja sklepu: `1.14.4`.
 Branch wersji: `ver-1.14`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
@@ -165,7 +165,7 @@ Oczekiwane publicznie:
 - gorny banner strony glownej uzywa statycznego assetu `public/assets/img/loft-hero.jpg`; na waskich ekranach ma szerszy i nizszy layout z logo dopasowanym do mobilnego kadru,
 - tlo strony ma subtelna papierowa teksture bez pionowych linii; karty i panele maja lekka fakture oraz oprawe okladek,
 - lista ofert na mobile zachowuje dwie karty w rzedzie rowniez na ekranach okolo 320 px szerokosci,
-- listing ma klientowe i serwerowe sortowanie po dacie dodania, cenie oraz tytule; parametr URL `sort` dziala na stronie glownej, w kategoriach i w wynikach wyszukiwania, ale warianty sortowania sa `noindex,follow` i nie trafiaja do sitemap,
+- listing domyslnie pokazuje najnowsze oferty i ma klientowe oraz serwerowe sortowanie po cenie i tytule; parametr URL `sort` dziala na stronie glownej, w kategoriach i w wynikach wyszukiwania, ale warianty sortowania sa `noindex,follow` i nie trafiaja do sitemap,
 - miniatury listingu i powiazanych ofert powinny uzywac wariantow Allegro `s256`/`s400`/`s512`/`s720`, a nie `/original/`,
 - katalog moze wyswietlac pelnoszerokie rotujace notki bez naglowka miedzy ofertami, z losowym startem rotacji, mniej wiecej co 36 produktow na desktopie i co 18 produktow na mobile,
 - pole wyszukiwania pokazuje tekst pomocniczy `Sprawdz, czy mamy to, czego szukasz` w samym polu zamiast widocznego naglowka `Szukaj`,

@@ -5,7 +5,7 @@ const SHELF_NOTE_DESKTOP_INTERVAL = 36;
 const SHELF_NOTE_MOBILE_INTERVAL = 18;
 const SHELF_NOTE_INTERVAL = currentShelfNoteInterval();
 const DEFAULT_SORT = "date-desc";
-const SORT_OPTIONS = new Set(["date-desc", "date-asc", "price-asc", "price-desc", "name-asc", "name-desc"]);
+const SORT_OPTIONS = new Set(["date-desc", "price-asc", "price-desc", "name-asc", "name-desc"]);
 const SHELF_NOTES = [
   {
     text: "W ofercie pokazujemy dokładnie ten egzemplarz, który później trafia do paczki.",
@@ -327,8 +327,6 @@ function sortProducts(products, sort) {
   const sorted = [...products];
   sorted.sort((a, b) => {
     switch (normalizedSort) {
-      case "date-asc":
-        return compareDate(a, b) || compareName(a, b) || sortProductIdAsc(a.id, b.id);
       case "price-asc":
         return comparePrice(a, b, "asc") || compareName(a, b) || compareDateDesc(a, b);
       case "price-desc":
@@ -343,10 +341,6 @@ function sortProducts(products, sort) {
     }
   });
   return sorted;
-}
-
-function compareDate(a, b) {
-  return productFreshnessTime(a) - productFreshnessTime(b);
 }
 
 function compareDateDesc(a, b) {
