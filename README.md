@@ -1,6 +1,6 @@
 # BookLoft sklep
 
-Wersja sklepu: `1.14.1`.
+Wersja sklepu: `1.14.2`.
 Branch tej wersji: `ver-1.14`.
 
 Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://bookloft.pl/`. Katalog jest oparty bezposrednio o aktywne oferty Allegro konta BookLoft.
@@ -104,6 +104,7 @@ Zasady:
 - tlo strony i panele uzywaja subtelnej papierowej tekstury bez pionowych linii ani ciezkich dekoracji,
 - lista ofert pokazuje dwie karty w rzedzie rowniez na bardzo waskich ekranach mobilnych,
 - pelny katalog mozna przeszukiwac po tytule, SKU i kategorii,
+- listing mozna sortowac po dacie dodania, cenie i tytule; sortowanie dziala dla calego katalogu, kategorii i wynikow wyszukiwania, a warianty z `sort` sa `noindex,follow` i nie sa dodawane do sitemap,
 - karty listingu pokazuja zdjecie, kategorie, tytul, cene i link `Zobacz`; okladki maja delikatne papierowe passe-partout i subtelny hover na desktopie,
 - listing uzywa skalowanych wariantow obrazow Allegro (`s256`/`s400`/`s512`/`s720`) zamiast ciezkich oryginalow,
 - katalog wplata niskie rotujace notki bez naglowka, z losowym startem rotacji, tekstem glownym i krotkim dopiskiem po prawej; na desktopie mniej wiecej co 36 ofert, na mobile co 18 ofert,

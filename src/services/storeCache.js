@@ -382,6 +382,7 @@ export class StoreCache {
       const descriptionHtml = normalizeDescriptionHtml(offer.descriptionHtml);
       visibleProducts.push({
         ...offer,
+        addedAt: published.addedAtByOfferId[String(offerId)] || offer.addedAt || null,
         slug: slugify(offer.name),
         descriptionHtml,
         searchText: productSearchText(offer, descriptionHtml),

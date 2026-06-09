@@ -6,6 +6,8 @@ import { stripHtml } from "../../lib/html.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 const SSR_PRODUCT_LIMIT = 50;
+const DEFAULT_SORT = "date-desc";
+const SORT_OPTIONS = new Set(["date-desc", "date-asc", "price-asc", "price-desc", "name-asc", "name-desc"]);
 
 export function createPageRouter(config, storeCache) {
   const router = express.Router();
@@ -20,11 +22,12 @@ export function createPageRouter(config, storeCache) {
       ]);
       const query = String(req.query.q || "").trim();
       const categoryId = String(req.query.category || "").trim();
+      const sort = normalizeSort(req.query.sort);
 
       if (categoryId && !query) {
         const category = findCategoryById(storefront.categories, categoryId);
         if (category) {
-          res.redirect(301, appPath(config.basePath, categoryPath(category)));
+          res.redirect(301, appPath(config.basePath, pathWithSort(categoryPath(category), sort)));
           return;
         }
       }
@@ -33,6 +36,7 @@ export function createPageRouter(config, storeCache) {
       res.type("html").send(renderStorePage(config, storefront, {
         category,
         query,
+        sort,
         newestProducts: !category && !query ? newestProducts : []
       }));
     })
@@ -46,8 +50,9 @@ export function createPageRouter(config, storeCache) {
         res.status(404).type("html").send(renderNotFoundPage(config, "Nie znaleziono strony katalogu"));
         return;
       }
+      const sort = normalizeSort(req.query.sort);
       if (page === 1) {
-        res.redirect(301, appPath(config.basePath, "/"));
+        res.redirect(301, appPath(config.basePath, pathWithSort("/", sort)));
         return;
       }
 
@@ -55,7 +60,7 @@ export function createPageRouter(config, storeCache) {
         storeCache.getStorefront(),
         storeCache.getNewestProducts(SSR_PRODUCT_LIMIT)
       ]);
-      const products = listingProducts(storefront.products, { newestProducts });
+      const products = listingProducts(storefront.products, { newestProducts, sort });
       const totalPages = pageCount(products.length);
       if (page > totalPages) {
         res.status(404).type("html").send(renderNotFoundPage(config, "Nie znaleziono strony katalogu"));
@@ -64,12 +69,13 @@ export function createPageRouter(config, storeCache) {
 
       const canonicalPath = catalogPagePath(page);
       if (req.path !== canonicalPath) {
-        res.redirect(301, appPath(config.basePath, canonicalPath));
+        res.redirect(301, appPath(config.basePath, pathWithSort(canonicalPath, sort)));
         return;
       }
 
       res.type("html").send(renderStorePage(config, storefront, {
         newestProducts,
+        sort,
         page
       }));
     })
@@ -81,16 +87,17 @@ export function createPageRouter(config, storeCache) {
       const page = parsePageParam(req.params.page);
       const storefront = await storeCache.getStorefront();
       const category = findCategoryById(storefront.categories, req.params.categoryId);
+      const sort = normalizeSort(req.query.sort);
       if (!page || !category) {
         res.status(404).type("html").send(renderNotFoundPage(config, "Nie znaleziono kategorii"));
         return;
       }
       if (page === 1) {
-        res.redirect(301, appPath(config.basePath, categoryPath(category)));
+        res.redirect(301, appPath(config.basePath, pathWithSort(categoryPath(category), sort)));
         return;
       }
 
-      const products = listingProducts(storefront.products, { categoryId: category.id });
+      const products = listingProducts(storefront.products, { categoryId: category.id, sort });
       const totalPages = pageCount(products.length);
       if (page > totalPages) {
         res.status(404).type("html").send(renderNotFoundPage(config, "Nie znaleziono strony kategorii"));
@@ -99,11 +106,11 @@ export function createPageRouter(config, storeCache) {
 
       const canonicalPath = categoryPagePath(category, page);
       if (req.path !== canonicalPath) {
-        res.redirect(301, appPath(config.basePath, canonicalPath));
+        res.redirect(301, appPath(config.basePath, pathWithSort(canonicalPath, sort)));
         return;
       }
 
-      res.type("html").send(renderStorePage(config, storefront, { category, page }));
+      res.type("html").send(renderStorePage(config, storefront, { category, sort, page }));
     })
   );
 
@@ -112,6 +119,7 @@ export function createPageRouter(config, storeCache) {
     asyncHandler(async (req, res) => {
       const storefront = await storeCache.getStorefront();
       const category = findCategoryById(storefront.categories, req.params.categoryId);
+      const sort = normalizeSort(req.query.sort);
       if (!category) {
         res.status(404).type("html").send(renderNotFoundPage(config, "Nie znaleziono kategorii"));
         return;
@@ -119,11 +127,11 @@ export function createPageRouter(config, storeCache) {
 
       const canonicalPath = categoryPath(category);
       if (req.path !== canonicalPath) {
-        res.redirect(301, appPath(config.basePath, canonicalPath));
+        res.redirect(301, appPath(config.basePath, pathWithSort(canonicalPath, sort)));
         return;
       }
 
-      res.type("html").send(renderStorePage(config, storefront, { category }));
+      res.type("html").send(renderStorePage(config, storefront, { category, sort }));
     })
   );
 
@@ -201,11 +209,13 @@ export function createPageRouter(config, storeCache) {
   return router;
 }
 
-function renderStorePage(config, storefront, { category = null, query = "", newestProducts = [], page = 1 } = {}) {
+function renderStorePage(config, storefront, { category = null, query = "", sort = DEFAULT_SORT, newestProducts = [], page = 1 } = {}) {
   const normalizedQuery = query.trim().toLowerCase();
+  const normalizedSort = normalizeSort(sort);
   const products = listingProducts(storefront.products, {
     categoryId: category?.id || "",
     query: normalizedQuery,
+    sort: normalizedSort,
     newestProducts
   });
   const currentPage = normalizedQuery ? 1 : Math.max(1, page);
@@ -215,6 +225,7 @@ function renderStorePage(config, storefront, { category = null, query = "", newe
   const pageMeta = storePageMeta(config, {
     category,
     query: normalizedQuery,
+    sort: normalizedSort,
     productCount: products.length,
     page: currentPage,
     totalPages
@@ -231,6 +242,7 @@ function renderStorePage(config, storefront, { category = null, query = "", newe
     totalCount: storefront.meta?.productCount || storefront.products.length
   });
   const categorySelect = renderCategorySelect(categoryOptions, category?.id || "");
+  const sortSelect = renderSortSelect(normalizedSort);
   const itemListSchema = JSON.stringify(itemListJsonLd(config, visibleProducts, pageOffset)).replaceAll("</", "<\\/");
   const siteSchema = JSON.stringify(siteJsonLd(config)).replaceAll("</", "<\\/");
   const breadcrumbSchema = category
@@ -271,6 +283,7 @@ function renderStorePage(config, storefront, { category = null, query = "", newe
   <script>
     window.BOOKLOFT_INITIAL_CATEGORY_ID=${JSON.stringify(category?.id || "")};
     window.BOOKLOFT_INITIAL_QUERY=${JSON.stringify(normalizedQuery)};
+    window.BOOKLOFT_INITIAL_SORT=${JSON.stringify(normalizedSort)};
     window.BOOKLOFT_INITIAL_PRODUCT_IDS=${JSON.stringify(visibleProducts.map((product) => String(product.id)))};
     window.BOOKLOFT_INITIAL_OFFSET=${JSON.stringify(pageOffset)};
     window.BOOKLOFT_INITIAL_PAGE=${JSON.stringify(currentPage)};
@@ -314,6 +327,12 @@ function renderStorePage(config, storefront, { category = null, query = "", newe
             <label class="visually-hidden" for="product-search">Szukaj</label>
             <input id="product-search" type="search" value="${escapeAttribute(query)}" placeholder="Sprawdź, czy mamy to, czego szukasz">
             <button class="search-clear" id="clear-search" type="button" aria-label="Wyczyść wyszukiwanie" ${query ? "" : "hidden"}>&times;</button>
+          </div>
+          <div class="sort-box">
+            <label for="product-sort">Sortuj</label>
+            <select id="product-sort">
+              ${sortSelect}
+            </select>
           </div>
           <nav class="shop-side-links" aria-label="Informacje o sklepie">
             <a href="${appPath(config.basePath, "/o-nas")}">O nas</a>
@@ -522,6 +541,20 @@ function renderCategorySelect(categories, activeCategoryId) {
       `<option value="${escapeAttribute(category.id)}"${String(category.id) === String(activeCategoryId) ? " selected" : ""}>${escapeHtml(category.displayName || category.name)}</option>`
     ))
   ].join("\n");
+}
+
+function renderSortSelect(activeSort) {
+  const options = [
+    ["date-desc", "Data dodania: najnowsze"],
+    ["date-asc", "Data dodania: najstarsze"],
+    ["price-asc", "Cena: rosnąco"],
+    ["price-desc", "Cena: malejąco"],
+    ["name-asc", "Alfabetycznie: A-Z"],
+    ["name-desc", "Alfabetycznie: Z-A"]
+  ];
+  return options.map(([value, label]) => (
+    `<option value="${escapeAttribute(value)}"${value === activeSort ? " selected" : ""}>${escapeHtml(label)}</option>`
+  )).join("\n");
 }
 
 function renderProductCard(product, index = 0) {
@@ -763,7 +796,9 @@ function parsePageParam(value) {
   return Number.isInteger(page) && page >= 1 ? page : null;
 }
 
-function storePageMeta(config, { category, query, productCount, page = 1, totalPages = 1 }) {
+function storePageMeta(config, { category, query, sort = DEFAULT_SORT, productCount, page = 1, totalPages = 1 }) {
+  const sortedVariant = normalizeSort(sort) !== DEFAULT_SORT;
+
   if (query) {
     return {
       title: `Wyniki wyszukiwania: ${query} | BookLoft`,
@@ -785,7 +820,7 @@ function storePageMeta(config, { category, query, productCount, page = 1, totalP
       title: `${name} - używane produkty${pageSuffix} | BookLoft`,
       description: `${name} w BookLoft: używane produkty z realnymi zdjęciami, rzetelnym opisem stanu i zakupem przez Allegro.${pageCopy}`,
       canonical: absoluteUrl(config, categoryPagePath(category, page)),
-      robots: "index,follow,max-image-preview:large",
+      robots: sortedVariant ? "noindex,follow,max-image-preview:large" : "index,follow,max-image-preview:large",
       eyebrow: "Kategoria",
       h1: name,
       copy: categoryIntroCopy(category),
@@ -799,7 +834,7 @@ function storePageMeta(config, { category, query, productCount, page = 1, totalP
     title: `BookLoft - używane książki z drugiego obiegu${pageSuffix}`,
     description: `BookLoft - używane książki z realnymi zdjęciami, rzetelnym opisem stanu i zakupem finalizowanym na Allegro.${pageCopy}`,
     canonical: absoluteUrl(config, catalogPagePath(page)),
-    robots: "index,follow,max-image-preview:large",
+    robots: sortedVariant ? "noindex,follow,max-image-preview:large" : "index,follow,max-image-preview:large",
     eyebrow: "Nowości z regału",
     h1: "Wybierz kolejną historię",
     copy: "Nowe tytuły z naszego regału. Przeglądaj ostatnio dodane oferty albo wyszukaj książkę po tytule, autorze lub gatunku.",
@@ -1079,8 +1114,9 @@ function isGenericUsedCondition(value) {
   return key === "uzywany" || key === "uzywana" || key === "uzywane";
 }
 
-function listingProducts(products, { categoryId = "", query = "", newestProducts = [] } = {}) {
+function listingProducts(products, { categoryId = "", query = "", sort = DEFAULT_SORT, newestProducts = [] } = {}) {
   const normalizedQuery = query.trim().toLowerCase();
+  const normalizedSort = normalizeSort(sort);
   const filtered = products.filter((product) => {
     const matchesQuery = !normalizedQuery || String(product.searchText || "").includes(normalizedQuery);
     const matchesCategory =
@@ -1088,7 +1124,7 @@ function listingProducts(products, { categoryId = "", query = "", newestProducts
     return matchesQuery && matchesCategory;
   });
 
-  if (categoryId || normalizedQuery) return filtered;
+  if (categoryId || normalizedQuery) return sortProducts(filtered, normalizedSort);
 
   if (newestProducts.length) {
     const newestIds = new Set(newestProducts.map((product) => String(product.id)));
@@ -1099,14 +1135,58 @@ function listingProducts(products, { categoryId = "", query = "", newestProducts
         if (dateDiff) return dateDiff;
         return sortProductIdDesc(a.id, b.id);
       });
-    return [...newestProducts, ...remaining];
+    const combined = [...newestProducts, ...remaining];
+    return normalizedSort === DEFAULT_SORT ? combined : sortProducts(combined, normalizedSort);
   }
 
-  return [...filtered].sort((a, b) => {
-    const dateDiff = productFreshnessTime(b) - productFreshnessTime(a);
-    if (dateDiff) return dateDiff;
-    return sortProductIdDesc(a.id, b.id);
+  return sortProducts(filtered, normalizedSort);
+}
+
+function sortProducts(products, sort) {
+  const normalizedSort = normalizeSort(sort);
+  const sorted = [...products];
+  sorted.sort((a, b) => {
+    switch (normalizedSort) {
+      case "date-asc":
+        return compareDate(a, b) || compareName(a, b) || sortProductIdAsc(a.id, b.id);
+      case "price-asc":
+        return comparePrice(a, b, "asc") || compareName(a, b) || compareDateDesc(a, b);
+      case "price-desc":
+        return comparePrice(a, b, "desc") || compareName(a, b) || compareDateDesc(a, b);
+      case "name-asc":
+        return compareName(a, b) || compareDateDesc(a, b);
+      case "name-desc":
+        return compareName(b, a) || compareDateDesc(a, b);
+      case "date-desc":
+      default:
+        return compareDateDesc(a, b) || compareName(a, b) || sortProductIdDesc(a.id, b.id);
+    }
   });
+  return sorted;
+}
+
+function compareDate(a, b) {
+  return productFreshnessTime(a) - productFreshnessTime(b);
+}
+
+function compareDateDesc(a, b) {
+  return productFreshnessTime(b) - productFreshnessTime(a);
+}
+
+function compareName(a, b) {
+  return String(a.name || "").localeCompare(String(b.name || ""), "pl-PL", {
+    sensitivity: "base",
+    numeric: true
+  });
+}
+
+function comparePrice(a, b, direction) {
+  const aPrice = typeof a.price === "number" ? a.price : null;
+  const bPrice = typeof b.price === "number" ? b.price : null;
+  if (aPrice === null && bPrice === null) return 0;
+  if (aPrice === null) return 1;
+  if (bPrice === null) return -1;
+  return direction === "asc" ? aPrice - bPrice : bPrice - aPrice;
 }
 
 function productFreshnessTime(product) {
@@ -1123,6 +1203,24 @@ function sortProductIdDesc(a, b) {
   const right = Number(b);
   if (Number.isFinite(left) && Number.isFinite(right)) return right - left;
   return String(b).localeCompare(String(a), "pl-PL", { numeric: true });
+}
+
+function sortProductIdAsc(a, b) {
+  const left = Number(a);
+  const right = Number(b);
+  if (Number.isFinite(left) && Number.isFinite(right)) return left - right;
+  return String(a).localeCompare(String(b), "pl-PL", { numeric: true });
+}
+
+function normalizeSort(value) {
+  const sort = String(value || "").trim();
+  return SORT_OPTIONS.has(sort) ? sort : DEFAULT_SORT;
+}
+
+function pathWithSort(pathname, sort) {
+  const normalizedSort = normalizeSort(sort);
+  if (normalizedSort === DEFAULT_SORT) return pathname;
+  return `${pathname}?sort=${encodeURIComponent(normalizedSort)}`;
 }
 
 function visibleCategories(categories) {

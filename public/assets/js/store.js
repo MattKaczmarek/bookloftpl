@@ -4,6 +4,8 @@ const SHELF_NOTE_FIRST_POSITION = 12;
 const SHELF_NOTE_DESKTOP_INTERVAL = 36;
 const SHELF_NOTE_MOBILE_INTERVAL = 18;
 const SHELF_NOTE_INTERVAL = currentShelfNoteInterval();
+const DEFAULT_SORT = "date-desc";
+const SORT_OPTIONS = new Set(["date-desc", "date-asc", "price-asc", "price-desc", "name-asc", "name-desc"]);
 const SHELF_NOTES = [
   {
     text: "W ofercie pokazujemy dokładnie ten egzemplarz, który później trafia do paczki.",
@@ -53,6 +55,7 @@ const state = {
   categories: [],
   query: "",
   categoryId: "",
+  sort: DEFAULT_SORT,
   rendered: 0,
   modeLimit: INITIAL_LIMIT,
   initialPage: 1,
@@ -70,6 +73,7 @@ const els = {
   categoryTree: document.querySelector("#category-tree"),
   categorySelect: document.querySelector("#category-select"),
   clearCategory: document.querySelector("#clear-category"),
+  sortSelect: document.querySelector("#product-sort"),
   loadSentinel: document.querySelector("#load-sentinel"),
   introEyebrow: document.querySelector(".shop-intro .eyebrow"),
   introTitle: document.querySelector(".shop-intro h1"),
@@ -101,12 +105,14 @@ async function init() {
   state.meta = data.meta || {};
   state.categoryId = categoryIdFromUrl();
   state.query = queryFromUrl();
+  state.sort = sortFromUrl();
   state.initialPage = initialPageFromServer();
 
   bindEvents();
   renderCategories();
   els.categorySelect.value = state.categoryId;
   els.search.value = state.query;
+  if (els.sortSelect) els.sortSelect.value = state.sort;
   syncSearchClear();
   syncCategoryButtons();
   if (!adoptInitialListing()) resetAndRender();
@@ -148,6 +154,14 @@ function bindEvents() {
   });
 
   els.clearCategory?.addEventListener("click", () => selectCategory("", { scroll: true }));
+  els.sortSelect?.addEventListener("change", () => {
+    state.sort = normalizeSort(els.sortSelect.value);
+    state.modeLimit = INITIAL_LIMIT;
+    state.initialPage = 1;
+    updateListingUrl();
+    scrollToTop();
+    resetAndRender();
+  });
 
   setupInfiniteScroll();
 }
@@ -240,7 +254,7 @@ function selectCategory(categoryId, { scroll = false } = {}) {
   els.categorySelect.value = state.categoryId;
   state.modeLimit = INITIAL_LIMIT;
   state.initialPage = 1;
-  updateCategoryUrl();
+  updateListingUrl();
   syncCategoryButtons();
   if (scroll) scrollToTop();
   resetAndRender();
@@ -269,7 +283,8 @@ function renderProducts() {
 }
 
 function currentProducts() {
-  return state.query || state.categoryId ? filteredProducts() : newestProducts();
+  const products = state.query || state.categoryId ? filteredProducts() : newestProducts();
+  return sortProducts(products, state.sort);
 }
 
 function loadNextPage() {
@@ -298,8 +313,57 @@ function newestProducts() {
       const dateDiff = productFreshnessTime(b) - productFreshnessTime(a);
       if (dateDiff) return dateDiff;
       return sortProductIdDesc(a.id, b.id);
-    });
+  });
   return [...state.newestProducts, ...remaining];
+}
+
+function sortProducts(products, sort) {
+  const normalizedSort = normalizeSort(sort);
+  if (normalizedSort === DEFAULT_SORT && !state.query && !state.categoryId) return products;
+
+  const sorted = [...products];
+  sorted.sort((a, b) => {
+    switch (normalizedSort) {
+      case "date-asc":
+        return compareDate(a, b) || compareName(a, b) || sortProductIdAsc(a.id, b.id);
+      case "price-asc":
+        return comparePrice(a, b, "asc") || compareName(a, b) || compareDateDesc(a, b);
+      case "price-desc":
+        return comparePrice(a, b, "desc") || compareName(a, b) || compareDateDesc(a, b);
+      case "name-asc":
+        return compareName(a, b) || compareDateDesc(a, b);
+      case "name-desc":
+        return compareName(b, a) || compareDateDesc(a, b);
+      case "date-desc":
+      default:
+        return compareDateDesc(a, b) || compareName(a, b) || sortProductIdDesc(a.id, b.id);
+    }
+  });
+  return sorted;
+}
+
+function compareDate(a, b) {
+  return productFreshnessTime(a) - productFreshnessTime(b);
+}
+
+function compareDateDesc(a, b) {
+  return productFreshnessTime(b) - productFreshnessTime(a);
+}
+
+function compareName(a, b) {
+  return String(a.name || "").localeCompare(String(b.name || ""), "pl-PL", {
+    sensitivity: "base",
+    numeric: true
+  });
+}
+
+function comparePrice(a, b, direction) {
+  const aPrice = typeof a.price === "number" ? a.price : null;
+  const bPrice = typeof b.price === "number" ? b.price : null;
+  if (aPrice === null && bPrice === null) return 0;
+  if (aPrice === null) return 1;
+  if (bPrice === null) return -1;
+  return direction === "asc" ? aPrice - bPrice : bPrice - aPrice;
 }
 
 function renderProduct(product, index = 0) {
@@ -408,21 +472,29 @@ function initialPageFromServer() {
   return Number.isInteger(value) && value > 1 ? value : 1;
 }
 
-function updateCategoryUrl() {
+function sortFromUrl() {
+  if (typeof window.BOOKLOFT_INITIAL_SORT === "string") return normalizeSort(window.BOOKLOFT_INITIAL_SORT);
+  return normalizeSort(new URLSearchParams(window.location.search).get("sort"));
+}
+
+function normalizeSort(value) {
+  const sort = String(value || "").trim();
+  return SORT_OPTIONS.has(sort) ? sort : DEFAULT_SORT;
+}
+
+function updateListingUrl() {
   const url = new URL(window.location.href);
   url.pathname = state.categoryId ? categoryUrl(findCategory(state.categoryId)) : "/";
   url.searchParams.delete("category");
+  if (state.query) url.searchParams.set("q", state.query);
+  else url.searchParams.delete("q");
+  if (state.sort && state.sort !== DEFAULT_SORT) url.searchParams.set("sort", state.sort);
+  else url.searchParams.delete("sort");
   window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
 }
 
 function updateSearchUrl() {
-  const url = new URL(window.location.href);
-  if (/\/strona\/\d+\/?$/.test(url.pathname)) {
-    url.pathname = state.categoryId ? categoryUrl(findCategory(state.categoryId)) : "/";
-  }
-  if (state.query) url.searchParams.set("q", state.query);
-  else url.searchParams.delete("q");
-  window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+  updateListingUrl();
 }
 
 function scrollToTop() {
@@ -573,6 +645,8 @@ function categoryUrl(category) {
 function productFreshnessTime(product) {
   return Math.max(
     Date.parse(product.addedAt || 0) || 0,
+    Date.parse(product.sourceAddedAt || 0) || 0,
+    Date.parse(product.sourceUpdatedAt || 0) || 0,
     Number(product.id || 0) || 0
   );
 }
@@ -582,6 +656,13 @@ function sortProductIdDesc(a, b) {
   const right = Number(b);
   if (Number.isFinite(left) && Number.isFinite(right)) return right - left;
   return String(b).localeCompare(String(a), "pl-PL", { numeric: true });
+}
+
+function sortProductIdAsc(a, b) {
+  const left = Number(a);
+  const right = Number(b);
+  if (Number.isFinite(left) && Number.isFinite(right)) return left - right;
+  return String(a).localeCompare(String(b), "pl-PL", { numeric: true });
 }
 
 function setupBrandIntro() {
@@ -636,7 +717,7 @@ function isHomeIntroPage() {
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
   if (path !== "/") return false;
   const params = new URLSearchParams(window.location.search);
-  return !params.get("q") && !params.get("category");
+  return !params.get("q") && !params.get("category") && !params.get("sort");
 }
 
 function waitForIntroFont() {

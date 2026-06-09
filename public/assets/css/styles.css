@@ -570,6 +570,7 @@ h2 {
 }
 
 .search-box,
+.sort-box,
 .mobile-categories {
   display: grid;
   gap: 6px;
@@ -580,6 +581,7 @@ h2 {
 }
 
 .search-box label,
+.sort-box label,
 .mobile-categories label,
 .login-form span {
   color: var(--muted);
@@ -588,6 +590,7 @@ h2 {
 }
 
 .search-box input,
+.sort-box select,
 .mobile-categories select,
 .login-form input {
   min-height: 48px;
@@ -643,6 +646,7 @@ h2 {
 }
 
 .search-box input:focus,
+.sort-box select:focus,
 .mobile-categories select:focus,
 .login-form input:focus {
   border-color: var(--forest);
@@ -2322,7 +2326,8 @@ h2 {
     line-height: 0.98;
   }
 
-  .search-box input {
+  .search-box input,
+  .sort-box select {
     min-height: 44px;
     padding-right: 11px;
     padding-left: 11px;
