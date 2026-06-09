@@ -2368,6 +2368,19 @@ h2 {
     gap: 8px;
   }
 
+  .page-top-links {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .page-brand-hero {
+    margin-top: 0;
+  }
+
   .shop-side-links a,
   .page-top-links a,
   .product-about-links a,
@@ -2378,6 +2391,11 @@ h2 {
     justify-content: center;
     box-shadow: none;
     text-align: center;
+  }
+
+  .page-top-links a {
+    min-width: 0;
+    white-space: nowrap;
   }
 
   .hero-logo {

@@ -1,7 +1,9 @@
 const INITIAL_LIMIT = 50;
 const PAGE_SIZE = 50;
 const SHELF_NOTE_FIRST_POSITION = 12;
-const SHELF_NOTE_INTERVAL = 36;
+const SHELF_NOTE_DESKTOP_INTERVAL = 36;
+const SHELF_NOTE_MOBILE_INTERVAL = 18;
+const SHELF_NOTE_INTERVAL = currentShelfNoteInterval();
 const SHELF_NOTES = [
   {
     text: "W ofercie pokazujemy dokładnie ten egzemplarz, który później trafia do paczki.",
@@ -366,6 +368,10 @@ function renderShelfNote(index) {
 
 function randomShelfNoteStartIndex() {
   return Math.floor(Math.random() * SHELF_NOTES.length);
+}
+
+function currentShelfNoteInterval() {
+  return window.matchMedia?.("(max-width: 620px)").matches ? SHELF_NOTE_MOBILE_INTERVAL : SHELF_NOTE_DESKTOP_INTERVAL;
 }
 
 function syncCategoryButtons() {
