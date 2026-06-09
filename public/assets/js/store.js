@@ -1,15 +1,47 @@
 const INITIAL_LIMIT = 50;
 const PAGE_SIZE = 50;
+const SHELF_NOTE_FIRST_POSITION = 12;
+const SHELF_NOTE_INTERVAL = 36;
 const SHELF_NOTES = [
   {
-    label: "Realne zdjęcia",
-    text: "Pokazujemy konkretny egzemplarz: okładkę, grzbiet i detale, które warto zobaczyć przed zakupem.",
-    aside: "konkretny egzemplarz"
+    text: "W ofercie pokazujemy dokładnie ten egzemplarz, który później trafia do paczki.",
+    aside: "realne zdjęcia"
   },
   {
-    label: "Opis stanu",
-    text: "Zaznaczamy ślady używania i dodatkowe uwagi, żeby decyzja była spokojna i świadoma.",
-    aside: "bez niedomówień"
+    text: "Każdą książkę fotografujemy sami, żeby można było spokojnie obejrzeć jej stan przed zakupem.",
+    aside: "bez niespodzianek"
+  },
+  {
+    text: "Przed wystawieniem sprawdzamy książkę i opisujemy zauważone ślady użytkowania.",
+    aside: "jasny opis"
+  },
+  {
+    text: "Każda oferta dotyczy konkretnego egzemplarza, a nie przypadkowej książki z magazynu.",
+    aside: "kupujesz to, co widzisz"
+  },
+  {
+    text: "Od 4 lat dajemy książkom drugie życie i regularnie dokładamy na regał kolejne tytuły.",
+    aside: "codziennie dużo nowości"
+  },
+  {
+    text: "Na naszym regale pojawiają się powieści, reportaże, poradniki, książki dla dzieci i całe serie kryminalne.",
+    aside: "różne gatunki"
+  },
+  {
+    text: "W dni robocze paczki nadajemy już następnego dnia po zakupie.",
+    aside: "szybka wysyłka"
+  },
+  {
+    text: "Zamówienia pakujemy solidnie, żeby książki dotarły w takim stanie, w jakim opuściły nasz regał.",
+    aside: "bezpieczne pakowanie"
+  },
+  {
+    text: "Kupujesz konkretną książkę, sfotografowaną i opisaną przed wystawieniem.",
+    aside: "świadomy wybór"
+  },
+  {
+    text: "Książki z naszego regału są używane, ale wiemy, że każda z nich ma jeszcze mnóstwo historii przed sobą.",
+    aside: "nowe życie książek"
   }
 ];
 const state = {
@@ -179,6 +211,7 @@ function adoptInitialListing() {
 
   state.rendered = Math.min(offset + initialIds.length, products.length);
   state.modeLimit = Math.max(state.modeLimit, state.rendered);
+  insertShelfNotesIntoInitialListing(offset, products.length);
   els.grid.classList.remove("is-loading");
   els.grid.removeAttribute("aria-busy");
   els.empty.hidden = products.length > 0;
@@ -187,6 +220,16 @@ function adoptInitialListing() {
   syncPageText(products.length);
   queueAutoLoadIfNeeded();
   return true;
+}
+
+function insertShelfNotesIntoInitialListing(offset, total) {
+  const cards = Array.from(els.grid.querySelectorAll(".product-card"));
+  for (const [index, card] of cards.entries()) {
+    const absoluteIndex = offset + index;
+    if (shouldRenderShelfNote(absoluteIndex, total)) {
+      card.insertAdjacentElement("afterend", renderShelfNote(absoluteIndex));
+    }
+  }
 }
 
 function selectCategory(categoryId, { scroll = false } = {}) {
@@ -301,17 +344,18 @@ function renderProduct(product, index = 0) {
 function shouldRenderShelfNote(index, total) {
   const position = index + 1;
   if (total < 14) return false;
-  return position === 8 || position === 32 || (position > 64 && position % 72 === 0);
+  if (position < SHELF_NOTE_FIRST_POSITION) return false;
+  return (position - SHELF_NOTE_FIRST_POSITION) % SHELF_NOTE_INTERVAL === 0;
 }
 
 function renderShelfNote(index) {
-  const note = SHELF_NOTES[Math.floor(index / 24) % SHELF_NOTES.length];
+  const noteIndex = Math.floor((index + 1 - SHELF_NOTE_FIRST_POSITION) / SHELF_NOTE_INTERVAL);
+  const note = SHELF_NOTES[noteIndex % SHELF_NOTES.length];
   const article = document.createElement("article");
   article.className = "shelf-note";
-  article.setAttribute("aria-label", note.label);
+  article.setAttribute("aria-label", note.aside);
   article.innerHTML = `
     <div>
-      <small>${escapeHtml(note.label)}</small>
       <p>${escapeHtml(note.text)}</p>
     </div>
     <span>${escapeHtml(note.aside)}</span>

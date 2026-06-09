@@ -106,7 +106,7 @@ Zasady:
 - pelny katalog mozna przeszukiwac po tytule, SKU i kategorii,
 - karty listingu pokazuja zdjecie, kategorie, tytul, cene i link `Zobacz`; okladki maja delikatne papierowe passe-partout i subtelny hover na desktopie,
 - listing uzywa skalowanych wariantow obrazow Allegro (`s256`/`s400`/`s512`/`s720`) zamiast ciezkich oryginalow,
-- katalog co pewien dystans scrollowania wplata niskie notki `Standard BookLoft` / `Drugi obieg`, ktore porzadkuja scroll bez robienia landing page'a,
+- katalog co okolo 36 obejrzanych ofert wplata niskie rotujace notki bez naglowka, z tekstem glownym i krotkim dopiskiem po prawej,
 - pole wyszukiwania uzywa tekstu pomocniczego `Sprawdz, czy mamy to, czego szukasz` bez osobnego widocznego naglowka `Szukaj`,
 - pole wyszukiwania ma subtelny przycisk czyszczenia wpisanej frazy,
 - pusty wynik wyszukiwania pokazuje dopracowany pusty stan z przyciskiem powrotu do wszystkich ofert,
