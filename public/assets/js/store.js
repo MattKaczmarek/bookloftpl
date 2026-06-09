@@ -44,6 +44,7 @@ const SHELF_NOTES = [
     aside: "nowe życie książek"
   }
 ];
+const SHELF_NOTE_START_INDEX = randomShelfNoteStartIndex();
 const state = {
   products: [],
   newestProducts: [],
@@ -350,7 +351,7 @@ function shouldRenderShelfNote(index, total) {
 
 function renderShelfNote(index) {
   const noteIndex = Math.floor((index + 1 - SHELF_NOTE_FIRST_POSITION) / SHELF_NOTE_INTERVAL);
-  const note = SHELF_NOTES[noteIndex % SHELF_NOTES.length];
+  const note = SHELF_NOTES[(SHELF_NOTE_START_INDEX + noteIndex) % SHELF_NOTES.length];
   const article = document.createElement("article");
   article.className = "shelf-note";
   article.setAttribute("aria-label", note.aside);
@@ -361,6 +362,10 @@ function renderShelfNote(index) {
     <span>${escapeHtml(note.aside)}</span>
   `;
   return article;
+}
+
+function randomShelfNoteStartIndex() {
+  return Math.floor(Math.random() * SHELF_NOTES.length);
 }
 
 function syncCategoryButtons() {
