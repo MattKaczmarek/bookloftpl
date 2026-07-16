@@ -897,7 +897,8 @@ function storePageMeta(config, { category, query, sort = DEFAULT_SORT, productCo
 
 function productJsonLd(config, product, url, image, description, category) {
   const identifiers = productIdentifiers(product);
-  const brand = productFeatureValue(product, ["marka", "brand"]);
+  const publisher = knownProductFeatureValue(product, ["wydawnictwo", "producent"]);
+  const brand = publisher || knownProductFeatureValue(product, ["marka", "brand"]) || "BookLoft";
   const additionalProperty = selectedProductFeatures(product.features || [], 10).map((feature) => ({
     "@type": "PropertyValue",
     name: schemaText(feature.name, "Cecha"),
@@ -923,10 +924,10 @@ function productJsonLd(config, product, url, image, description, category) {
     image: cleanImageList(product.images?.length ? product.images : [image]),
     sku: schemaText(product.sku || product.id, String(product.id || "")),
     category: schemaText(category, "Książki używane"),
-    brand: brand ? {
+    brand: {
       "@type": "Brand",
       name: schemaText(brand)
-    } : undefined,
+    },
     additionalProperty,
     offers: offer
   };
@@ -1360,6 +1361,11 @@ function productFeatureValue(product, keys) {
   const wanted = new Set(keys.map(normalizeFeatureName));
   const value = cleanSpecValue((product.features || []).find((feature) => wanted.has(normalizeFeatureName(feature.name)))?.value || "");
   return isGenericUsedCondition(value) ? "" : value;
+}
+
+function knownProductFeatureValue(product, keys) {
+  const value = productFeatureValue(product, keys);
+  return ["brak", "nie dotyczy", "nie podano", "nieznane"].includes(normalizeFeatureName(value)) ? "" : value;
 }
 
 function productIdentifiers(product) {

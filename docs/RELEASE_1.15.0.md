@@ -56,7 +56,8 @@ Brakujace miejsca sa uzupelniane najnowszymi ofertami. Do HTML trafia maksymalni
 
 ### Dane strukturalne
 
-- `Product.brand` nie otrzymuje juz sztucznego fallbacku `BookLoft`. Pole jest obecne tylko przy parametrze `marka` albo `brand` z Allegro.
+- Hydratacja oferty laczy parametry ofertowe z `parameters` oraz produktowe z `productSet[].product.parameters`, zamiast odrzucac m.in. wydawnictwo, gdy Allegro zwraca ofertowy parametr stanu.
+- `Product.brand` preferuje rzeczywiste wydawnictwo, producenta albo marke z Allegro. Przy braku znanej wartosci zachowuje dotychczasowy fallback `BookLoft`.
 - Usunieto niepelne `MerchantReturnPolicy`, `ShippingService` i referencje polityki z `Offer`.
 - Pozostaja prawdziwe dane `OnlineStore`, `Product`, `Offer`, cena, waluta, dostepnosc, stan, sprzedawca oraz identyfikatory, gdy Allegro je dostarczy.
 

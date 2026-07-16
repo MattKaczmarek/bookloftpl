@@ -106,3 +106,66 @@ test("removed offers retain a lightweight snapshot and clear it after reactivati
   assert.equal(reactivated.removedOfferSnapshots["1"], undefined);
   assert.equal(await cache.getMissingProductStatus("1"), 404);
 });
+
+test("offer hydration merges offer and Allegro product parameters", async (t) => {
+  const dataDir = await mkdtemp(path.join(tmpdir(), "bookloft-cache-test-"));
+  t.after(() => rm(dataDir, { recursive: true, force: true }));
+  const cache = new StoreCache({
+    version: "1.15.0",
+    dataDir,
+    allegroMarketplaceId: "allegro-pl",
+    allegroSellingFormats: ["BUY_NOW"]
+  });
+  await cache.init();
+
+  await writeJson(cache.files.published, {
+    version: 3,
+    activeOfferIds: ["1"],
+    addedAtByOfferId: { "1": "2026-07-01T08:00:00.000Z" },
+    removedByUnavailable: {},
+    removedOfferSnapshots: {}
+  });
+  await writeJson(cache.files.catalog, {
+    version: "1.14.5",
+    updatedAt: "2026-07-10T08:00:00.000Z",
+    context: { source: "Allegro", currency: "PLN" },
+    categories: [{ category_id: "fantasy", name: "Fantasy", parent_id: "" }],
+    offers: { "1": cachedOffer(1, "Achaja Tom 1 / Andrzej Ziemiański") }
+  });
+  await cache.rebuildStorefront();
+
+  let detailRequests = 0;
+  cache.withAccessToken = async (run) => run("test-token");
+  cache.allegroClient.getOfferDetails = async () => {
+    detailRequests += 1;
+    return {
+      name: "Achaja Tom 1 / Andrzej Ziemiański",
+      description: { sections: [] },
+      parameters: [{ name: "Stan", values: ["Używany"] }],
+      productSet: [{
+        product: {
+          parameters: [
+            { name: "Wydawnictwo", values: ["Fabryka Słów"] },
+            { name: "Autor", values: ["Andrzej Ziemiański"] },
+            { name: "Stan", values: ["Nowy"] }
+          ]
+        }
+      }],
+      sellingMode: { price: { amount: "29.00", currency: "PLN" } },
+      stock: { available: 1 },
+      category: { id: "fantasy" }
+    };
+  };
+
+  const hydrated = await cache.getProduct("1");
+  assert.equal(detailRequests, 1);
+  assert.equal(hydrated.detailSchemaVersion, 2);
+  assert.deepEqual(hydrated.features, [
+    { name: "Wydawnictwo", value: "Fabryka Słów" },
+    { name: "Autor", value: "Andrzej Ziemiański" },
+    { name: "Stan", value: "Używany" }
+  ]);
+
+  await cache.getProduct("1");
+  assert.equal(detailRequests, 1);
+});

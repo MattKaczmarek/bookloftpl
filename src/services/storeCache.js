@@ -10,6 +10,7 @@ const CATALOG_FILE = "allegro-offers-cache.json";
 const STOREFRONT_FILE = "storefront-cache.json";
 const META_FILE = "cache-meta.json";
 const AUTH_STATE_TTL_MS = 15 * 60 * 1000;
+const OFFER_DETAIL_SCHEMA_VERSION = 2;
 
 function nowIso() {
   return new Date().toISOString();
@@ -147,7 +148,7 @@ export class StoreCache {
     let product = storefront.products.find((item) => String(item.id) === String(productId));
     if (!product) return null;
 
-    if (!product.descriptionFetchedAt) {
+    if (!product.descriptionFetchedAt || Number(product.detailSchemaVersion || 0) < OFFER_DETAIL_SCHEMA_VERSION) {
       await this.hydrateOfferDetail(product.id).catch((error) => this.rememberError(error));
       storefront = await this.getStorefront();
       product = storefront.products.find((item) => String(item.id) === String(productId)) || product;
@@ -727,9 +728,9 @@ function mergeOfferDetail(existing, detail) {
   const hydratedAt = nowIso();
   const descriptionHtml = standardizedDescriptionToHtml(detail.description) || normalizeDescriptionHtml(existing.descriptionHtml);
   const images = normalizeImages(detail.images || existing.images || []);
-  const features = normalizeParameters(detail.parameters || []);
+  const offerParameters = normalizeParameters(detail.parameters || []);
   const productParameters = normalizeProductSetParameters(detail.productSet || []);
-  const mergedFeatures = features.length ? features : productParameters;
+  const mergedFeatures = mergeFeatures(productParameters, offerParameters);
   const price = parsePrice(detail.sellingMode?.price || existing);
   const name = String(detail.name || existing.name || "").trim();
 
@@ -748,6 +749,7 @@ function mergeOfferDetail(existing, detail) {
     sourceAddedAt: detail.createdAt || existing.sourceAddedAt || null,
     sourceUpdatedAt: detail.updatedAt || existing.sourceUpdatedAt || null,
     descriptionFetchedAt: hydratedAt,
+    detailSchemaVersion: OFFER_DETAIL_SCHEMA_VERSION,
     contentUpdatedAt: detail.updatedAt || hydratedAt,
     searchText: productSearchText({ name: name || existing.name, sku: existing.sku || "", features: mergedFeatures }, descriptionHtml)
   };
@@ -785,6 +787,15 @@ function normalizeParameters(parameters) {
 
 function normalizeProductSetParameters(productSet) {
   return productSet.flatMap((item) => normalizeParameters(item?.product?.parameters || []));
+}
+
+function mergeFeatures(...featureGroups) {
+  const merged = new Map();
+  for (const feature of featureGroups.flat()) {
+    const key = String(feature.name || "").trim().toLocaleLowerCase("pl-PL");
+    if (key) merged.set(key, feature);
+  }
+  return [...merged.values()];
 }
 
 function normalizeParameterValue(parameter) {

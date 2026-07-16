@@ -97,7 +97,7 @@ async function withServer(run) {
   }
 }
 
-test("active product metadata stays unchanged and schema omits invented merchant data", async () => {
+test("active product metadata stays unchanged and schema prefers Allegro publisher for brand", async () => {
   await withServer(async (origin, data) => {
     const response = await fetch(`${origin}/product/${data.products[0].id}/${data.products[0].slug}`);
     const html = await response.text();
@@ -105,8 +105,14 @@ test("active product metadata stays unchanged and schema omits invented merchant
     assert.equal(response.status, 200);
     assert.match(html, /<title>Książka 1 \| BookLoft<\/title>/);
     assert.match(html, /Książka 1\. Stan: DOBRY\. Fantasy w BookLoft z realnymi zdjęciami, rzetelnym opisem i zakupem przez Allegro\./);
-    assert.doesNotMatch(html, /"brand":\{"@type":"Brand","name":"BookLoft"\}/);
+    assert.match(html, /"brand":\{"@type":"Brand","name":"BookLoft"\}/);
     assert.doesNotMatch(html, /MerchantReturnPolicy|ShippingService|hasMerchantReturnPolicy/);
+
+    data.products[0].features.push({ name: "Wydawnictwo", value: "Fabryka Słów" });
+    const publisherResponse = await fetch(`${origin}/product/${data.products[0].id}/${data.products[0].slug}`);
+    const publisherHtml = await publisherResponse.text();
+    assert.match(publisherHtml, /"brand":\{"@type":"Brand","name":"Fabryka Słów"\}/);
+    assert.doesNotMatch(publisherHtml, /"brand":\{"@type":"Brand","name":"BookLoft"\}/);
   });
 });
 
