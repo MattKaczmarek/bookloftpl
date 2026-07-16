@@ -69,7 +69,6 @@ const els = {
   listingTitle: document.querySelector("#listing-title"),
   search: document.querySelector("#product-search"),
   clearSearch: document.querySelector("#clear-search"),
-  emptyReset: document.querySelector("#empty-reset"),
   categoryTree: document.querySelector("#category-tree"),
   categorySelect: document.querySelector("#category-select"),
   clearCategory: document.querySelector("#clear-category"),
@@ -140,7 +139,8 @@ function bindEvents() {
     resetAndRender();
   });
 
-  els.emptyReset?.addEventListener("click", () => {
+  els.empty?.addEventListener("click", (event) => {
+    if (!event.target.closest("#empty-reset")) return;
     els.search.value = "";
     state.query = "";
     state.initialPage = 1;
@@ -234,8 +234,7 @@ function adoptInitialListing() {
   insertShelfNotesIntoInitialListing(offset, products.length);
   els.grid.classList.remove("is-loading");
   els.grid.removeAttribute("aria-busy");
-  els.empty.hidden = products.length > 0;
-  if (els.emptyReset) els.emptyReset.hidden = !state.query && !state.categoryId;
+  syncEmptyState(products.length);
   els.loadSentinel.hidden = products.length === 0 || state.rendered >= products.length;
   syncPageText(products.length);
   queueAutoLoadIfNeeded();
@@ -278,8 +277,7 @@ function renderProducts() {
 
   els.grid.appendChild(fragment);
   state.rendered += next.length;
-  els.empty.hidden = products.length > 0;
-  if (els.emptyReset) els.emptyReset.hidden = !state.query && !state.categoryId;
+  syncEmptyState(products.length);
   els.loadSentinel.hidden = products.length === 0 || state.rendered >= products.length;
   syncPageText(products.length);
   queueAutoLoadIfNeeded();
@@ -288,6 +286,20 @@ function renderProducts() {
 function currentProducts() {
   const products = state.query || state.categoryId ? filteredProducts() : newestProducts();
   return sortProducts(products, state.sort);
+}
+
+function syncEmptyState(productCount) {
+  const isEmpty = productCount === 0;
+  if (isEmpty && !els.empty.querySelector("h2")) {
+    els.empty.innerHTML = `
+      <span class="empty-mark" aria-hidden="true">B</span>
+      <h2>Nie znaleźliśmy pasujących ofert</h2>
+      <p>Spróbuj krótszej frazy, nazwiska autora albo wybierz inną kategorię.</p>
+      <button class="secondary-action" id="empty-reset" type="button">Pokaż wszystkie oferty</button>`;
+  }
+  const reset = els.empty.querySelector("#empty-reset");
+  if (reset) reset.hidden = !state.query && !state.categoryId;
+  els.empty.hidden = !isEmpty;
 }
 
 function loadNextPage() {

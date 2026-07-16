@@ -1,7 +1,9 @@
 # BookLoft sklep
 
-Wersja sklepu: `1.14.5`.
-Branch tej wersji: `ver-1.14`.
+Wersja przygotowana lokalnie: `1.15.0`.
+Branch tej wersji: `ver-1.15`.
+
+Produkcja pozostaje na `1.14.5` z brancha `ver-1.14`; wersja `1.15.0` nie zostala wdrozona.
 
 Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://bookloft.pl/`. Katalog jest oparty bezposrednio o aktywne oferty Allegro konta BookLoft.
 
@@ -81,7 +83,7 @@ Po deployu administrator wchodzi w `/panel`, klika `Polacz Allegro`, loguje kont
 Cache jest trzymany w `BOOKLOFT_DATA_DIR`.
 
 - `allegro-auth.json` - token OAuth i tymczasowe stany autoryzacji,
-- `published-offers.json` - aktywne oferty dopuszczone do katalogu,
+- `published-offers.json` - aktywne oferty dopuszczone do katalogu, znaczniki wycofania i lekkie snapshoty historycznych ofert,
 - `allegro-offers-cache.json` - ostatni snapshot ofert i kategorii z Allegro,
 - `storefront-cache.json` - gotowe dane dla frontendu,
 - `cache-meta.json` - status ostatnich aktualizacji i bledow.
@@ -93,6 +95,8 @@ Zasady:
 - automatyczny refresh nie dodaje nowych ofert do katalogu,
 - oferta bez stanu `>= 1` albo nieaktywna znika z katalogu,
 - nowa oferta aktywna na Allegro pojawia sie po akcji `Dodaj nowe` w panelu.
+- przy wycofaniu oferty zapisywane sa tylko dane potrzebne stronie `410`: identyfikator, nazwa, slug, pierwsze zdjecie, kategoria i data usuniecia; cena i opis nie sa utrwalane w historycznym snapshotcie,
+- ponowne dodanie tej samej oferty usuwa jej znacznik wycofania i snapshot.
 
 ## Frontend
 
@@ -111,6 +115,7 @@ Zasady:
 - pole wyszukiwania uzywa tekstu pomocniczego `Sprawdz, czy mamy to, czego szukasz` bez osobnego widocznego naglowka `Szukaj`,
 - pole wyszukiwania ma subtelny przycisk czyszczenia wpisanej frazy,
 - pusty wynik wyszukiwania pokazuje dopracowany pusty stan z przyciskiem powrotu do wszystkich ofert,
+- aktywny listing nie wysyla ukrytej tresci pustego wyniku w SSR; komunikat jest tworzony dopiero dla rzeczywiscie pustej listy,
 - pierwsze ladowanie katalogu pokazuje lekkie skeletony kart,
 - strona oferty pokazuje przycisk `Kup na Allegro`, informacje ze zakup, platnosc, dostawa, zwrot i reklamacja odbywaja sie w Allegro, pasek zalet BookLoft, galerie ze strzalkami bez tla i przewijaniem swipem, lekki podglad zdjec z przewijaniem swipem, zoomem kolkiem myszy, plynniejszym pinch-to-zoom na mobile i przesuwaniem po powiekszeniu oraz stopke `O nas`,
 - strona oferty pokazuje najwazniejsze parametry z Allegro, jesli sa dostepne w cache, np. autora, wydawnictwo, rok wydania, serie, ISBN/EAN, oprawe, liczbe stron i jezyk,
@@ -126,10 +131,12 @@ Zasady:
 - SSR listingu pozostaje ograniczony do 50 produktow na strone, ale katalog i kategorie maja techniczna, indeksowalna paginacje HTML w sitemapie i `rel=prev/next`. Dla uzytkownikow glowne przegladanie nadal dziala przez infinite scroll po stronie klienta.
 - Stare lub bledne slugi produktu i kategorii przekierowuja 301 na adres kanoniczny.
 - Niedostepne historyczne oferty zwracaja `410 Gone`, a nieznane identyfikatory `404 Not Found`; obie odpowiedzi sa `noindex`.
+- Strona `410` ma pelnoszerokosciowy uklad na PC i mobile, pokazuje zachowane dane egzemplarza, wyszukiwarke oraz maksymalnie osiem trafnych aktywnych ofert. Starsze wpisy bez snapshotu buduja fraze wyszukiwania ze sluga URL.
 - Nieznane publiczne sciezki HTML zwracaja `404` z `noindex`, zamiast przekierowywac crawlera na strone glowna.
-- `/sitemap.xml` zawiera strone glowna, strony informacyjne, publiczne kategorie, strony paginacji katalogu/kategorii i aktywne produkty.
+- `/sitemap.xml` zawiera strone glowna, strony informacyjne, publiczne kategorie, strony paginacji katalogu/kategorii i aktywne produkty. `lastmod` jest podawany tylko dla produktu z wiarygodna data istotnej zmiany; agregaty nie dostaja globalnej daty odswiezenia cache.
 - Dane strukturalne na listingach obejmuja `Organization`, `WebSite`, `ItemList` oraz `BreadcrumbList`; karty ofert nie udaja osobnych `Product`/`Offer`, zeby Google nie raportowal brakow z miniaturek.
-- Pelne dane `Product`/`Offer` sa tylko na stronach `/product/:id/:slug`; zawieraja sprzedawce `OnlineStore`, linkowana polityke zwrotow/dostawy, opis, cene, dostepnosc, stan oraz ISBN/EAN/GTIN, jesli sa dostepne w parametrach Allegro.
+- Pelne dane `Product`/`Offer` sa tylko na stronach `/product/:id/:slug`; zawieraja sprzedawce `OnlineStore`, opis, cene, dostepnosc, stan oraz ISBN/EAN/GTIN, jesli sa dostepne w parametrach Allegro. `brand` jest publikowany tylko przy prawdziwym parametrze marki, a nie zastepowany nazwa BookLoft.
+- Techniczna paginacja pozostaje linkowalna dla crawlerow, ale ma `data-nosnippet`, zeby jej numery i etykiety nie trafialy do opisu wyniku wyszukiwania.
 - Publiczne API listingu zwraca tylko pierwsze zdjecie produktu, zeby ograniczyc wage `/api/storefront`; pelna galeria zostaje na `/api/products/:id`.
 - Dynamiczne publiczne API katalogu (`/api/storefront`, `/api/newest`, `/api/products/:id`) wysyla `Cache-Control: no-cache`, zeby zwykle odswiezenie strony po dodaniu ofert rewalidowalo dane bez wymuszania `Ctrl+F5`.
 - Miniatury i karty uzywaja mniejszych wariantow obrazow Allegro, a pelny podglad zdjecia nadal korzysta z pelnego adresu obrazu.
@@ -156,6 +163,7 @@ $env:BOOKLOFT_COOKIE_SECURE="false"
 $env:BOOKLOFT_PUBLIC_ORIGIN="http://127.0.0.1:3225"
 $env:BOOKLOFT_PORT="3225"
 npm install
+npm test
 npm start
 ```
 
@@ -171,7 +179,7 @@ Standard:
 
 1. zmiana lokalna,
 2. `git push`,
-3. na Hetznerze: `cd /home/bookloftpl && git fetch && git switch ver-1.14 && git pull --ff-only`,
+3. po osobnej zgodzie na deploy na Hetznerze: `cd /home/bookloftpl && git fetch && git switch ver-1.15 && git pull --ff-only`,
 4. uzupelnienie ENV Allegro w `/etc/bookloft-shop/bookloft-shop.env`,
 5. `npm ci --omit=dev`,
 6. restart uslugi sklepu,

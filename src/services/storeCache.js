@@ -24,10 +24,11 @@ function emptyAuth() {
 
 function emptyPublished() {
   return {
-    version: 2,
+    version: 3,
     activeOfferIds: [],
     addedAtByOfferId: {},
-    removedByUnavailable: {}
+    removedByUnavailable: {},
+    removedOfferSnapshots: {}
   };
 }
 
@@ -167,6 +168,24 @@ export class StoreCache {
     return published.removedByUnavailable?.[String(productId)] ? 410 : 404;
   }
 
+  async getMissingProductPageData(productId, requestedSlug = "", storefrontOverride = null) {
+    const [published, storefront] = await Promise.all([
+      this.readPublished(),
+      storefrontOverride ? Promise.resolve(storefrontOverride) : this.getStorefront()
+    ]);
+    const id = String(productId);
+    const removedAt = published.removedByUnavailable?.[id] || null;
+    const snapshot = removedAt ? published.removedOfferSnapshots?.[id] || null : null;
+    const searchQuery = missingOfferSearchQuery(snapshot?.name, requestedSlug);
+
+    return {
+      status: removedAt ? 410 : 404,
+      snapshot,
+      searchQuery,
+      alternatives: selectMissingOfferAlternatives(storefront.products || [], snapshot, searchQuery, 8)
+    };
+  }
+
   async getStatus() {
     const [published, storefront, meta, catalog, auth] = await Promise.all([
       this.readPublished(),
@@ -237,6 +256,7 @@ export class StoreCache {
         const previousActive = new Set(published.activeOfferIds.map(String));
         const nextActive = new Set();
         const addedIds = [];
+        const removedIds = [];
 
         for (const offerId of Object.keys(listingMap)) {
           nextActive.add(offerId);
@@ -245,14 +265,17 @@ export class StoreCache {
             published.addedAtByOfferId[offerId] = startedAt;
           }
           delete published.removedByUnavailable[offerId];
+          delete published.removedOfferSnapshots[offerId];
         }
 
         for (const offerId of previousActive) {
           if (!nextActive.has(offerId)) {
             published.removedByUnavailable[offerId] = startedAt;
+            removedIds.push(offerId);
           }
         }
 
+        await this.captureRemovedOfferSnapshots(published, removedIds, startedAt);
         published.activeOfferIds = [...nextActive].sort(sortIds);
         await writeJson(this.files.published, published);
         await this.refreshOfferCacheLocked("add-new-offers", listingMap);
@@ -313,16 +336,20 @@ export class StoreCache {
     const timestamp = nowIso();
     const published = await this.readPublished();
     const nextActiveIds = [];
+    const removedIds = [];
 
     for (const offerId of published.activeOfferIds.map(String)) {
       if (listingMap[offerId]) {
         nextActiveIds.push(offerId);
         delete published.removedByUnavailable[offerId];
+        delete published.removedOfferSnapshots[offerId];
       } else {
         published.removedByUnavailable[offerId] = timestamp;
+        removedIds.push(offerId);
       }
     }
 
+    await this.captureRemovedOfferSnapshots(published, removedIds, timestamp);
     published.activeOfferIds = nextActiveIds.sort(sortIds);
     await writeJson(this.files.published, published);
     await this.refreshOfferCacheLocked("refresh-availability", listingMap);
@@ -368,6 +395,34 @@ export class StoreCache {
     await writeJson(this.files.catalog, catalog);
     await this.rebuildStorefront(catalog.context);
     return catalog.offers[String(offerId)];
+  }
+
+  async captureRemovedOfferSnapshots(published, offerIds, removedAt) {
+    if (!offerIds.length) return;
+
+    const [catalog, storefront] = await Promise.all([this.readCatalog(), this.getStorefront()]);
+    const productsById = new Map((storefront.products || []).map((product) => [String(product.id), product]));
+
+    for (const offerId of offerIds) {
+      if (published.removedOfferSnapshots?.[offerId]) continue;
+      const product = productsById.get(String(offerId));
+      const offer = product || catalog.offers?.[String(offerId)];
+      if (!offer) continue;
+
+      const categoryPath = product?.categoryPath || getCategoryPath(catalog.categories || [], offer.categoryId);
+      const categoryLeaf = categoryPath[categoryPath.length - 1];
+      published.removedOfferSnapshots[offerId] = {
+        id: String(offerId),
+        name: String(offer.name || "").trim(),
+        slug: offer.slug || slugify(offer.name),
+        image: normalizeImages(offer.images || [])[0] || "",
+        categoryId: String(offer.categoryId || ""),
+        categoryName: categoryLeaf?.displayName || categoryLeaf?.name || "",
+        categoryPath,
+        removedAt,
+        sourceUpdatedAt: offer.sourceUpdatedAt || null
+      };
+    }
   }
 
   async rebuildStorefront(contextOverride = null) {
@@ -529,9 +584,11 @@ export class StoreCache {
 
   async readPublished() {
     const published = await readJson(this.files.published, emptyPublished());
+    published.version = Math.max(3, Number(published.version) || 0);
     published.activeOfferIds = [...new Set((published.activeOfferIds || []).map(String))].sort(sortIds);
     published.addedAtByOfferId = published.addedAtByOfferId || {};
     published.removedByUnavailable = published.removedByUnavailable || {};
+    published.removedOfferSnapshots = published.removedOfferSnapshots || {};
     return published;
   }
 
@@ -628,6 +685,17 @@ function normalizeOfferFromListing(offer, existing = {}) {
   const sku = offer.external?.id || existing.sku || "";
   const descriptionHtml = normalizeDescriptionHtml(existing.descriptionHtml) || `<p>Oferta BookLoft dostępna na Allegro. Finalizacja zakupu oraz obsługa płatności, dostawy, zwrotu i reklamacji odbywają się w Allegro.</p>`;
   const allegroUrl = `https://allegro.pl/oferta/${encodeURIComponent(String(offer.id))}`;
+  const sourceUpdatedAt = offer.updatedAt || existing.sourceUpdatedAt || null;
+  const contentChanged = !existing.id ||
+    existing.name !== name ||
+    existing.price !== price ||
+    existing.currency !== currency ||
+    existing.categoryId !== categoryId ||
+    existing.sku !== sku ||
+    existing.images?.[0] !== primaryImage;
+  const contentUpdatedAt = contentChanged
+    ? sourceUpdatedAt || nowIso()
+    : existing.contentUpdatedAt || sourceUpdatedAt || existing.sourceAddedAt || offer.publication?.startingAt || null;
 
   return {
     ...existing,
@@ -647,7 +715,8 @@ function normalizeOfferFromListing(offer, existing = {}) {
     source: "allegro",
     publicationStatus: offer.publication?.status || existing.publicationStatus || "ACTIVE",
     sourceAddedAt: existing.sourceAddedAt || offer.publication?.startingAt || null,
-    sourceUpdatedAt: existing.sourceUpdatedAt || null,
+    sourceUpdatedAt,
+    contentUpdatedAt,
     addedAt: existing.addedAt || offer.publication?.startingAt || null,
     descriptionHtml,
     features: existing.features || []
@@ -655,6 +724,7 @@ function normalizeOfferFromListing(offer, existing = {}) {
 }
 
 function mergeOfferDetail(existing, detail) {
+  const hydratedAt = nowIso();
   const descriptionHtml = standardizedDescriptionToHtml(detail.description) || normalizeDescriptionHtml(existing.descriptionHtml);
   const images = normalizeImages(detail.images || existing.images || []);
   const features = normalizeParameters(detail.parameters || []);
@@ -677,7 +747,8 @@ function mergeOfferDetail(existing, detail) {
     publicationStatus: detail.publication?.status || existing.publicationStatus,
     sourceAddedAt: detail.createdAt || existing.sourceAddedAt || null,
     sourceUpdatedAt: detail.updatedAt || existing.sourceUpdatedAt || null,
-    descriptionFetchedAt: nowIso(),
+    descriptionFetchedAt: hydratedAt,
+    contentUpdatedAt: detail.updatedAt || hydratedAt,
     searchText: productSearchText({ name: name || existing.name, sku: existing.sku || "", features: mergedFeatures }, descriptionHtml)
   };
 }
@@ -744,6 +815,77 @@ function productFreshnessTime(product) {
     Date.parse(product.sourceUpdatedAt || 0) || 0,
     Number(product.id || 0) || 0
   );
+}
+
+function missingOfferSearchQuery(name, requestedSlug) {
+  const source = (name ? String(name) : String(requestedSlug || "").replace(/-/g, " "))
+    .replace(/\s+/g, " ")
+    .trim();
+  const primaryTitle = source.split(/\s*\/\s*/)[0]
+    .replace(/^(?:twarda|twarde|miękka|miękkie)\s+/i, "")
+    .trim();
+  return (primaryTitle || source).slice(0, 100);
+}
+
+function selectMissingOfferAlternatives(products, snapshot, searchQuery, limit) {
+  const queryTokens = significantSearchTokens(snapshot?.name || searchQuery);
+  const queryText = normalizeSearchValue(searchQuery);
+  const categoryIds = new Set((snapshot?.categoryPath || []).map((category) => String(category.id)));
+  if (snapshot?.categoryId) categoryIds.add(String(snapshot.categoryId));
+
+  const ranked = products.map((product) => {
+    const normalizedName = normalizeSearchValue(product.name);
+    const productTokens = new Set(significantSearchTokens(product.name));
+    const sharedTokenCount = queryTokens.filter((token) => productTokens.has(token)).length;
+    const sameCategory = (product.categoryPath || []).some((category) => categoryIds.has(String(category.id)));
+    const includesQuery = Boolean(queryText && normalizedName.includes(queryText));
+    const hasTitleMatch = includesQuery || sharedTokenCount >= Math.min(2, queryTokens.length);
+    const score = (includesQuery ? 120 : 0) +
+      sharedTokenCount * 18 +
+      (sameCategory ? 16 : 0);
+    return { product, score, relevant: hasTitleMatch || sameCategory };
+  });
+
+  const matching = ranked
+    .filter((item) => item.relevant)
+    .sort((a, b) => b.score - a.score || productFreshnessTime(b.product) - productFreshnessTime(a.product));
+  const selected = matching.slice(0, limit);
+  const selectedIds = new Set(selected.map((item) => String(item.product.id)));
+
+  if (selected.length < limit) {
+    const newest = ranked
+      .filter((item) => !selectedIds.has(String(item.product.id)))
+      .sort((a, b) => productFreshnessTime(b.product) - productFreshnessTime(a.product));
+    selected.push(...newest.slice(0, limit - selected.length));
+  }
+
+  return selected.map((item) => toListProduct(item.product));
+}
+
+function significantSearchTokens(value) {
+  const ignored = new Set(["twarda", "twarde", "miekka", "miekkie", "tom", "tomy", "czesc", "ksiazka", "ksiazki", "zestaw"]);
+  return [...new Set(normalizeSearchValue(value)
+    .split(" ")
+    .filter((token) => token.length >= 3 && !ignored.has(token)))]
+    .slice(0, 12);
+}
+
+function normalizeSearchValue(value) {
+  return String(value || "")
+    .replace(/[ąĄ]/g, "a")
+    .replace(/[ćĆ]/g, "c")
+    .replace(/[ęĘ]/g, "e")
+    .replace(/[łŁ]/g, "l")
+    .replace(/[ńŃ]/g, "n")
+    .replace(/[óÓ]/g, "o")
+    .replace(/[śŚ]/g, "s")
+    .replace(/[źŹżŻ]/g, "z")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function normalizeImages(images) {

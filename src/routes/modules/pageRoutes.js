@@ -172,9 +172,13 @@ export function createPageRouter(config, storeCache) {
         storeCache.getStorefront()
       ]);
       if (!product) {
-        const status = await storeCache.getMissingProductStatus(req.params.productId);
+        const missingProduct = await storeCache.getMissingProductPageData(
+          req.params.productId,
+          req.params.slug,
+          storefront
+        );
         res.setHeader("X-Robots-Tag", "noindex, nofollow, noarchive");
-        res.status(status).type("html").send(renderMissingProductPage(config, status));
+        res.status(missingProduct.status).type("html").send(renderMissingProductPage(config, missingProduct));
         return;
       }
 
@@ -195,30 +199,26 @@ export function createPageRouter(config, storeCache) {
       const categories = visibleCategories(storefront.categories);
       const urls = [
         {
-          loc: absoluteUrl(config, "/"),
-          priority: "1.0"
+          loc: absoluteUrl(config, "/")
         },
         {
-          loc: absoluteUrl(config, "/o-nas"),
-          priority: "0.6"
+          loc: absoluteUrl(config, "/o-nas")
         },
         {
-          loc: absoluteUrl(config, "/informacje-prawne"),
-          priority: "0.4"
+          loc: absoluteUrl(config, "/informacje-prawne")
         },
         ...categories.map((category) => ({
-          loc: absoluteUrl(config, categoryPath(category)),
-          priority: "0.7"
+          loc: absoluteUrl(config, categoryPath(category))
         })),
-        ...catalogPaginationUrls(config, storefront.products.length, "0.6"),
+        ...catalogPaginationUrls(config, storefront.products.length),
         ...categoryPaginationUrls(config, storefront.products, categories),
         ...storefront.products.map((product) => ({
           loc: absoluteUrl(config, productPath(product)),
-          priority: "0.8"
+          lastmod: sitemapLastModified(product)
         }))
       ];
 
-      res.type("application/xml").send(renderSitemap(urls, storefront.updatedAt));
+      res.type("application/xml").send(renderSitemap(urls));
     })
   );
 
@@ -378,12 +378,7 @@ function renderStorePage(config, storefront, { category = null, query = "", sort
       </div>
       ${pagination ? renderCatalogPagination(pagination) : ""}
       <div class="load-sentinel" id="load-sentinel" aria-hidden="true" ${products.length > SSR_PRODUCT_LIMIT ? "" : "hidden"}></div>
-      <div class="empty-state" id="empty-state" ${products.length ? "hidden" : ""}>
-        <span class="empty-mark" aria-hidden="true">B</span>
-        <h2>Nie znaleźliśmy pasujących ofert</h2>
-        <p>Spróbuj krótszej frazy, nazwiska autora albo wybierz inną kategorię.</p>
-        <button class="secondary-action" id="empty-reset" type="button">Pokaż wszystkie oferty</button>
-      </div>
+      ${renderCatalogEmptyState(products.length === 0)}
       ${renderCatalogTrustNote(config)}
     </section>
   </main>
@@ -603,6 +598,16 @@ function renderProductCard(product, index = 0) {
   </article>`;
 }
 
+function renderCatalogEmptyState(hasNoProducts) {
+  const content = hasNoProducts ? `
+        <span class="empty-mark" aria-hidden="true">B</span>
+        <h2>Nie znaleźliśmy pasujących ofert</h2>
+        <p>Spróbuj krótszej frazy, nazwiska autora albo wybierz inną kategorię.</p>
+        <button class="secondary-action" id="empty-reset" type="button">Pokaż wszystkie oferty</button>` : "";
+  return `<div class="empty-state" id="empty-state"${hasNoProducts ? "" : " hidden"}>${content}
+      </div>`;
+}
+
 function renderRelated(products) {
   if (!products.length) return "";
   return `
@@ -669,27 +674,57 @@ function renderProductAbout(config) {
     </section>`;
 }
 
-function renderMissingProductPage(config, status) {
-  const title = status === 410 ? "Oferta jest już niedostępna" : "Nie znaleziono oferty";
+function renderMissingProductPage(config, missingProduct) {
+  const { status, snapshot, searchQuery, alternatives = [] } = missingProduct;
+  const isGone = status === 410;
+  const title = isGone ? "Oferta jest już niedostępna" : "Nie znaleziono oferty";
+  const heading = isGone ? "Ten egzemplarz został już sprzedany" : "Nie znaleźliśmy tej oferty";
+  const image = snapshot?.image ? allegroImageVariant(snapshot.image, "s400") : "";
+  const categoryName = snapshot?.categoryName || "";
+  const searchForm = searchQuery ? `
+          <form class="unavailable-search" action="${appPath(config.basePath, "/")}" method="get" role="search">
+            <label for="unavailable-search-input">Poszukaj podobnego tytułu</label>
+            <div>
+              <input id="unavailable-search-input" name="q" type="search" value="${escapeAttribute(searchQuery)}">
+              <button class="primary-action" type="submit">Szukaj w katalogu</button>
+            </div>
+          </form>` : "";
+
   return renderSimplePage(config, {
     status,
     title,
     description: "Ta oferta nie jest obecnie dostępna w katalogu BookLoft.",
-    body: `<main class="shop-layout simple-page-shell">
-      <section class="shop-surface simple-page">
-        <a class="shop-brand-hero" href="${appPath(config.basePath, "/")}" aria-label="BookLoft - wróć na stronę główną">
+    body: `<main class="unavailable-page">
+        <a class="shop-brand-hero unavailable-brand-hero" href="${appPath(config.basePath, "/")}" aria-label="BookLoft - wróć na stronę główną">
           <div class="hero-brand-copy">
             <img class="hero-logo" src="${appPath(config.basePath, `/assets/img/logo.png?v=${config.version}`)}" alt="BookLoft">
             <p>Przestrzeń pełna książek</p>
           </div>
         </a>
-        <div class="empty-state">
-          <span class="empty-mark" aria-hidden="true">B</span>
-          <h1>${escapeHtml(title)}</h1>
-          <p>Tego egzemplarza nie ma już w katalogu. Wróć do aktualnych ofert i wybierz coś z dostępnego regału.</p>
-          <a class="secondary-action" href="${appPath(config.basePath, "/")}">Wróć do ofert</a>
+        <div class="unavailable-content">
+          <section class="unavailable-summary${image ? " has-image" : ""}">
+            ${image ? `<div class="unavailable-cover"><img src="${escapeAttribute(image)}" alt=""></div>` : ""}
+            <div class="unavailable-copy">
+              <p class="eyebrow">${isGone ? "Oferta zakończona" : "Nieznany adres"}</p>
+              <h1>${escapeHtml(heading)}</h1>
+              ${snapshot?.name ? `<p class="unavailable-offer-name">${escapeHtml(snapshot.name)}</p>` : ""}
+              ${categoryName ? `<p class="unavailable-category">${escapeHtml(categoryName)}</p>` : ""}
+              <p>${isGone
+                ? "Każda oferta BookLoft dotyczy konkretnego używanego egzemplarza. Ten nie jest już dostępny, ale poniżej znajdziesz aktualne propozycje z naszego regału."
+                : "Adres nie prowadzi do znanej oferty. Skorzystaj z wyszukiwarki albo przejdź do aktualnego katalogu."}</p>
+              ${searchForm}
+              <a class="secondary-action unavailable-catalog-link" href="${appPath(config.basePath, "/")}">Przejdź do wszystkich ofert</a>
+            </div>
+          </section>
+          ${alternatives.length ? `
+            <section class="related-products unavailable-alternatives" aria-labelledby="unavailable-alternatives-title">
+              <p class="eyebrow">Aktualnie dostępne</p>
+              <h2 id="unavailable-alternatives-title">${searchQuery ? "Podobne oferty i nowości" : "Najnowsze oferty"}</h2>
+              <div class="related-grid">
+                ${alternatives.map(renderRelatedCard).join("")}
+              </div>
+            </section>` : ""}
         </div>
-      </section>
     </main>`
   });
 }
@@ -731,26 +766,22 @@ function renderSimplePage(config, { title, description, body }) {
 </html>`;
 }
 
-function renderSitemap(urls, updatedAt) {
+function renderSitemap(urls) {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls
-  .map(
-    (url) => `  <url>
+    .map(
+      (url) => `  <url>
     <loc>${escapeHtml(url.loc)}</loc>
-    <lastmod>${escapeHtml((updatedAt || new Date().toISOString()).slice(0, 10))}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>${url.priority}</priority>
-  </url>`
-  )
-  .join("\n")}
+${url.lastmod ? `    <lastmod>${escapeHtml(url.lastmod)}</lastmod>\n` : ""}  </url>`
+    )
+    .join("\n")}
 </urlset>`;
 }
 
-function catalogPaginationUrls(config, productCount, priority) {
+function catalogPaginationUrls(config, productCount) {
   return Array.from({ length: Math.max(0, pageCount(productCount) - 1) }, (_item, index) => ({
-    loc: absoluteUrl(config, catalogPagePath(index + 2)),
-    priority
+    loc: absoluteUrl(config, catalogPagePath(index + 2))
   }));
 }
 
@@ -758,8 +789,7 @@ function categoryPaginationUrls(config, products, categories) {
   return categories.flatMap((category) => {
     const count = listingProducts(products, { categoryId: category.id }).length;
     return Array.from({ length: Math.max(0, pageCount(count) - 1) }, (_item, index) => ({
-      loc: absoluteUrl(config, categoryPagePath(category, index + 2)),
-      priority: "0.5"
+      loc: absoluteUrl(config, categoryPagePath(category, index + 2))
     }));
   });
 }
@@ -788,17 +818,19 @@ function catalogPagination(config, { category, currentPage, totalPages, productC
 function renderCatalogPagination(pagination) {
   if (!pagination) return "";
   return `
-      <nav class="catalog-pagination" aria-label="Strony katalogu" hidden>
-        <p>Oferty ${pagination.start}-${pagination.end} z ${pagination.productCount}</p>
-        <div class="catalog-pagination-links">
-          ${pagination.prevUrl ? `<a class="pager-link" href="${escapeAttribute(pagination.prevUrl)}" rel="prev">Poprzednia</a>` : `<span class="pager-link is-disabled">Poprzednia</span>`}
-          ${pagination.pages.map((item) => item.current
-            ? `<span class="pager-number is-current" aria-current="page">${item.page}</span>`
-            : `<a class="pager-number" href="${escapeAttribute(item.url)}">${item.page}</a>`
-          ).join("")}
-          ${pagination.nextUrl ? `<a class="pager-link" href="${escapeAttribute(pagination.nextUrl)}" rel="next">Następna</a>` : `<span class="pager-link is-disabled">Następna</span>`}
-        </div>
-      </nav>`;
+      <div class="catalog-pagination-shell" data-nosnippet hidden>
+        <nav class="catalog-pagination" aria-label="Strony katalogu">
+          <p>Oferty ${pagination.start}-${pagination.end} z ${pagination.productCount}</p>
+          <div class="catalog-pagination-links">
+            ${pagination.prevUrl ? `<a class="pager-link" href="${escapeAttribute(pagination.prevUrl)}" rel="prev">Poprzednia</a>` : `<span class="pager-link is-disabled">Poprzednia</span>`}
+            ${pagination.pages.map((item) => item.current
+              ? `<span class="pager-number is-current" aria-current="page">${item.page}</span>`
+              : `<a class="pager-number" href="${escapeAttribute(item.url)}">${item.page}</a>`
+            ).join("\n")}
+            ${pagination.nextUrl ? `<a class="pager-link" href="${escapeAttribute(pagination.nextUrl)}" rel="next">Następna</a>` : `<span class="pager-link is-disabled">Następna</span>`}
+          </div>
+        </nav>
+      </div>`;
 }
 
 function paginationWindow(currentPage, totalPages) {
@@ -865,7 +897,7 @@ function storePageMeta(config, { category, query, sort = DEFAULT_SORT, productCo
 
 function productJsonLd(config, product, url, image, description, category) {
   const identifiers = productIdentifiers(product);
-  const publisher = productFeatureValue(product, ["wydawnictwo", "producent"]);
+  const brand = productFeatureValue(product, ["marka", "brand"]);
   const additionalProperty = selectedProductFeatures(product.features || [], 10).map((feature) => ({
     "@type": "PropertyValue",
     name: schemaText(feature.name, "Cecha"),
@@ -881,8 +913,7 @@ function productJsonLd(config, product, url, image, description, category) {
         availability: Number(product.stock || 0) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
         itemCondition: "https://schema.org/UsedCondition",
         url: schemaText(product.allegroUrl || url, url),
-        seller: { "@id": organizationId(config) },
-        hasMerchantReturnPolicy: { "@id": returnPolicyId(config) }
+        seller: { "@id": organizationId(config) }
       };
   const productData = {
     "@type": "Product",
@@ -892,10 +923,10 @@ function productJsonLd(config, product, url, image, description, category) {
     image: cleanImageList(product.images?.length ? product.images : [image]),
     sku: schemaText(product.sku || product.id, String(product.id || "")),
     category: schemaText(category, "Książki używane"),
-    brand: {
+    brand: brand ? {
       "@type": "Brand",
-      name: schemaText(publisher || "BookLoft", "BookLoft")
-    },
+      name: schemaText(brand)
+    } : undefined,
     additionalProperty,
     offers: offer
   };
@@ -937,18 +968,6 @@ function organizationId(config) {
   return `${config.publicOrigin}/#organization`;
 }
 
-function returnPolicyId(config) {
-  return absoluteUrl(config, "/informacje-prawne#return-policy");
-}
-
-function shippingPolicyId(config) {
-  return absoluteUrl(config, "/informacje-prawne#shipping-policy");
-}
-
-function legalPolicyUrl(config) {
-  return absoluteUrl(config, "/informacje-prawne#zwroty-dostawa");
-}
-
 function storeIdentityJsonLd(config) {
   return compactJsonLd({
     "@type": "OnlineStore",
@@ -966,27 +985,7 @@ function storeIdentityJsonLd(config) {
       addressLocality: "Pogórska Wola",
       addressCountry: "PL"
     },
-    vatID: "PL9930688202",
-    hasMerchantReturnPolicy: {
-      "@type": "MerchantReturnPolicy",
-      "@id": returnPolicyId(config),
-      merchantReturnLink: legalPolicyUrl(config)
-    },
-    hasShippingService: {
-      "@type": "ShippingService",
-      "@id": shippingPolicyId(config),
-      name: "Dostawa zgodnie z ofertą Allegro",
-      description: "Metody, koszty i terminy dostawy są wybierane oraz potwierdzane w konkretnej ofercie Allegro.",
-      url: legalPolicyUrl(config),
-      areaServed: "PL",
-      shippingConditions: {
-        "@type": "ShippingConditions",
-        shippingDestination: {
-          "@type": "DefinedRegion",
-          addressCountry: "PL"
-        }
-      }
-    }
+    vatID: "PL9930688202"
   });
 }
 
@@ -1334,6 +1333,17 @@ function categoryPagePath(category, page) {
 
 function absoluteUrl(config, relativePath) {
   return `${config.publicOrigin}${appPath(config.basePath, relativePath)}`;
+}
+
+function sitemapLastModified(product) {
+  const timestamp = Math.max(
+    Date.parse(product.contentUpdatedAt || 0) || 0,
+    Date.parse(product.sourceUpdatedAt || 0) || 0,
+    Date.parse(product.descriptionFetchedAt || 0) || 0,
+    Date.parse(product.addedAt || 0) || 0,
+    Date.parse(product.sourceAddedAt || 0) || 0
+  );
+  return timestamp ? new Date(timestamp).toISOString().slice(0, 10) : "";
 }
 
 function metaDescription(product) {

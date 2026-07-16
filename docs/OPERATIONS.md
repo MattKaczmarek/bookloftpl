@@ -1,8 +1,9 @@
 # Operacje BookLoft sklep
 
-Stan dokumentu: `2026-05-29`.
-Wersja sklepu: `1.14.5`.
-Branch wersji: `ver-1.14`.
+Stan dokumentu: `2026-07-16`.
+Wersja przygotowana lokalnie: `1.15.0`.
+Branch wersji: `ver-1.15`.
+Stan produkcji: `1.14.5` na `ver-1.14`; wersja `1.15.0` nie zostala wdrozona.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
 
@@ -81,17 +82,30 @@ Jesli token wygasnie albo zostanie cofniety, w panelu pojawi sie blad i trzeba p
 
 - SSR listingu zostaje ograniczony do 50 produktow na strone; kolejne produkty laduja sie po scrollowaniu po stronie klienta.
 - Katalog ma techniczna, indeksowalna paginacje HTML pod `/strona/:page`, a kategorie pod `/kategoria/:id/:slug/strona/:page`, z publicznymi canonicalami, linkami `prev`/`next`, wpisami w sitemap i realnymi linkami do ofert bez JavaScriptu. Paginacja jest ukryta w UI; dla uzytkownikow glowne przegladanie nadal dziala przez infinite scroll.
+- Kontener technicznej paginacji ma `data-nosnippet`; linki pozostaja w SSR, ale ich numery i etykiety nie powinny byc uzywane przez Google jako snippet wyniku.
 - Listing i kategorie maja tylko `ItemList`/`BreadcrumbList`; karty ofert nie maja microdata `Product`/`Offer`, zeby Search Console nie traktowal miniaturek jako niepelnych produktow.
-- Strony produktow maja pelne JSON-LD `Product`/`Offer`, `BreadcrumbList`, sprzedawce `OnlineStore`, linkowana polityke zwrotow/dostawy oraz `PropertyValue` i ISBN/EAN/GTIN budowane z parametrow Allegro, jesli sa dostepne w cache.
+- Strony produktow maja JSON-LD `Product`/`Offer`, `BreadcrumbList`, sprzedawce `OnlineStore` oraz `PropertyValue` i ISBN/EAN/GTIN budowane z parametrow Allegro, jesli sa dostepne w cache. `brand` nie ma fallbacku do BookLoft i jest wysylany tylko przy rzeczywistym parametrze marki.
 - Meta description produktu jest skladane kontrolowanie z nazwy, kategorii, stanu i informacji o zakupie przez Allegro, bez wklejania surowego opisu z Allegro.
+- Wersja `1.15.0` nie zmienia generatora tytulu ani meta description aktywnej oferty.
+- Sitemap nie uzywa globalnego czasu przebudowy cache jako `lastmod`. Data jest opcjonalna i wyliczana osobno dla produktu na podstawie znanej istotnej zmiany, hydratacji szczegolow albo daty dodania.
 - Blok informacyjny pod katalogiem przypomina, ze BookLoft.pl jest katalogiem ofert, a finalizacja zakupu odbywa sie na Allegro.
 
+## Niedostepne oferty
+
+- Aktywna oferta, ktora znika z Allegro, nadal otrzymuje `410 Gone` i `noindex`; nie jest przekierowywana na strone glowna.
+- `published-offers.json` ma schemat `version: 3` i pole `removedOfferSnapshots`. Snapshot zawiera tylko identyfikator, nazwe, slug, pierwsze zdjecie, kategorie, `removedAt` i znany `sourceUpdatedAt`.
+- Stare pliki `version: 2` sa uzupelniane przy pierwszym zapisie bez osobnego skryptu migracyjnego. Nieznane pola sa tolerowane przez wersje `1.14`, wiec format pozostaje zgodny z rollbackiem.
+- Strona `410` pokazuje zapisany egzemplarz, wyszukiwarke i maksymalnie osiem aktywnych alternatyw. Dla historycznych ofert bez snapshotu fraza jest wyliczana ze sluga URL.
+- Ponowne dodanie identycznego ID oferty usuwa wpis z `removedByUnavailable` i `removedOfferSnapshots`.
+
 ## Deploy
+
+Wersja `1.15.0` jest tylko lokalna. Ponizszych polecen nie wykonywac bez osobnej zgody uzytkownika na deploy.
 
 ```bash
 cd /home/bookloftpl
 git fetch
-git switch ver-1.14
+git switch ver-1.15
 git pull --ff-only
 npm ci --omit=dev
 systemctl restart bookloft-shop.service
@@ -160,6 +174,9 @@ Oczekiwane publicznie:
 - `robots.txt` dopuszcza katalog, blokuje panel/login/admin API i wskazuje publiczny `/sitemap.xml`,
 - `/sitemap.xml` jest publiczne i zawiera strone glowna, strony informacyjne, kategorie, strony paginacji oraz produkty,
 - niedostepna historyczna oferta zwraca `410 Gone`, a nieznany produkt `404 Not Found`,
+- strona `410` zajmuje pelna dostepna szerokosc, nie ucina logo i pokazuje aktywne alternatywy na PC oraz mobile,
+- aktywna strona katalogu nie zawiera w SSR tekstu `Nie znalezlismy pasujacych ofert`; tekst pojawia sie dopiero przy pustym wyniku,
+- wpis produktu w sitemap ma jego wlasny `lastmod`, jesli data jest znana; strony agregujace nie dostaja daty kazdego technicznego odswiezenia cache,
 - nieznane publiczne sciezki HTML zwracaja `404` z `noindex` zamiast przekierowania na strone glowna,
 - fonty sa serwowane lokalnie z `public/assets/fonts` przez `public/assets/css/fonts.css`,
 - gorny banner strony glownej uzywa statycznego assetu `public/assets/img/loft-hero.jpg`; na waskich ekranach ma szerszy i nizszy layout z logo dopasowanym do mobilnego kadru,
@@ -195,6 +212,7 @@ Prawidlowe branche repo:
 - `ver-1.11`,
 - `ver-1.12`,
 - `ver-1.13`,
-- `ver-1.14`.
+- `ver-1.14`,
+- `ver-1.15` (lokalnie, bez deployu).
 
 Robocze branche z prefiksem `codex/` nie sa linia wersji sklepu i po przeniesieniu zmian do aktualnego brancha `ver-*` powinny byc usuniete lokalnie oraz z GitHuba.
