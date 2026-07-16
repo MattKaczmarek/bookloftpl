@@ -2,6 +2,7 @@ import express from "express";
 import path from "node:path";
 import { appPath } from "../../config.js";
 import { requireAuth } from "../../lib/auth.js";
+import { catalogSearchScore } from "../../lib/catalogSearch.js";
 import { stripHtml } from "../../lib/html.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
@@ -41,7 +42,7 @@ export function createPageRouter(config, storeCache) {
         category,
         query,
         sort,
-        newestProducts: !category && !query ? newestProducts : []
+        newestProducts
       }));
     })
   );
@@ -238,6 +239,12 @@ function renderStorePage(config, storefront, { category = null, query = "", sort
   const totalPages = normalizedQuery ? 1 : pageCount(products.length);
   const pageOffset = (currentPage - 1) * SSR_PRODUCT_LIMIT;
   const visibleProducts = products.slice(pageOffset, pageOffset + SSR_PRODUCT_LIMIT);
+  const emptySuggestions = normalizedQuery && products.length === 0
+    ? listingProducts(storefront.products, {
+        categoryId: category?.id || "",
+        newestProducts
+      }).slice(0, 4)
+    : [];
   const pageMeta = storePageMeta(config, {
     category,
     query: normalizedQuery,
@@ -344,7 +351,7 @@ function renderStorePage(config, storefront, { category = null, query = "", sort
             <input id="product-search" type="search" value="${escapeAttribute(query)}" placeholder="Sprawdź, czy mamy to, czego szukasz">
             <button class="search-clear" id="clear-search" type="button" aria-label="Wyczyść wyszukiwanie" ${query ? "" : "hidden"}>&times;</button>
           </div>
-          <div class="sort-box">
+          <div class="sort-box"${products.length ? "" : " hidden"}>
             <label for="product-sort">Sortuj</label>
             <select id="product-sort" data-product-sort>
               ${sortSelect}
@@ -363,7 +370,7 @@ function renderStorePage(config, storefront, { category = null, query = "", sort
           ${categorySelect}
         </select>
       </div>
-      <div class="sort-box mobile-sort-box">
+      <div class="sort-box mobile-sort-box"${products.length ? "" : " hidden"}>
         <label for="mobile-product-sort">Sortuj</label>
         <select id="mobile-product-sort" data-product-sort>
           ${sortSelect}
@@ -379,6 +386,7 @@ function renderStorePage(config, storefront, { category = null, query = "", sort
       ${pagination ? renderCatalogPagination(pagination) : ""}
       <div class="load-sentinel" id="load-sentinel" aria-hidden="true" ${products.length > SSR_PRODUCT_LIMIT ? "" : "hidden"}></div>
       ${renderCatalogEmptyState(products.length === 0)}
+      ${renderEmptySuggestions(emptySuggestions)}
       ${renderCatalogTrustNote(config)}
     </section>
   </main>
@@ -605,6 +613,16 @@ function renderCatalogEmptyState(hasNoProducts) {
         <button class="secondary-action" id="empty-reset" type="button">Pokaż wszystkie oferty</button>` : "";
   return `<div class="empty-state" id="empty-state"${hasNoProducts ? "" : " hidden"}>${content}
       </div>`;
+}
+
+function renderEmptySuggestions(products) {
+  return `<section class="empty-suggestions" id="empty-suggestions" aria-labelledby="empty-suggestions-title"${products.length ? "" : " hidden"}>
+        ${products.length ? `
+          <h2 id="empty-suggestions-title">Najnowsze oferty</h2>
+          <div class="related-grid">
+            ${products.map(renderRelatedCard).join("")}
+          </div>` : ""}
+      </section>`;
 }
 
 function renderRelated(products) {
@@ -1135,20 +1153,28 @@ function isGenericUsedCondition(value) {
 }
 
 function listingProducts(products, { categoryId = "", query = "", sort = DEFAULT_SORT, newestProducts = [] } = {}) {
-  const normalizedQuery = query.trim().toLowerCase();
+  const normalizedQuery = query.trim();
   const normalizedSort = normalizeSort(sort);
-  const filtered = products.filter((product) => {
-    const matchesQuery = !normalizedQuery || String(product.searchText || "").includes(normalizedQuery);
+  const filtered = products.map((product) => {
+    const searchScore = catalogSearchScore(product.searchText, normalizedQuery);
     const matchesCategory =
       !categoryId || (product.categoryPath || []).some((category) => String(category.id) === String(categoryId));
-    return matchesQuery && matchesCategory;
-  });
+    return { product, searchScore, matchesCategory };
+  }).filter((item) => item.searchScore >= 0 && item.matchesCategory);
 
-  if (categoryId || normalizedQuery) return sortProducts(filtered, normalizedSort);
+  if (normalizedQuery && normalizedSort === DEFAULT_SORT) {
+    return filtered
+      .sort((a, b) => b.searchScore - a.searchScore || productFreshnessTime(b.product) - productFreshnessTime(a.product))
+      .map((item) => item.product);
+  }
+
+  const filteredProducts = filtered.map((item) => item.product);
+
+  if (categoryId || normalizedQuery) return sortProducts(filteredProducts, normalizedSort);
 
   if (newestProducts.length) {
     const newestIds = new Set(newestProducts.map((product) => String(product.id)));
-    const remaining = filtered
+    const remaining = filteredProducts
       .filter((product) => !newestIds.has(String(product.id)))
       .sort((a, b) => {
         const dateDiff = productFreshnessTime(b) - productFreshnessTime(a);
@@ -1159,7 +1185,7 @@ function listingProducts(products, { categoryId = "", query = "", sort = DEFAULT
     return normalizedSort === DEFAULT_SORT ? combined : sortProducts(combined, normalizedSort);
   }
 
-  return sortProducts(filtered, normalizedSort);
+  return sortProducts(filteredProducts, normalizedSort);
 }
 
 function sortProducts(products, sort) {

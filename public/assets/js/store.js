@@ -73,7 +73,9 @@ const els = {
   categorySelect: document.querySelector("#category-select"),
   clearCategory: document.querySelector("#clear-category"),
   sortSelects: Array.from(document.querySelectorAll("[data-product-sort]")),
+  sortBoxes: Array.from(document.querySelectorAll(".sort-box")),
   loadSentinel: document.querySelector("#load-sentinel"),
+  emptySuggestions: document.querySelector("#empty-suggestions"),
   introEyebrow: document.querySelector(".shop-intro .eyebrow"),
   introTitle: document.querySelector(".shop-intro h1"),
   introCopy: document.querySelector(".shop-intro .hero-copy"),
@@ -285,6 +287,7 @@ function renderProducts() {
 
 function currentProducts() {
   const products = state.query || state.categoryId ? filteredProducts() : newestProducts();
+  if (state.query && state.sort === DEFAULT_SORT) return products;
   return sortProducts(products, state.sort);
 }
 
@@ -299,6 +302,59 @@ function syncEmptyState(productCount) {
   const reset = els.empty.querySelector("#empty-reset");
   if (reset) reset.hidden = !state.query && !state.categoryId;
   els.empty.hidden = !isEmpty;
+  els.sortBoxes.forEach((sortBox) => {
+    sortBox.hidden = isEmpty;
+  });
+  syncEmptySuggestions(isEmpty && (state.query || state.categoryId) ? emptySuggestionProducts() : []);
+}
+
+function syncEmptySuggestions(products) {
+  if (!els.emptySuggestions && els.empty) {
+    els.emptySuggestions = document.createElement("section");
+    els.emptySuggestions.id = "empty-suggestions";
+    els.emptySuggestions.className = "empty-suggestions";
+    els.emptySuggestions.setAttribute("aria-labelledby", "empty-suggestions-title");
+    els.empty.insertAdjacentElement("afterend", els.emptySuggestions);
+  }
+  if (!els.emptySuggestions) return;
+
+  els.emptySuggestions.innerHTML = products.length ? `
+    <h2 id="empty-suggestions-title">Najnowsze oferty</h2>
+    <div class="related-grid">
+      ${products.map(renderEmptySuggestionCard).join("")}
+    </div>` : "";
+  els.emptySuggestions.hidden = products.length === 0;
+}
+
+function emptySuggestionProducts() {
+  const candidates = state.categoryId
+    ? state.products
+        .filter((product) => (product.categoryPath || []).some((category) => String(category.id) === state.categoryId))
+        .sort((a, b) => productFreshnessTime(b) - productFreshnessTime(a))
+    : newestProducts();
+  const seen = new Set();
+  return candidates.filter((product) => {
+    const id = String(product.id);
+    if (!id || seen.has(id)) return false;
+    seen.add(id);
+    return true;
+  }).slice(0, 4);
+}
+
+function renderEmptySuggestionCard(product) {
+  const rawImage = product.images && product.images.length ? product.images[0] : "";
+  const image = rawImage ? allegroImageVariant(rawImage, "s256") : "";
+  const price = product.price === null ? "Cena do ustalenia" : formatPrice(product.price, product.currency);
+  return `
+    <a class="related-card" href="${productUrl(product)}">
+      <span class="related-thumb">
+        ${image ? `<img src="${escapeAttribute(image)}" loading="lazy" decoding="async" alt="${escapeAttribute(product.name)}">` : "<span>BookLoft</span>"}
+      </span>
+      <span class="related-copy">
+        <span>${escapeHtml(product.name)}</span>
+        <strong>${price}</strong>
+      </span>
+    </a>`;
 }
 
 function loadNextPage() {
@@ -309,12 +365,14 @@ function loadNextPage() {
 }
 
 function filteredProducts() {
-  return state.products.filter((product) => {
-    const matchesQuery = !state.query || String(product.searchText || "").includes(state.query);
+  return state.products.map((product) => {
+    const searchScore = catalogSearchScore(product.searchText, state.query);
     const matchesCategory =
       !state.categoryId || (product.categoryPath || []).some((category) => String(category.id) === state.categoryId);
-    return matchesQuery && matchesCategory;
-  });
+    return { product, searchScore, matchesCategory };
+  }).filter((item) => item.searchScore >= 0 && item.matchesCategory)
+    .sort((a, b) => b.searchScore - a.searchScore || productFreshnessTime(b.product) - productFreshnessTime(a.product))
+    .map((item) => item.product);
 }
 
 function newestProducts() {
@@ -645,6 +703,102 @@ function normalizeCategoryName(value) {
     .replace(/[\u0300-\u036f]/g, "")
     .trim()
     .toLowerCase();
+}
+
+function catalogSearchScore(value, query) {
+  const rawQuery = String(query || "").trim().toLowerCase();
+  if (!rawQuery) return 0;
+
+  const rawValue = String(value || "").toLowerCase();
+  const rawPhraseIndex = rawValue.indexOf(rawQuery);
+  if (rawPhraseIndex >= 0) return 11_000 - Math.min(rawPhraseIndex, 999);
+
+  const normalizedQuery = normalizeCatalogSearch(query);
+  if (!normalizedQuery) return -1;
+  const normalizedValue = normalizeCatalogSearch(value);
+  if (!normalizedValue) return -1;
+
+  const phraseIndex = normalizedValue.indexOf(normalizedQuery);
+  if (phraseIndex >= 0) return 10_000 - Math.min(phraseIndex, 999);
+
+  const queryTokens = [...new Set(normalizedQuery.split(" ").filter(Boolean))];
+  const valueTokens = normalizedValue.split(" ").filter(Boolean);
+  if (!queryTokens.length || !valueTokens.length) return -1;
+
+  let score = 0;
+  let previousIndex = -1;
+  let ordered = true;
+
+  for (const queryToken of queryTokens) {
+    let bestScore = -1;
+    let bestIndex = -1;
+
+    for (const [index, valueToken] of valueTokens.entries()) {
+      const tokenScore = catalogTokenScore(valueToken, queryToken);
+      if (tokenScore > bestScore) {
+        bestScore = tokenScore;
+        bestIndex = index;
+      }
+    }
+
+    if (bestScore < 0) return -1;
+    if (bestIndex < previousIndex) ordered = false;
+    previousIndex = bestIndex;
+    score += bestScore;
+  }
+
+  return score + (ordered ? 60 : 0) + Math.min(queryTokens.length * 20, 100);
+}
+
+function normalizeCatalogSearch(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function catalogTokenScore(valueToken, queryToken) {
+  if (valueToken === queryToken) return 300;
+  if (queryToken.length >= 2 && valueToken.startsWith(queryToken)) return 220;
+  if (queryToken.length >= 3 && valueToken.includes(queryToken)) return 180;
+  if (queryToken.length >= 4 && isOneEditAway(valueToken, queryToken)) return 120;
+  return -1;
+}
+
+function isOneEditAway(left, right) {
+  if (Math.abs(left.length - right.length) > 1) return false;
+
+  if (left.length === right.length) {
+    const differences = [];
+    for (let index = 0; index < left.length; index += 1) {
+      if (left[index] !== right[index]) differences.push(index);
+      if (differences.length > 2) return false;
+    }
+    if (differences.length <= 1) return true;
+    const [first, second] = differences;
+    return second === first + 1 && left[first] === right[second] && left[second] === right[first];
+  }
+
+  const shorter = left.length < right.length ? left : right;
+  const longer = left.length < right.length ? right : left;
+  let shortIndex = 0;
+  let longIndex = 0;
+  let skipped = false;
+
+  while (shortIndex < shorter.length && longIndex < longer.length) {
+    if (shorter[shortIndex] === longer[longIndex]) {
+      shortIndex += 1;
+      longIndex += 1;
+      continue;
+    }
+    if (skipped) return false;
+    skipped = true;
+    longIndex += 1;
+  }
+  return true;
 }
 
 function findCategory(categoryId) {

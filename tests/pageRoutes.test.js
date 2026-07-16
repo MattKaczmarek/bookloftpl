@@ -151,6 +151,31 @@ test("catalog hides no-result copy from populated SSR and protects pagination sn
     assert.equal(emptyResponse.status, 200);
     assert.match(emptyHtml, /Nie znaleźliśmy pasujących ofert/);
     assert.doesNotMatch(emptyHtml, /empty-mark/);
+    assert.match(emptyHtml, /<div class="sort-box" hidden>/);
+    assert.match(emptyHtml, /<div class="sort-box mobile-sort-box" hidden>/);
+    assert.match(emptyHtml, /<h2 id="empty-suggestions-title">Najnowsze oferty<\/h2>/);
+    assert.equal((emptyHtml.match(/class="related-card"/g) || []).length, 4);
+  });
+});
+
+test("catalog search tolerates missing accents, word order and a small typo", async () => {
+  await withServer(async (origin, data) => {
+    data.products[0].name = "Harry Potter i Kamień Filozoficzny";
+    data.products[0].searchText = "Harry Potter i Kamień Filozoficzny J.K. Rowling";
+    data.products[1].name = "Achaja / Andrzej Ziemiański";
+    data.products[1].searchText = "Achaja / Andrzej Ziemiański";
+
+    const typoResponse = await fetch(`${origin}/?q=harry%20poter`);
+    const typoHtml = await typoResponse.text();
+    assert.equal(typoResponse.status, 200);
+    assert.match(typoHtml, /Harry Potter i Kamień Filozoficzny/);
+    assert.doesNotMatch(typoHtml, /Nie znaleźliśmy pasujących ofert/);
+
+    const reorderedResponse = await fetch(`${origin}/?q=ziemianski%20achaja`);
+    const reorderedHtml = await reorderedResponse.text();
+    assert.equal(reorderedResponse.status, 200);
+    assert.match(reorderedHtml, /Achaja \/ Andrzej Ziemiański/);
+    assert.doesNotMatch(reorderedHtml, /Nie znaleźliśmy pasujących ofert/);
   });
 });
 

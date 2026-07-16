@@ -1,6 +1,6 @@
 # BookLoft sklep
 
-Wersja produkcyjna: `1.15.2`.
+Wersja produkcyjna: `1.15.3`.
 Branch produkcyjny: `ver-1.15`.
 
 Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://bookloft.pl/`. Katalog jest oparty bezposrednio o aktywne oferty Allegro konta BookLoft.
@@ -115,7 +115,9 @@ Zasady:
 - pole wyszukiwania uzywa tekstu pomocniczego `Sprawdz, czy mamy to, czego szukasz` bez osobnego widocznego naglowka `Szukaj`,
 - pole wyszukiwania ma subtelny przycisk czyszczenia wpisanej frazy,
 - wyniki wyszukiwania maja mala etykiete `Wyszukiwanie` w stylu pozostalych etykiet sekcji oraz jeden naglowek `Oferty dla „<fraza>”`, bez dodatkowych naglowkow wynikow,
+- wyszukiwanie ignoruje polskie znaki i kolejnosc slow oraz toleruje pojedyncza drobna literowke w dluzszym slowie; trafienia dokladne pozostaja wyzej od przyblizonych,
 - puste i niepuste wyniki zachowuja to samo kremowe tlo strony; pusty stan nie ma zielonego gradientu ani dekoracyjnego monogramu i pozwala wrocic do wszystkich ofert,
+- przy pustym wyniku sortowanie jest ukryte, a pod komunikatem widoczne sa cztery rzeczywiste najnowsze oferty z katalogu,
 - aktywny listing nie wysyla ukrytej tresci pustego wyniku w SSR; komunikat jest tworzony dopiero dla rzeczywiscie pustej listy,
 - pierwsze ladowanie katalogu pokazuje lekkie skeletony kart,
 - strona oferty pokazuje przycisk `Kup na Allegro`, informacje ze zakup, platnosc, dostawa, zwrot i reklamacja odbywaja sie w Allegro, pasek zalet BookLoft, galerie ze strzalkami bez tla i przewijaniem swipem, lekki podglad zdjec z przewijaniem swipem, zoomem kolkiem myszy, plynniejszym pinch-to-zoom na mobile i przesuwaniem po powiekszeniu oraz stopke `O nas`,
