@@ -41,7 +41,7 @@ body {
   background-image:
     radial-gradient(circle at 1px 1px, rgba(138, 90, 60, 0.06) 0 1px, transparent 1.35px),
     radial-gradient(circle at 18px 14px, rgba(31, 111, 85, 0.045) 0 0.9px, transparent 1.2px),
-    linear-gradient(180deg, #fbf6ed 0%, #f6fbf3 48%, #fffdf8 100%);
+    linear-gradient(180deg, #fbf6ed 0%, #f8f2e8 48%, #fffdf8 100%);
   background-position: 0 0, 0 0, 0 0;
   background-size: 34px 34px, 46px 46px, auto;
   line-height: 1.35;
@@ -1159,10 +1159,9 @@ h2 {
   justify-items: start;
   gap: 10px;
   padding: clamp(24px, 4vw, 40px);
-  background:
-    radial-gradient(circle at 24px 20px, rgba(202, 167, 131, 0.14) 0 1px, transparent 1.4px),
-    linear-gradient(135deg, rgba(255, 253, 248, 0.96), rgba(237, 246, 238, 0.9));
-  background-size: 46px 46px, auto;
+  background-color: rgba(255, 253, 248, 0.96);
+  background-image: radial-gradient(circle at 24px 20px, rgba(202, 167, 131, 0.14) 0 1px, transparent 1.4px);
+  background-size: 46px 46px;
 }
 
 .empty-state[hidden],
@@ -2391,7 +2390,7 @@ h2 {
     background-color: var(--bg);
     background-image:
       radial-gradient(circle at 1px 1px, rgba(138, 90, 60, 0.05) 0 1px, transparent 1.3px),
-      linear-gradient(180deg, #fbf6ed 0%, #f6fbf3 54%, #fffdf8 100%);
+      linear-gradient(180deg, #fbf6ed 0%, #f8f2e8 54%, #fffdf8 100%);
     background-size: 34px 34px, auto;
   }
 

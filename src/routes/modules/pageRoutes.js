@@ -856,8 +856,8 @@ function storePageMeta(config, { category, query, sort = DEFAULT_SORT, productCo
       description: `Wyniki wyszukiwania "${query}" w katalogu BookLoft. Używane książki z rzetelnym opisem stanu i zakupem przez Allegro.`,
       canonical: category ? absoluteUrl(config, categoryPath(category)) : absoluteUrl(config, "/"),
       robots: "noindex,follow,max-image-preview:large",
-      eyebrow: "",
-      h1: `Oferty dla: ${query}`,
+      eyebrow: "Wyszukiwanie",
+      h1: `Oferty dla „${query}”`,
       copy: "",
       listingTitle: ""
     };

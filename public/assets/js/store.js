@@ -525,8 +525,8 @@ function scrollToTop() {
 function syncPageText(_count) {
   const category = state.categoryId ? findCategory(state.categoryId) : null;
   if (state.query) {
-    setText(els.introEyebrow, "");
-    setText(els.introTitle, `Oferty dla: ${state.query}`);
+    setText(els.introEyebrow, "Wyszukiwanie");
+    setText(els.introTitle, `Oferty dla „${state.query}”`);
     setText(els.introCopy, "");
     els.listingTitle.textContent = "";
     setCategoryNote("");

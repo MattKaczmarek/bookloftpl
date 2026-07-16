@@ -154,15 +154,15 @@ test("catalog hides no-result copy from populated SSR and protects pagination sn
   });
 });
 
-test("search results use one concise heading without repeated search labels", async () => {
+test("search results use a small search label and one concise heading", async () => {
   await withServer(async (origin) => {
     const response = await fetch(`${origin}/?q=Książka`);
     const html = await response.text();
     const body = html.match(/<body>([\s\S]*)<\/body>/)?.[1] || "";
 
     assert.equal(response.status, 200);
-    assert.match(body, /<h1>Oferty dla: książka<\/h1>/);
-    assert.doesNotMatch(body, />Wyszukiwanie</);
+    assert.match(body, /<p class="eyebrow">Wyszukiwanie<\/p>/);
+    assert.match(body, /<h1>Oferty dla „książka”<\/h1>/);
     assert.doesNotMatch(body, /Wyniki wyszukiwania w BookLoft/);
     assert.doesNotMatch(body, /Wyniki: książka/);
     assert.match(body, /<h2 class="listing-title" id="listing-title"><\/h2>/);
