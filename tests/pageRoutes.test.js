@@ -108,11 +108,16 @@ test("active product metadata stays unchanged and schema prefers Allegro publish
     assert.match(html, /"brand":\{"@type":"Brand","name":"BookLoft"\}/);
     assert.doesNotMatch(html, /MerchantReturnPolicy|ShippingService|hasMerchantReturnPolicy/);
 
-    data.products[0].features.push({ name: "Wydawnictwo", value: "Fabryka Słów" });
+    data.products[0].features.push(
+      { name: "Wydawnictwo", value: "Fabryka Słów" },
+      { name: "Liczba stron", value: "432" }
+    );
     const publisherResponse = await fetch(`${origin}/product/${data.products[0].id}/${data.products[0].slug}`);
     const publisherHtml = await publisherResponse.text();
     assert.match(publisherHtml, /"brand":\{"@type":"Brand","name":"Fabryka Słów"\}/);
     assert.doesNotMatch(publisherHtml, /"brand":\{"@type":"Brand","name":"BookLoft"\}/);
+    assert.doesNotMatch(publisherHtml, /<dt>Liczba stron<\/dt>/);
+    assert.match(publisherHtml, /"name":"Liczba stron","value":"432"/);
   });
 });
 

@@ -1027,6 +1027,7 @@ const PRODUCT_SPEC_FIELDS = [
   { label: "Liczba stron", keys: ["liczba stron", "ilosc stron"] },
   { label: "Język", keys: ["jezyk"] }
 ];
+const VISIBLE_PRODUCT_SPEC_FIELDS = PRODUCT_SPEC_FIELDS.filter((field) => field.label !== "Liczba stron");
 
 function renderCatalogTrustNote(config) {
   return `
@@ -1073,7 +1074,7 @@ function productBreadcrumbItems(config, product, productUrl) {
 }
 
 function renderProductSpecs(product) {
-  const specs = selectedProductFeatures(product.features || [], 8);
+  const specs = selectedProductFeatures(product.features || [], 8, VISIBLE_PRODUCT_SPEC_FIELDS);
   if (!specs.length) return "";
   return `
     <section class="product-specs" aria-label="Najważniejsze informacje o książce">
@@ -1089,7 +1090,7 @@ function renderProductSpecs(product) {
     </section>`;
 }
 
-function selectedProductFeatures(features, limit = 8) {
+function selectedProductFeatures(features, limit = 8, fields = PRODUCT_SPEC_FIELDS) {
   const normalizedFeatures = (features || [])
     .map((feature) => ({
       key: normalizeFeatureName(feature.name),
@@ -1100,7 +1101,7 @@ function selectedProductFeatures(features, limit = 8) {
 
   const selected = [];
   const usedKeys = new Set();
-  for (const field of PRODUCT_SPEC_FIELDS) {
+  for (const field of fields) {
     const feature = normalizedFeatures.find((item) => field.keys.includes(item.key) && !usedKeys.has(item.key));
     if (!feature) continue;
     selected.push({ name: field.label, value: feature.value });

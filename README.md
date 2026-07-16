@@ -118,7 +118,7 @@ Zasady:
 - aktywny listing nie wysyla ukrytej tresci pustego wyniku w SSR; komunikat jest tworzony dopiero dla rzeczywiscie pustej listy,
 - pierwsze ladowanie katalogu pokazuje lekkie skeletony kart,
 - strona oferty pokazuje przycisk `Kup na Allegro`, informacje ze zakup, platnosc, dostawa, zwrot i reklamacja odbywaja sie w Allegro, pasek zalet BookLoft, galerie ze strzalkami bez tla i przewijaniem swipem, lekki podglad zdjec z przewijaniem swipem, zoomem kolkiem myszy, plynniejszym pinch-to-zoom na mobile i przesuwaniem po powiekszeniu oraz stopke `O nas`,
-- strona oferty pokazuje najwazniejsze parametry z Allegro, jesli sa dostepne w cache, np. autora, wydawnictwo, rok wydania, serie, ISBN/EAN, oprawe, liczbe stron i jezyk,
+- strona oferty pokazuje najwazniejsze parametry z Allegro, jesli sa dostepne w cache, np. autora, wydawnictwo, rok wydania, serie, ISBN/EAN, oprawe i jezyk; liczba stron pozostaje ukryta w widocznej specyfikacji,
 - strona oferty nie pokazuje liczby dostepnych egzemplarzy, bo katalog zaklada pojedyncze egzemplarze ksiazek uzywanych,
 - favicon i ikona Apple Touch korzystaja z monogramu `B` z transparentnymi rogami,
 - opisy szczegolowe sa dociagane z Allegro na stronie oferty, jesli nie ma ich jeszcze w cache,
