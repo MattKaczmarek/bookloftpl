@@ -1,9 +1,9 @@
 # Operacje BookLoft sklep
 
 Stan dokumentu: `2026-07-16`.
-Wersja produkcyjna: `1.15.0`.
+Wersja produkcyjna: `1.15.1`.
 Branch wersji: `ver-1.15`.
-Stan produkcji: `1.15.0` na `ver-1.15`.
+Stan produkcji: `1.15.1` na `ver-1.15`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
 
@@ -86,7 +86,7 @@ Jesli token wygasnie albo zostanie cofniety, w panelu pojawi sie blad i trzeba p
 - Listing i kategorie maja tylko `ItemList`/`BreadcrumbList`; karty ofert nie maja microdata `Product`/`Offer`, zeby Search Console nie traktowal miniaturek jako niepelnych produktow.
 - Strony produktow maja JSON-LD `Product`/`Offer`, `BreadcrumbList`, sprzedawce `OnlineStore` oraz `PropertyValue` i ISBN/EAN/GTIN budowane z parametrow Allegro, jesli sa dostepne w cache. Hydratacja laczy parametry ofertowe z `parameters` i produktowe z `productSet[].product.parameters`; `brand` preferuje rzeczywiste wydawnictwo, producenta albo marke, a przy braku znanej wartosci zachowuje fallback `BookLoft`.
 - Meta description produktu jest skladane kontrolowanie z nazwy, kategorii, stanu i informacji o zakupie przez Allegro, bez wklejania surowego opisu z Allegro.
-- Wersja `1.15.0` nie zmienia generatora tytulu ani meta description aktywnej oferty.
+- Wersje `1.15.0` i `1.15.1` nie zmieniaja generatora tytulu ani meta description aktywnej oferty.
 - Sitemap nie uzywa globalnego czasu przebudowy cache jako `lastmod`. Data jest opcjonalna i wyliczana osobno dla produktu na podstawie znanej istotnej zmiany, hydratacji szczegolow albo daty dodania.
 - Blok informacyjny pod katalogiem przypomina, ze BookLoft.pl jest katalogiem ofert, a finalizacja zakupu odbywa sie na Allegro.
 
@@ -95,7 +95,7 @@ Jesli token wygasnie albo zostanie cofniety, w panelu pojawi sie blad i trzeba p
 - Aktywna oferta, ktora znika z Allegro, nadal otrzymuje `410 Gone` i `noindex`; nie jest przekierowywana na strone glowna.
 - `published-offers.json` ma schemat `version: 3` i pole `removedOfferSnapshots`. Snapshot zawiera tylko identyfikator, nazwe, slug, pierwsze zdjecie, kategorie, `removedAt` i znany `sourceUpdatedAt`.
 - Stare pliki `version: 2` sa uzupelniane przy pierwszym zapisie bez osobnego skryptu migracyjnego. Nieznane pola sa tolerowane przez wersje `1.14`, wiec format pozostaje zgodny z rollbackiem.
-- Strona `410` pokazuje zapisany egzemplarz, wyszukiwarke i maksymalnie osiem aktywnych alternatyw. Dla historycznych ofert bez snapshotu fraza jest wyliczana ze sluga URL.
+- Strona `410` pokazuje zapisany egzemplarz, wyszukiwarke i maksymalnie osiem aktywnych alternatyw. Pole formularza zawiera pierwsze dwa slowa oczyszczonego tytulu albo sluga URL; ranking alternatyw nadal korzysta z pelnej nazwy snapshotu.
 - Ponowne dodanie identycznego ID oferty usuwa wpis z `removedByUnavailable` i `removedOfferSnapshots`.
 
 ## Deploy
@@ -203,7 +203,9 @@ Oczekiwane publicznie:
 - miniatury listingu i powiazanych ofert powinny uzywac wariantow Allegro `s256`/`s400`/`s512`/`s720`, a nie `/original/`,
 - katalog moze wyswietlac pelnoszerokie rotujace notki bez naglowka miedzy ofertami, z losowym startem rotacji, mniej wiecej co 36 produktow na desktopie i co 18 produktow na mobile,
 - pole wyszukiwania pokazuje tekst pomocniczy `Sprawdz, czy mamy to, czego szukasz` w samym polu zamiast widocznego naglowka `Szukaj`,
-- pole wyszukiwania ma przycisk czyszczenia, pusty wynik ma pusty stan z powrotem do wszystkich ofert, a pierwszy render pokazuje skeletony kart,
+- wyniki wyszukiwania maja jeden widoczny naglowek `Oferty dla: <fraza>` bez powtarzania slow `Wyszukiwanie` i `Wyniki`,
+- pole wyszukiwania ma przycisk czyszczenia, pusty wynik nie ma dekoracyjnego monogramu i pozwala wrocic do wszystkich ofert, a pierwszy render pokazuje skeletony kart,
+- formularz na stronie `410` uzupelnia sie maksymalnie dwoma pierwszymi slowami tytulu na desktopie i mobile,
 - strona produktu ma galerie z subtelnymi strzalkami bez tla, przewijanie zdjec swipem, lekki podglad zdjec po kliknieciu, swipe w podgladzie, zoom kolkiem myszy, plynniejszy pinch-to-zoom na mobile zakotwiczony miedzy palcami, przesuwanie zdjecia po powiekszeniu oraz obsluge `ArrowLeft`, `ArrowRight` i `Escape` w otwartym podgladzie,
 - strona produktu przy przycisku `Kup na Allegro` informuje, ze zakup, platnosc, dostawa, zwrot i reklamacja odbywaja sie w Allegro,
 - strona produktu nie pokazuje widocznego stanu magazynowego przy cenie; informacja o dostepnosci zostaje tylko w danych strukturalnych,

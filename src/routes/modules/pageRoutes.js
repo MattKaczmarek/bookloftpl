@@ -600,7 +600,6 @@ function renderProductCard(product, index = 0) {
 
 function renderCatalogEmptyState(hasNoProducts) {
   const content = hasNoProducts ? `
-        <span class="empty-mark" aria-hidden="true">B</span>
         <h2>Nie znaleźliśmy pasujących ofert</h2>
         <p>Spróbuj krótszej frazy, nazwiska autora albo wybierz inną kategorię.</p>
         <button class="secondary-action" id="empty-reset" type="button">Pokaż wszystkie oferty</button>` : "";
@@ -737,7 +736,6 @@ function renderNotFoundPage(config, title) {
     body: `<main class="shop-layout simple-page-shell">
       <section class="shop-surface simple-page">
         <div class="empty-state">
-          <span class="empty-mark" aria-hidden="true">B</span>
           <h1>${escapeHtml(title)}</h1>
           <p>Wróć do katalogu i sprawdź aktualne oferty.</p>
           <a class="secondary-action" href="${appPath(config.basePath, "/")}">Wróć do ofert</a>
@@ -858,10 +856,10 @@ function storePageMeta(config, { category, query, sort = DEFAULT_SORT, productCo
       description: `Wyniki wyszukiwania "${query}" w katalogu BookLoft. Używane książki z rzetelnym opisem stanu i zakupem przez Allegro.`,
       canonical: category ? absoluteUrl(config, categoryPath(category)) : absoluteUrl(config, "/"),
       robots: "noindex,follow,max-image-preview:large",
-      eyebrow: category ? category.displayName || category.name : "Wyszukiwanie",
-      h1: "Wyniki wyszukiwania w BookLoft",
-      copy: "Dopasowane oferty z katalogu BookLoft. Jeśli nie widzisz szukanej książki, spróbuj krótszej frazy albo nazwiska autora.",
-      listingTitle: `Wyniki: ${query}`
+      eyebrow: "",
+      h1: `Oferty dla: ${query}`,
+      copy: "",
+      listingTitle: ""
     };
   }
 

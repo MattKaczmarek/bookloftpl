@@ -1,6 +1,6 @@
 # BookLoft sklep
 
-Wersja produkcyjna: `1.15.0`.
+Wersja produkcyjna: `1.15.1`.
 Branch produkcyjny: `ver-1.15`.
 
 Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://bookloft.pl/`. Katalog jest oparty bezposrednio o aktywne oferty Allegro konta BookLoft.
@@ -114,7 +114,8 @@ Zasady:
 - katalog wplata niskie rotujace notki bez naglowka, z losowym startem rotacji, tekstem glownym i krotkim dopiskiem po prawej; na desktopie mniej wiecej co 36 ofert, na mobile co 18 ofert,
 - pole wyszukiwania uzywa tekstu pomocniczego `Sprawdz, czy mamy to, czego szukasz` bez osobnego widocznego naglowka `Szukaj`,
 - pole wyszukiwania ma subtelny przycisk czyszczenia wpisanej frazy,
-- pusty wynik wyszukiwania pokazuje dopracowany pusty stan z przyciskiem powrotu do wszystkich ofert,
+- wyniki wyszukiwania maja jeden naglowek `Oferty dla: <fraza>` bez powtarzania etykiet `Wyszukiwanie`, `Wyniki wyszukiwania` i `Wyniki`,
+- pusty wynik wyszukiwania pokazuje prosty pusty stan bez dekoracyjnego monogramu, z przyciskiem powrotu do wszystkich ofert,
 - aktywny listing nie wysyla ukrytej tresci pustego wyniku w SSR; komunikat jest tworzony dopiero dla rzeczywiscie pustej listy,
 - pierwsze ladowanie katalogu pokazuje lekkie skeletony kart,
 - strona oferty pokazuje przycisk `Kup na Allegro`, informacje ze zakup, platnosc, dostawa, zwrot i reklamacja odbywaja sie w Allegro, pasek zalet BookLoft, galerie ze strzalkami bez tla i przewijaniem swipem, lekki podglad zdjec z przewijaniem swipem, zoomem kolkiem myszy, plynniejszym pinch-to-zoom na mobile i przesuwaniem po powiekszeniu oraz stopke `O nas`,
@@ -131,7 +132,7 @@ Zasady:
 - SSR listingu pozostaje ograniczony do 50 produktow na strone, ale katalog i kategorie maja techniczna, indeksowalna paginacje HTML w sitemapie i `rel=prev/next`. Dla uzytkownikow glowne przegladanie nadal dziala przez infinite scroll po stronie klienta.
 - Stare lub bledne slugi produktu i kategorii przekierowuja 301 na adres kanoniczny.
 - Niedostepne historyczne oferty zwracaja `410 Gone`, a nieznane identyfikatory `404 Not Found`; obie odpowiedzi sa `noindex`.
-- Strona `410` ma pelnoszerokosciowy uklad na PC i mobile, pokazuje zachowane dane egzemplarza, wyszukiwarke oraz maksymalnie osiem trafnych aktywnych ofert. Starsze wpisy bez snapshotu buduja fraze wyszukiwania ze sluga URL.
+- Strona `410` ma pelnoszerokosciowy uklad na PC i mobile, pokazuje zachowane dane egzemplarza, wyszukiwarke oraz maksymalnie osiem trafnych aktywnych ofert. Pole wyszukiwania jest uzupelniane pierwszymi dwoma slowami oczyszczonego tytulu; ranking alternatyw nadal korzysta z pelnej nazwy snapshotu. Starsze wpisy bez snapshotu buduja fraze ze sluga URL i rowniez skracaja ja do dwoch slow.
 - Nieznane publiczne sciezki HTML zwracaja `404` z `noindex`, zamiast przekierowywac crawlera na strone glowna.
 - `/sitemap.xml` zawiera strone glowna, strony informacyjne, publiczne kategorie, strony paginacji katalogu/kategorii i aktywne produkty. `lastmod` jest podawany tylko dla produktu z wiarygodna data istotnej zmiany; agregaty nie dostaja globalnej daty odswiezenia cache.
 - Dane strukturalne na listingach obejmuja `Organization`, `WebSite`, `ItemList` oraz `BreadcrumbList`; karty ofert nie udaja osobnych `Product`/`Offer`, zeby Google nie raportowal brakow z miniaturek.

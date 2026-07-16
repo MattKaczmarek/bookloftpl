@@ -490,6 +490,12 @@ a {
   text-transform: uppercase;
 }
 
+.eyebrow:empty,
+.hero-copy:empty,
+.listing-title:empty {
+  display: none;
+}
+
 h1,
 h2 {
   margin: 0;
@@ -1174,20 +1180,6 @@ h2 {
   margin: 0;
   color: var(--muted);
   line-height: 1.55;
-}
-
-.empty-mark {
-  display: grid;
-  width: 42px;
-  height: 42px;
-  place-items: center;
-  border: 1px solid rgba(31, 111, 85, 0.18);
-  border-radius: 50%;
-  background: rgba(255, 253, 248, 0.82);
-  color: var(--forest-strong);
-  font-family: var(--font-heading);
-  font-size: 1.65rem;
-  font-weight: 700;
 }
 
 .simple-page-shell {

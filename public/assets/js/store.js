@@ -292,7 +292,6 @@ function syncEmptyState(productCount) {
   const isEmpty = productCount === 0;
   if (isEmpty && !els.empty.querySelector("h2")) {
     els.empty.innerHTML = `
-      <span class="empty-mark" aria-hidden="true">B</span>
       <h2>Nie znaleźliśmy pasujących ofert</h2>
       <p>Spróbuj krótszej frazy, nazwiska autora albo wybierz inną kategorię.</p>
       <button class="secondary-action" id="empty-reset" type="button">Pokaż wszystkie oferty</button>`;
@@ -526,10 +525,10 @@ function scrollToTop() {
 function syncPageText(_count) {
   const category = state.categoryId ? findCategory(state.categoryId) : null;
   if (state.query) {
-    setText(els.introEyebrow, category ? category.displayName || category.name : "Wyszukiwanie");
-    setText(els.introTitle, "Wyniki wyszukiwania w BookLoft");
-    setText(els.introCopy, "Dopasowane oferty z katalogu BookLoft. Jeśli nie widzisz szukanej książki, spróbuj krótszej frazy albo nazwiska autora.");
-    els.listingTitle.textContent = `Wyniki: ${state.query}`;
+    setText(els.introEyebrow, "");
+    setText(els.introTitle, `Oferty dla: ${state.query}`);
+    setText(els.introCopy, "");
+    els.listingTitle.textContent = "";
     setCategoryNote("");
     return;
   }

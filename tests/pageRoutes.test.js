@@ -75,7 +75,7 @@ async function withServer(run) {
         image: "https://a.allegroimg.com/original/achaja.jpg",
         categoryName: "Fantasy"
       },
-      searchQuery: "Achaja Tomy 1-3",
+      searchQuery: "Achaja Tomy",
       alternatives: data.products.slice(0, 4)
     } : {
       status: 404,
@@ -131,7 +131,7 @@ test("gone product renders a useful full-width 410 page with current alternative
     assert.match(html, /class="unavailable-page"/);
     assert.match(html, /Ten egzemplarz został już sprzedany/);
     assert.match(html, /Achaja Tomy 1-3 \/ Andrzej Ziemiański/);
-    assert.match(html, /value="Achaja Tomy 1-3"/);
+    assert.match(html, /value="Achaja Tomy"/);
     assert.match(html, /Podobne oferty i nowości/);
     assert.doesNotMatch(html, /shop-layout simple-page-shell/);
   });
@@ -150,6 +150,22 @@ test("catalog hides no-result copy from populated SSR and protects pagination sn
     const emptyHtml = await emptyResponse.text();
     assert.equal(emptyResponse.status, 200);
     assert.match(emptyHtml, /Nie znaleźliśmy pasujących ofert/);
+    assert.doesNotMatch(emptyHtml, /empty-mark/);
+  });
+});
+
+test("search results use one concise heading without repeated search labels", async () => {
+  await withServer(async (origin) => {
+    const response = await fetch(`${origin}/?q=Książka`);
+    const html = await response.text();
+    const body = html.match(/<body>([\s\S]*)<\/body>/)?.[1] || "";
+
+    assert.equal(response.status, 200);
+    assert.match(body, /<h1>Oferty dla: książka<\/h1>/);
+    assert.doesNotMatch(body, />Wyszukiwanie</);
+    assert.doesNotMatch(body, /Wyniki wyszukiwania w BookLoft/);
+    assert.doesNotMatch(body, /Wyniki: książka/);
+    assert.match(body, /<h2 class="listing-title" id="listing-title"><\/h2>/);
   });
 });
 

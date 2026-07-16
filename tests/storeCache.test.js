@@ -92,7 +92,7 @@ test("removed offers retain a lightweight snapshot and clear it after reactivati
 
   const pageData = await cache.getMissingProductPageData("1", "achaja-tomy-1-3");
   assert.equal(pageData.status, 410);
-  assert.equal(pageData.searchQuery, "Achaja Tomy 1-3");
+  assert.equal(pageData.searchQuery, "Achaja Tomy");
   assert.deepEqual(pageData.alternatives.map((item) => item.id), ["2"]);
 
   cache.fetchActiveOfferMap = async () => ({

@@ -51,7 +51,6 @@ export function createRouter(config, storeCache) {
   <main class="shop-layout simple-page-shell">
     <section class="shop-surface simple-page">
       <div class="empty-state">
-        <span class="empty-mark" aria-hidden="true">B</span>
         <h1>Nie znaleziono strony</h1>
         <p>Wróć do katalogu i sprawdź aktualne oferty BookLoft.</p>
         <a class="secondary-action" href="${config.basePath}">Wróć do ofert</a>

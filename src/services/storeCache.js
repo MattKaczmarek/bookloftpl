@@ -1009,7 +1009,7 @@ function missingOfferSearchQuery(name, requestedSlug) {
   const primaryTitle = source.split(/\s*\/\s*/)[0]
     .replace(/^(?:twarda|twarde|miękka|miękkie)\s+/i, "")
     .trim();
-  return (primaryTitle || source).slice(0, 100);
+  return (primaryTitle || source).split(/\s+/).slice(0, 2).join(" ").slice(0, 100);
 }
 
 function selectMissingOfferAlternatives(products, snapshot, searchQuery, limit) {
