@@ -11,6 +11,9 @@ const STOREFRONT_FILE = "storefront-cache.json";
 const META_FILE = "cache-meta.json";
 const AUTH_STATE_TTL_MS = 15 * 60 * 1000;
 const OFFER_DETAIL_SCHEMA_VERSION = 2;
+const DETAIL_ENRICHMENT_BATCH_SIZE = 5;
+const ACTIVE_OFFER_DROP_RATIO = 0.75;
+const ACTIVE_OFFER_DROP_MINIMUM = 20;
 
 function nowIso() {
   return new Date().toISOString();
@@ -67,6 +70,8 @@ function emptyMeta(version) {
     lastStockRefreshAt: null,
     lastCatalogRefreshAt: null,
     lastAddNewAt: null,
+    lastDetailEnrichmentAt: null,
+    lastDetailEnrichment: null,
     lastOAuthAt: null,
     lastErrorAt: null,
     lastError: null,
@@ -86,6 +91,7 @@ export class StoreCache {
       meta: path.join(config.dataDir, META_FILE)
     };
     this.queue = Promise.resolve();
+    this.detailEnrichmentQueued = false;
   }
 
   async init() {
@@ -148,7 +154,8 @@ export class StoreCache {
     let product = storefront.products.find((item) => String(item.id) === String(productId));
     if (!product) return null;
 
-    if (!product.descriptionFetchedAt || Number(product.detailSchemaVersion || 0) < OFFER_DETAIL_SCHEMA_VERSION) {
+    if ((!product.descriptionFetchedAt || Number(product.detailSchemaVersion || 0) < OFFER_DETAIL_SCHEMA_VERSION) &&
+        !this.detailEnrichmentQueued) {
       await this.hydrateOfferDetail(product.id).catch((error) => this.rememberError(error));
       storefront = await this.getStorefront();
       product = storefront.products.find((item) => String(item.id) === String(productId)) || product;
@@ -209,6 +216,8 @@ export class StoreCache {
       allegro: this.publicAllegroStatus(auth),
       lastError: meta.lastError,
       lastErrorAt: meta.lastErrorAt,
+      lastDetailEnrichmentAt: meta.lastDetailEnrichmentAt || null,
+      lastDetailEnrichment: meta.lastDetailEnrichment || null,
       runningAction: meta.runningAction
     };
   }
@@ -254,6 +263,7 @@ export class StoreCache {
       try {
         const listingMap = await this.fetchActiveOfferMap();
         const published = await this.readPublished();
+        assertReasonableActiveOfferSnapshot(published.activeOfferIds, listingMap);
         const previousActive = new Set(published.activeOfferIds.map(String));
         const nextActive = new Set();
         const addedIds = [];
@@ -336,6 +346,7 @@ export class StoreCache {
   async refreshAvailabilityLocked(_reason, listingMap) {
     const timestamp = nowIso();
     const published = await this.readPublished();
+    assertReasonableActiveOfferSnapshot(published.activeOfferIds, listingMap);
     const nextActiveIds = [];
     const removedIds = [];
 
@@ -386,6 +397,11 @@ export class StoreCache {
   }
 
   async hydrateOfferDetail(offerId) {
+    if (this.detailEnrichmentQueued) return null;
+    return this.runExclusive(`hydrate-offer:${offerId}`, () => this.hydrateOfferDetailLocked(offerId));
+  }
+
+  async hydrateOfferDetailLocked(offerId) {
     const catalog = await this.readCatalog();
     const existing = catalog.offers?.[String(offerId)];
     if (!existing) return null;
@@ -396,6 +412,123 @@ export class StoreCache {
     await writeJson(this.files.catalog, catalog);
     await this.rebuildStorefront(catalog.context);
     return catalog.offers[String(offerId)];
+  }
+
+  async enrichActiveOfferDetails({ force = false } = {}) {
+    if (this.detailEnrichmentQueued) {
+      throw new Error("Wzbogacanie szczegolow ofert jest juz uruchomione");
+    }
+
+    this.detailEnrichmentQueued = true;
+    try {
+      return await this.runExclusive("enrich-offer-details", async () => {
+        await this.markRunning("enrich-offer-details");
+        try {
+          return await this.enrichActiveOfferDetailsLocked({ force });
+        } catch (error) {
+          await this.rememberError(error);
+          throw error;
+        } finally {
+          await this.clearRunning();
+        }
+      });
+    } finally {
+      this.detailEnrichmentQueued = false;
+    }
+  }
+
+  async enrichActiveOfferDetailsLocked({ force }) {
+    const startedAt = nowIso();
+    const [published, catalog] = await Promise.all([this.readPublished(), this.readCatalog()]);
+    const catalogOfferCount = Object.keys(catalog.offers || {}).length;
+    const activeOfferIds = published.activeOfferIds
+      .map(String)
+      .filter((offerId) => catalog.offers?.[offerId]);
+    const candidateIds = activeOfferIds.filter((offerId) => {
+      const offer = catalog.offers[offerId];
+      return force || Number(offer.detailSchemaVersion || 0) < OFFER_DETAIL_SCHEMA_VERSION;
+    });
+
+    if (!candidateIds.length) {
+      return enrichmentResult({ startedAt, totalCount: 0, successCount: 0, failedOfferIds: [] });
+    }
+
+    let accessToken = await this.getAccessToken();
+    let successCount = 0;
+    const failedOfferIds = [];
+
+    for (let offset = 0; offset < candidateIds.length; offset += DETAIL_ENRICHMENT_BATCH_SIZE) {
+      const batchIds = candidateIds.slice(offset, offset + DETAIL_ENRICHMENT_BATCH_SIZE);
+      let batch = await this.fetchOfferDetailBatch(batchIds, accessToken);
+      if (batch.some((item) => item.error?.status === 401)) {
+        accessToken = await this.refreshAccessToken();
+        const retried = await this.fetchOfferDetailBatch(
+          batch.filter((item) => item.error?.status === 401).map((item) => item.offerId),
+          accessToken
+        );
+        const retryById = new Map(retried.map((item) => [item.offerId, item]));
+        batch = batch.map((item) => retryById.get(item.offerId) || item);
+      }
+
+      for (const item of batch) {
+        const existing = catalog.offers[item.offerId];
+        if (item.error || !existing) {
+          failedOfferIds.push(item.offerId);
+          continue;
+        }
+        catalog.offers[item.offerId] = mergeEnrichedOfferDetail(existing, item.detail);
+        successCount += 1;
+      }
+
+      const processed = Math.min(offset + batchIds.length, candidateIds.length);
+      if (processed % 100 === 0 || processed === candidateIds.length) {
+        console.log(`BookLoft cache enrichment ${processed}/${candidateIds.length} success=${successCount} failed=${failedOfferIds.length}`);
+      }
+    }
+
+    if (Object.keys(catalog.offers || {}).length !== catalogOfferCount) {
+      throw new Error("Przerwano wzbogacanie cache: zmienila sie liczba ofert katalogu");
+    }
+    if (!successCount) {
+      throw new Error(`Nie udalo sie wzbogacic zadnej z ${candidateIds.length} ofert`);
+    }
+
+    catalog.version = this.config.version;
+    catalog.updatedAt = nowIso();
+    await writeJson(this.files.catalog, catalog);
+    await this.rebuildStorefront(catalog.context);
+
+    const result = enrichmentResult({
+      startedAt,
+      totalCount: candidateIds.length,
+      successCount,
+      failedOfferIds
+    });
+    const meta = await this.readMeta();
+    meta.lastDetailEnrichmentAt = result.completedAt;
+    meta.lastDetailEnrichment = {
+      totalCount: result.totalCount,
+      successCount: result.successCount,
+      failedCount: result.failedCount
+    };
+    meta.lastError = null;
+    meta.lastErrorAt = null;
+    await writeJson(this.files.meta, meta);
+    return result;
+  }
+
+  async fetchOfferDetailBatch(offerIds, accessToken) {
+    return Promise.all(offerIds.map(async (offerId) => {
+      try {
+        return {
+          offerId,
+          detail: await this.allegroClient.getOfferDetails(offerId, accessToken),
+          error: null
+        };
+      } catch (error) {
+        return { offerId, detail: null, error };
+      }
+    }));
   }
 
   async captureRemovedOfferSnapshots(published, offerIds, removedAt) {
@@ -656,6 +789,24 @@ function isAutomaticReason(reason) {
   return reason === "schedule" || reason === "startup";
 }
 
+function assertReasonableActiveOfferSnapshot(previousOfferIds, listingMap) {
+  const previousCount = new Set((previousOfferIds || []).map(String)).size;
+  const nextCount = Object.keys(listingMap || {}).length;
+  if (previousCount < ACTIVE_OFFER_DROP_MINIMUM || nextCount >= previousCount * ACTIVE_OFFER_DROP_RATIO) return;
+  throw new Error(`Przerwano odswiezanie ofert: Allegro zwrocilo tylko ${nextCount} z poprzednich ${previousCount} aktywnych ofert`);
+}
+
+function enrichmentResult({ startedAt, totalCount, successCount, failedOfferIds }) {
+  return {
+    startedAt,
+    completedAt: nowIso(),
+    totalCount,
+    successCount,
+    failedCount: failedOfferIds.length,
+    failedOfferIds
+  };
+}
+
 function normalizeToken(token, fallbackRefreshToken = "") {
   const expiresIn = Number(token.expires_in || 0);
   return {
@@ -752,6 +903,29 @@ function mergeOfferDetail(existing, detail) {
     detailSchemaVersion: OFFER_DETAIL_SCHEMA_VERSION,
     contentUpdatedAt: detail.updatedAt || hydratedAt,
     searchText: productSearchText({ name: name || existing.name, sku: existing.sku || "", features: mergedFeatures }, descriptionHtml)
+  };
+}
+
+function mergeEnrichedOfferDetail(existing, detail) {
+  const enriched = mergeOfferDetail(existing, detail);
+  return {
+    ...enriched,
+    id: existing.id,
+    name: existing.name,
+    slug: existing.slug,
+    price: existing.price,
+    currency: existing.currency,
+    stock: existing.stock,
+    categoryId: existing.categoryId,
+    publicationStatus: existing.publicationStatus,
+    sourceAddedAt: existing.sourceAddedAt,
+    sourceUpdatedAt: existing.sourceUpdatedAt,
+    contentUpdatedAt: existing.contentUpdatedAt,
+    searchText: productSearchText({
+      name: existing.name,
+      sku: existing.sku || "",
+      features: enriched.features
+    }, enriched.descriptionHtml)
   };
 }
 

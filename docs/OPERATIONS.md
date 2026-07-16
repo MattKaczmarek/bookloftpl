@@ -1,9 +1,9 @@
 # Operacje BookLoft sklep
 
 Stan dokumentu: `2026-07-16`.
-Wersja przygotowana lokalnie: `1.15.0`.
+Wersja produkcyjna: `1.15.0`.
 Branch wersji: `ver-1.15`.
-Stan produkcji: `1.14.5` na `ver-1.14`; wersja `1.15.0` nie zostala wdrozona.
+Stan produkcji: `1.15.0` na `ver-1.15`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
 
@@ -100,8 +100,6 @@ Jesli token wygasnie albo zostanie cofniety, w panelu pojawi sie blad i trzeba p
 
 ## Deploy
 
-Wersja `1.15.0` jest tylko lokalna. Ponizszych polecen nie wykonywac bez osobnej zgody uzytkownika na deploy.
-
 ```bash
 cd /home/bookloftpl
 git fetch
@@ -112,6 +110,25 @@ systemctl restart bookloft-shop.service
 ```
 
 Reload Nginx jest potrzebny tylko po zmianie konfiguracji reverse proxy. Zwykle zmiany UI/API wymagaja restartu `bookloft-shop.service`.
+
+## Pelne odswiezenie cache ofert
+
+Po deployu wersji zmieniajacej schemat szczegolow ofert uruchom synchronizacje przez dzialajacy proces aplikacji:
+
+```bash
+systemd-run --quiet --wait --pipe --collect \
+  -p User=bookloft \
+  -p Group=bookloft \
+  -p WorkingDirectory=/home/bookloftpl \
+  -p EnvironmentFile=/etc/bookloft-shop/bookloft-shop.env \
+  /usr/bin/node /home/bookloftpl/scripts/refresh-production-cache.js
+```
+
+Skrypt najpierw synchronizuje liste aktywnych ofert, a potem wzbogaca brakujace szczegoly paczkami po 5. Operacja odbywa sie wewnatrz kolejki procesu aplikacji, nie kasuje starego cache i zapisuje nowy katalog atomowo dopiero po przejsciu kontroli integralnosci. Blad pojedynczej oferty zachowuje jej poprzednie dane i jest automatycznie ponawiany jeden raz.
+
+Zabezpieczenie dostepnosci przerywa zwykly refresh, gdy Allegro zwroci mniej niz 75% poprzedniej liczby aktywnych ofert przy katalogu majacym co najmniej 20 pozycji. Taki blad trzeba wyjasnic; nie obchodzic progu przez reczne kasowanie `published-offers.json`.
+
+Postep pelnego wzbogacenia jest zapisywany co 100 ofert w `journalctl -u bookloft-shop.service`. Szczegolowy lokalny status `/health` i chroniony `/api/status` zawieraja ostatni wynik wzbogacenia.
 
 ## Nginx
 
@@ -213,6 +230,6 @@ Prawidlowe branche repo:
 - `ver-1.12`,
 - `ver-1.13`,
 - `ver-1.14`,
-- `ver-1.15` (lokalnie, bez deployu).
+- `ver-1.15` (produkcja).
 
 Robocze branche z prefiksem `codex/` nie sa linia wersji sklepu i po przeniesieniu zmian do aktualnego brancha `ver-*` powinny byc usuniete lokalnie oraz z GitHuba.

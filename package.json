@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node src/server.js",
     "test": "node --test tests/*.test.js",
-    "healthcheck": "node scripts/healthcheck.js"
+    "healthcheck": "node scripts/healthcheck.js",
+    "refresh-production-cache": "node scripts/refresh-production-cache.js"
   },
   "engines": {
     "node": ">=18.19"

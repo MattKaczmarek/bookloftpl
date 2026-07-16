@@ -169,3 +169,106 @@ test("offer hydration merges offer and Allegro product parameters", async (t) =>
   await cache.getProduct("1");
   assert.equal(detailRequests, 1);
 });
+
+test("availability refresh rejects a suspicious mass drop", async (t) => {
+  const dataDir = await mkdtemp(path.join(tmpdir(), "bookloft-cache-test-"));
+  t.after(() => rm(dataDir, { recursive: true, force: true }));
+  const cache = new StoreCache({
+    version: "1.15.0",
+    dataDir,
+    allegroMarketplaceId: "allegro-pl",
+    allegroSellingFormats: ["BUY_NOW"]
+  });
+  await cache.init();
+
+  const activeOfferIds = Array.from({ length: 20 }, (_item, index) => String(index + 1));
+  await writeJson(cache.files.published, {
+    version: 3,
+    activeOfferIds,
+    addedAtByOfferId: {},
+    removedByUnavailable: {},
+    removedOfferSnapshots: {}
+  });
+
+  await assert.rejects(
+    cache.refreshAvailabilityLocked("test", {}),
+    /Przerwano odswiezanie ofert/
+  );
+  const published = JSON.parse(await readFile(cache.files.published, "utf8"));
+  assert.deepEqual(published.activeOfferIds, activeOfferIds);
+  assert.deepEqual(published.removedByUnavailable, {});
+});
+
+test("bulk detail enrichment preserves listing identity and failed cache entries", async (t) => {
+  const dataDir = await mkdtemp(path.join(tmpdir(), "bookloft-cache-test-"));
+  t.after(() => rm(dataDir, { recursive: true, force: true }));
+  const cache = new StoreCache({
+    version: "1.15.0",
+    dataDir,
+    allegroMarketplaceId: "allegro-pl",
+    allegroSellingFormats: ["BUY_NOW"]
+  });
+  await cache.init();
+
+  const first = cachedOffer(1, "Pierwsza książka");
+  const second = cachedOffer(2, "Druga książka");
+  await writeJson(cache.files.published, {
+    version: 3,
+    activeOfferIds: ["1", "2"],
+    addedAtByOfferId: {},
+    removedByUnavailable: {},
+    removedOfferSnapshots: {}
+  });
+  await writeJson(cache.files.catalog, {
+    version: "1.14.5",
+    updatedAt: "2026-07-10T08:00:00.000Z",
+    context: { source: "Allegro", currency: "PLN" },
+    categories: [{ category_id: "fantasy", name: "Fantasy", parent_id: "" }],
+    offers: { "1": first, "2": second }
+  });
+  await cache.rebuildStorefront();
+
+  cache.getAccessToken = async () => "test-token";
+  cache.allegroClient.getOfferDetails = async (offerId) => {
+    if (String(offerId) === "2") {
+      const error = new Error("Allegro API HTTP 500");
+      error.status = 500;
+      throw error;
+    }
+    return {
+      name: "Nazwa, której wzbogacenie nie powinno przejąć",
+      description: { sections: [{ items: [{ type: "TEXT", content: "<p>Pełny opis</p>" }] }] },
+      images: [{ url: "https://a.allegroimg.com/original/detail-1.jpg" }],
+      parameters: [{ name: "Stan", values: ["Używany"] }],
+      productSet: [{ product: { parameters: [{ name: "Wydawnictwo", values: ["Bellona"] }] } }],
+      sellingMode: { price: { amount: "999.00", currency: "EUR" } },
+      stock: { available: 0 },
+      category: { id: "different" },
+      publication: { status: "ENDED" }
+    };
+  };
+
+  const result = await cache.enrichActiveOfferDetails();
+  assert.equal(result.totalCount, 2);
+  assert.equal(result.successCount, 1);
+  assert.equal(result.failedCount, 1);
+  assert.deepEqual(result.failedOfferIds, ["2"]);
+
+  const catalog = JSON.parse(await readFile(cache.files.catalog, "utf8"));
+  assert.equal(catalog.offers["1"].name, first.name);
+  assert.equal(catalog.offers["1"].price, first.price);
+  assert.equal(catalog.offers["1"].currency, first.currency);
+  assert.equal(catalog.offers["1"].stock, first.stock);
+  assert.equal(catalog.offers["1"].categoryId, first.categoryId);
+  assert.equal(catalog.offers["1"].publicationStatus, first.publicationStatus);
+  assert.equal(catalog.offers["1"].detailSchemaVersion, 2);
+  assert.deepEqual(catalog.offers["1"].features, [
+    { name: "Wydawnictwo", value: "Bellona" },
+    { name: "Stan", value: "Używany" }
+  ]);
+  assert.deepEqual(catalog.offers["2"], second);
+
+  const storefront = JSON.parse(await readFile(cache.files.storefront, "utf8"));
+  assert.equal(storefront.products.length, 2);
+  assert.deepEqual(storefront.products.map((product) => product.id).sort(), ["1", "2"]);
+});

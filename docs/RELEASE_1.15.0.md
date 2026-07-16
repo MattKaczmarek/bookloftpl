@@ -1,8 +1,8 @@
 # BookLoft.pl 1.15.0
 
-Status: przygotowane lokalnie na branchu `ver-1.15`, bez pushu i bez deployu.
+Status: wdrozone produkcyjnie na branchu `ver-1.15`.
 
-Produkcja w czasie przygotowania tej wersji pozostaje na `ver-1.14`, commit `2aa707d`, wersja `1.14.5`.
+Poprzednia produkcja: `ver-1.14`, commit `2aa707d`, wersja `1.14.5`.
 
 ## Cel
 
@@ -61,6 +61,14 @@ Brakujace miejsca sa uzupelniane najnowszymi ofertami. Do HTML trafia maksymalni
 - Usunieto niepelne `MerchantReturnPolicy`, `ShippingService` i referencje polityki z `Offer`.
 - Pozostaja prawdziwe dane `OnlineStore`, `Product`, `Offer`, cena, waluta, dostepnosc, stan, sprzedawca oraz identyfikatory, gdy Allegro je dostarczy.
 
+### Bezpieczne wzbogacenie cache
+
+- Chroniony endpoint operacyjny wzbogaca wszystkie aktywne oferty szczegolami Allegro w paczkach po 5 bez blokowania publicznego odczytu dotychczasowego cache.
+- Katalog i storefront sa zapisywane atomowo dopiero po zakonczeniu operacji i kontroli niezmiennej liczby wpisow katalogu.
+- Blad pojedynczej oferty zachowuje jej poprzednie dane; skrypt produkcyjny automatycznie ponawia nieudane wpisy jeden raz.
+- Wzbogacenie zachowuje identyfikator, nazwe, cene, walute, stan, kategorie i status z aktualnego listingu, dlatego nie zmienia URL-i ani dostepnosci aktywnych ofert.
+- Refresh listingu jest przerywany, gdy Allegro zwroci mniej niz 75% poprzedniego katalogu liczacego co najmniej 20 ofert.
+
 ### Snippety katalogu
 
 - Przy aktywnym SSR kontener pustego wyniku jest pusty i ukryty. Jego tekst jest generowany dopiero dla faktycznie pustej listy.
@@ -81,17 +89,20 @@ npm test
 Zakres:
 
 - niezmieniony tytul i meta description aktywnej oferty,
-- brak sztucznej marki i niepelnych polityk w JSON-LD,
+- wydawnictwo Allegro z fallbackiem `BookLoft` i brak niepelnych polityk w JSON-LD,
 - status, naglowki i zawartosc `410`,
 - brak ukrytego pustego komunikatu w aktywnym SSR,
 - `data-nosnippet` na technicznej paginacji,
 - daty `lastmod` per produkt,
 - migracja snapshotu, ranking alternatyw i czyszczenie po reaktywacji.
+- polaczenie parametrow ofertowych i produktowych,
+- ochrona przed masowym spadkiem aktywnego katalogu,
+- atomowe paczkowe wzbogacenie z zachowaniem danych po bledzie pojedynczej oferty.
 
-## Weryfikacja przed przyszlym deployem
+## Weryfikacja wdrozenia
 
 1. Uruchomic `npm ci`, `npm test` i `npm audit --omit=dev`.
-2. Uruchomic aplikacje na osobnym lokalnym porcie z kopia danych runtime.
-3. Sprawdzic PC `1440x900` i mobile `390x844` dla `/`, aktywnego produktu, historycznego `410` ze snapshotem, starego `410` bez snapshotu i nieznanego `404`.
-4. Potwierdzic statusy HTTP, brak bledow konsoli, brak overflow i zaladowanie obrazow.
-5. Dopiero po wyraznej zgodzie wykonac push/deploy, restart uslugi i obserwacje logow.
+2. Sprawdzic PC `1440x900` i mobile `390x844` dla `/`, aktywnego produktu, historycznego `410` ze snapshotem, starego `410` bez snapshotu i nieznanego `404`.
+3. Potwierdzic statusy HTTP, brak bledow konsoli, brak overflow i zaladowanie obrazow.
+4. Uruchomic `scripts/refresh-production-cache.js` przez transient unit z produkcyjnym ENV.
+5. Porownac liczbe aktywnych i widocznych ofert przed i po, sprawdzic sitemap oraz obserwowac logi uslugi.

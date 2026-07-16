@@ -1,9 +1,7 @@
 # BookLoft sklep
 
-Wersja przygotowana lokalnie: `1.15.0`.
-Branch tej wersji: `ver-1.15`.
-
-Produkcja pozostaje na `1.14.5` z brancha `ver-1.14`; wersja `1.15.0` nie zostala wdrozona.
+Wersja produkcyjna: `1.15.0`.
+Branch produkcyjny: `ver-1.15`.
 
 Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://bookloft.pl/`. Katalog jest oparty bezposrednio o aktywne oferty Allegro konta BookLoft.
 
@@ -97,6 +95,8 @@ Zasady:
 - nowa oferta aktywna na Allegro pojawia sie po akcji `Dodaj nowe` w panelu.
 - przy wycofaniu oferty zapisywane sa tylko dane potrzebne stronie `410`: identyfikator, nazwa, slug, pierwsze zdjecie, kategoria i data usuniecia; cena i opis nie sa utrwalane w historycznym snapshotcie,
 - ponowne dodanie tej samej oferty usuwa jej znacznik wycofania i snapshot.
+- pelne wzbogacenie cache laczy parametry ofertowe i produktowe Allegro w paczkach po 5 ofert; stary cache pozostaje dostepny do atomowego zapisu wyniku, a blad pojedynczej oferty zachowuje jej poprzednie dane,
+- odswiezenie dostepnosci jest przerywane, gdy Allegro zwroci mniej niz 75% poprzedniego katalogu majacego co najmniej 20 ofert, co chroni przed masowym wycofaniem URL-i po niepelnej odpowiedzi API.
 
 ## Frontend
 
@@ -179,7 +179,7 @@ Standard:
 
 1. zmiana lokalna,
 2. `git push`,
-3. po osobnej zgodzie na deploy na Hetznerze: `cd /home/bookloftpl && git fetch && git switch ver-1.15 && git pull --ff-only`,
+3. na Hetznerze: `cd /home/bookloftpl && git fetch && git switch ver-1.15 && git pull --ff-only`,
 4. uzupelnienie ENV Allegro w `/etc/bookloft-shop/bookloft-shop.env`,
 5. `npm ci --omit=dev`,
 6. restart uslugi sklepu,

@@ -14,6 +14,14 @@ export function createAdminApiRouter(config, storeCache) {
     })
   );
 
+  router.post(
+    "/enrich-details",
+    asyncHandler(async (req, res) => {
+      const result = await storeCache.enrichActiveOfferDetails({ force: req.query.force === "1" });
+      res.json({ status: "ok", ...result });
+    })
+  );
+
   router.get(
     "/allegro/connect",
     asyncHandler(async (_req, res) => {
