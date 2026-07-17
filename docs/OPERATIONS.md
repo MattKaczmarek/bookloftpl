@@ -1,19 +1,19 @@
 # Operacje BookLoft sklep
 
 Stan dokumentu: `2026-07-17`.
-Wersja produkcyjna: `1.15.3`.
-Branch wersji: `ver-1.15`.
-Stan produkcji: `1.15.3` na `ver-1.15`.
+Wersja produkcyjna: `1.16.0`.
+Branch wersji: `ver-1.16`.
+Stan produkcji: `1.16.0` na `ver-1.16`; commit kodu wydania `8b61e4b`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
 
-## Wersja oczekujaca 1.16.0
+## Wersja produkcyjna 1.16.0
 
-- Branch `ver-1.16` zawiera przygotowana wersje `1.16.0`, ale nie jest branchem produkcyjnym.
+- Branch `ver-1.16` jest aktywnym branchem produkcyjnym od `2026-07-17`.
 - Wersja nie wymaga migracji danych, zmiany ENV, odswiezenia cache ofert ani modyfikacji Nginx.
 - Zmienia ranking podobnych ofert, linkowanie kategorii, zasady `lastmod` oraz statyczne zasoby bannera.
-- Do czasu osobnego polecenia deployu nie wykonuj na Hetznerze `git switch ver-1.16`, `git pull`, `npm ci` ani restartu `bookloft-shop.service`.
-- Pelny zakres, przeplyw funkcji, testy i rollback opisuje `docs/RELEASE_1.16.0.md`.
+- Deploy zachowal dotychczasowy cache 2013 aktywnych ofert; pelne odswiezenie nie bylo potrzebne.
+- Pelny zakres, przeplyw funkcji, testy produkcyjne i rollback opisuje `docs/RELEASE_1.16.0.md`.
 
 ## Granice projektu
 
@@ -111,7 +111,7 @@ Jesli token wygasnie albo zostanie cofniety, w panelu pojawi sie blad i trzeba p
 ```bash
 cd /home/bookloftpl
 git fetch
-git switch ver-1.15
+git switch ver-1.16
 git pull --ff-only
 npm ci --omit=dev
 systemctl restart bookloft-shop.service
@@ -204,7 +204,7 @@ Oczekiwane publicznie:
 - wpis produktu w sitemap ma jego wlasny `lastmod`, jesli data jest znana; strony agregujace nie dostaja daty kazdego technicznego odswiezenia cache,
 - nieznane publiczne sciezki HTML zwracaja `404` z `noindex` zamiast przekierowania na strone glowna,
 - fonty sa serwowane lokalnie z `public/assets/fonts` przez `public/assets/css/fonts.css`,
-- gorny banner strony glownej uzywa statycznego assetu `public/assets/img/loft-hero.jpg`; na waskich ekranach ma szerszy i nizszy layout z logo dopasowanym do mobilnego kadru,
+- gorny banner strony glownej uzywa `loft-hero.webp` na desktopie i `loft-hero-mobile.webp` na telefonie, z `loft-hero.jpg` jako fallbackiem; na waskich ekranach ma szerszy i nizszy layout z logo dopasowanym do mobilnego kadru,
 - tlo strony ma subtelna papierowa teksture bez pionowych linii; karty i panele maja lekka fakture oraz oprawe okladek,
 - lista ofert na mobile zachowuje dwie karty w rzedzie rowniez na ekranach okolo 320 px szerokosci,
 - listing domyslnie pokazuje najnowsze oferty i ma klientowe oraz serwerowe sortowanie po cenie i tytule; parametr URL `sort` dziala na stronie glownej, w kategoriach i w wynikach wyszukiwania, ale warianty sortowania sa `noindex,follow` i nie trafiaja do sitemap,

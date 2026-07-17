@@ -1,6 +1,6 @@
 # BookLoft.pl 1.16.0
 
-Status: przygotowane lokalnie na branchu `ver-1.16`, bez deployu i bez zmian na Hetznerze.
+Status: wdrozone produkcyjnie `2026-07-17` na branchu `ver-1.16`; commit kodu wydania `8b61e4b`.
 
 ## Cel
 
@@ -56,12 +56,17 @@ Wersja poprawia odkrywanie powiazanych ofert, wewnetrzne linkowanie kategorii or
 - Pelny zestaw `npm test` przechodzi: 16/16 testow.
 - Playwright Chromium potwierdza brak poziomego overflow przy `1440x1000` i `390x844`, poprawna zmiane kategorii bez przeladowania oraz po 50 kart SSR i 6 linkow kontekstowych na pierwszym widoku kategorii.
 - Przegladarka pobiera tylko `loft-hero.webp` na desktopie i tylko `loft-hero-mobile.webp` na telefonie; JPEG pozostaje niewykorzystanym fallbackiem dla starszych przegladarek.
+- Produkcyjny health zwraca wersje `1.16.0`, polaczenie z Allegro jest aktywne, a zachowany cache zawiera 2013 widocznych ofert.
+- Produkcyjne testy Playwright przy `1440x1000` i `390x844` potwierdzily 50 kart SSR, 6 linkow powiazanych kategorii, 8 podobnych ofert oraz brak poziomego overflow.
+- Publiczne strony glownej, kategorii i produktu zwracaja `200`; `www` wykonuje `301`, sitemap ma poprawny XML, a Nginx nie zarejestrowal bledu aplikacji po restarcie.
+- Search Console raportuje sitemap bez bledow i ostrzezen. Strona glowna oraz reprezentatywny produkt sa zaindeksowane z poprawnymi canonicalami; efekt nowego linkowania kategorii wymaga ponownego crawlu Google.
 
-## Ograniczenia
+## Stan produkcyjny
 
-- Wydanie nie zostalo wdrozone na serwer.
-- Produkcja pozostaje na `1.15.3` i branchu `ver-1.15`.
+- Produkcja dziala na `1.16.0` i branchu `ver-1.16`.
+- Wdrozenie nie zmienilo ENV, formatu cache ani danych ofert i nie uruchamialo pelnego odswiezenia katalogu.
+- Wplyw na indeksowanie kategorii, klikniecia i pozycje nalezy oceniac dopiero po zebraniu nowych danych Search Console.
 
 ## Rollback
 
-Poniewaz wersja nie ma migracji danych ani zmian ENV, rollback kodu polega na ponownym uruchomieniu ostatniego commita `ver-1.15`. Nie trzeba cofac ani przebudowywac runtime cache. Samo wypchniecie `ver-1.16` do GitHub nie zmienia produkcji.
+Poniewaz wersja nie ma migracji danych ani zmian ENV, rollback kodu polega na ponownym uruchomieniu ostatniego commita `ver-1.15`. Nie trzeba cofac ani przebudowywac runtime cache.
