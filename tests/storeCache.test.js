@@ -170,6 +170,61 @@ test("offer hydration merges offer and Allegro product parameters", async (t) =>
   assert.equal(detailRequests, 1);
 });
 
+test("active product recommendations prefer matching titles and authors", async (t) => {
+  const dataDir = await mkdtemp(path.join(tmpdir(), "bookloft-cache-test-"));
+  t.after(() => rm(dataDir, { recursive: true, force: true }));
+  const cache = new StoreCache({
+    version: "1.16.0",
+    dataDir,
+    allegroMarketplaceId: "allegro-pl",
+    allegroSellingFormats: ["BUY_NOW"]
+  });
+  await cache.init();
+
+  const offer = (id, name, categoryId, author, addedAt) => ({
+    ...cachedOffer(id, name),
+    categoryId,
+    addedAt,
+    sourceAddedAt: addedAt,
+    detailSchemaVersion: 2,
+    features: [
+      { name: "Autor", value: author },
+      { name: "Wydawnictwo", value: "Fabryka Słów" },
+      { name: "Stan", value: "Używany" }
+    ]
+  });
+  const offers = {
+    "1": offer(1, "Achaja Tom 1 / Andrzej Ziemiański", "fantasy", "Andrzej Ziemiański", "2026-07-01T08:00:00.000Z"),
+    "2": offer(2, "Achaja Tom 2 / Andrzej Ziemiański", "fantasy", "Andrzej Ziemiański", "2026-07-02T08:00:00.000Z"),
+    "3": offer(3, "Pomnik Cesarzowej Achai / Andrzej Ziemiański", "fantasy", "Andrzej Ziemiański", "2026-07-03T08:00:00.000Z"),
+    "4": offer(4, "Zupełnie inna opowieść", "fantasy", "Inny Autor", "2026-07-16T08:00:00.000Z"),
+    "5": offer(5, "Achaja wydanie specjalne / Andrzej Ziemiański", "crime", "Andrzej Ziemiański", "2026-07-04T08:00:00.000Z")
+  };
+
+  await writeJson(cache.files.published, {
+    version: 3,
+    activeOfferIds: Object.keys(offers),
+    addedAtByOfferId: {},
+    removedByUnavailable: {},
+    removedOfferSnapshots: {}
+  });
+  await writeJson(cache.files.catalog, {
+    version: "1.16.0",
+    updatedAt: "2026-07-16T08:00:00.000Z",
+    context: { source: "Allegro", currency: "PLN" },
+    categories: [
+      { category_id: "fantasy", name: "Fantasy", parent_id: "" },
+      { category_id: "crime", name: "Kryminał", parent_id: "" }
+    ],
+    offers
+  });
+  await cache.rebuildStorefront();
+
+  const product = await cache.getProduct("1");
+  assert.deepEqual(product.related.slice(0, 3).map((item) => item.id), ["2", "3", "5"]);
+  assert.equal(product.related[3].id, "4");
+});
+
 test("availability refresh rejects a suspicious mass drop", async (t) => {
   const dataDir = await mkdtemp(path.join(tmpdir(), "bookloft-cache-test-"));
   t.after(() => rm(dataDir, { recursive: true, force: true }));

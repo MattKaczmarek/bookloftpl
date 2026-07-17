@@ -161,10 +161,7 @@ export class StoreCache {
       product = storefront.products.find((item) => String(item.id) === String(productId)) || product;
     }
 
-    const related = storefront.products
-      .filter((item) => item.id !== product.id && item.categoryId && item.categoryId === product.categoryId)
-      .slice(0, 8)
-      .map(toListProduct);
+    const related = selectRelatedProducts(storefront.products, product, 8);
     return {
       ...product,
       related
@@ -1045,6 +1042,62 @@ function selectMissingOfferAlternatives(products, snapshot, searchQuery, limit) 
   }
 
   return selected.map((item) => toListProduct(item.product));
+}
+
+function selectRelatedProducts(products, target, limit) {
+  const targetTitleTokens = new Set(significantSearchTokens(target.name));
+  const targetCategoryIds = meaningfulCategoryIds(target.categoryPath);
+  const targetFeatures = recommendationFeatures(target);
+
+  return products
+    .filter((product) => String(product.id) !== String(target.id))
+    .map((product) => {
+      const titleTokens = significantSearchTokens(product.name);
+      const sharedTitleTokens = titleTokens.filter((token) => targetTitleTokens.has(token)).length;
+      const sharedCategoryDepth = meaningfulCategoryIds(product.categoryPath)
+        .filter((categoryId) => targetCategoryIds.includes(categoryId)).length;
+      const exactCategory = Boolean(
+        target.categoryId && product.categoryId && String(target.categoryId) === String(product.categoryId)
+      );
+      const features = recommendationFeatures(product);
+      const sharedAuthor = sharedFeatureValue(targetFeatures, features, "autor");
+      const sharedSeries = sharedFeatureValue(targetFeatures, features, "seria");
+      const sharedPublisher = sharedFeatureValue(targetFeatures, features, "wydawnictwo", "producent");
+      const relevant = exactCategory || sharedTitleTokens > 0 || sharedAuthor || sharedSeries;
+      const score = (exactCategory ? 60 : 0) +
+        sharedCategoryDepth * 12 +
+        sharedTitleTokens * 28 +
+        (sharedAuthor ? 70 : 0) +
+        (sharedSeries ? 48 : 0) +
+        (sharedPublisher ? 18 : 0);
+      return { product, relevant, score };
+    })
+    .filter((item) => item.relevant)
+    .sort((a, b) => b.score - a.score || productFreshnessTime(b.product) - productFreshnessTime(a.product))
+    .slice(0, Math.max(1, Number(limit) || 8))
+    .map((item) => toListProduct(item.product));
+}
+
+function meaningfulCategoryIds(categoryPath) {
+  const genericNames = new Set(["kultura i rozrywka", "ksiazki"]);
+  return (categoryPath || [])
+    .filter((category) => !genericNames.has(normalizeSearchValue(category.displayName || category.name)))
+    .map((category) => String(category.id));
+}
+
+function recommendationFeatures(product) {
+  const supported = new Set(["autor", "seria", "wydawnictwo", "producent"]);
+  return new Map((product.features || [])
+    .map((feature) => [normalizeSearchValue(feature.name), normalizeSearchValue(feature.value)])
+    .filter(([name, value]) => supported.has(name) && value));
+}
+
+function sharedFeatureValue(left, right, ...names) {
+  return names.some((name) => {
+    const leftValue = left.get(name);
+    if (!leftValue) return false;
+    return names.some((candidate) => right.get(candidate) === leftValue);
+  });
 }
 
 function significantSearchTokens(value) {

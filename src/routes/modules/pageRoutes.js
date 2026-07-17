@@ -265,6 +265,9 @@ function renderStorePage(config, storefront, { category = null, query = "", sort
     totalCount: storefront.meta?.productCount || storefront.products.length
   });
   const categorySelect = renderCategorySelect(categoryOptions, category?.id || "");
+  const categoryLinks = category && !normalizedQuery
+    ? relatedCategoryLinks(categoryOptions, category, 6)
+    : [];
   const sortSelect = renderSortSelect(normalizedSort);
   const itemListSchema = JSON.stringify(itemListJsonLd(config, visibleProducts, pageOffset)).replaceAll("</", "<\\/");
   const siteSchema = JSON.stringify(siteJsonLd(config)).replaceAll("</", "<\\/");
@@ -296,8 +299,8 @@ function renderStorePage(config, storefront, { category = null, query = "", sort
   <script type="application/ld+json">${siteSchema}</script>
   <script type="application/ld+json">${itemListSchema}</script>
   ${breadcrumbSchema ? `<script type="application/ld+json">${breadcrumbSchema}</script>` : ""}
-  <link rel="preload" as="image" href="${appPath(config.basePath, `/assets/img/loft-hero.jpg?v=${config.version}`)}" fetchpriority="high">
-  <link rel="preload" as="image" href="${appPath(config.basePath, `/assets/img/logo.png?v=${config.version}`)}" fetchpriority="high">
+  <link rel="preload" as="image" href="${appPath(config.basePath, `/assets/img/loft-hero.webp?v=${config.version}`)}" type="image/webp" media="(min-width: 621px)" fetchpriority="high">
+  <link rel="preload" as="image" href="${appPath(config.basePath, `/assets/img/loft-hero-mobile.webp?v=${config.version}`)}" type="image/webp" media="(max-width: 620px)" fetchpriority="high">
   <link rel="stylesheet" href="${appPath(config.basePath, `/assets/css/fonts.css?v=${config.version}`)}">
   <link rel="icon" type="image/png" sizes="32x32" href="${appPath(config.basePath, `/assets/img/favicon-32.png?v=${config.version}`)}">
   <link rel="icon" type="image/png" sizes="512x512" href="${appPath(config.basePath, `/assets/img/favicon.png?v=${config.version}`)}">
@@ -318,7 +321,7 @@ function renderStorePage(config, storefront, { category = null, query = "", sort
 <body>
   <div class="brand-intro is-visible" id="brand-intro">
     <div class="brand-intro-inner">
-      <img src="${appPath(config.basePath, `/assets/img/logo.png?v=${config.version}`)}" alt="BookLoft">
+      <img src="${appPath(config.basePath, `/assets/img/logo.png?v=${config.version}`)}" width="1816" height="803" alt="BookLoft">
       <p>Wejdź do przestrzeni pełnej książek</p>
     </div>
   </div>
@@ -334,7 +337,7 @@ function renderStorePage(config, storefront, { category = null, query = "", sort
     <section class="shop-surface" aria-live="polite">
       <a class="shop-brand-hero" href="${appPath(config.basePath, "/")}" aria-label="BookLoft - wróć na stronę główną">
         <div class="hero-brand-copy">
-          <img class="hero-logo" src="${appPath(config.basePath, `/assets/img/logo.png?v=${config.version}`)}" alt="BookLoft">
+          <img class="hero-logo" src="${appPath(config.basePath, `/assets/img/logo.png?v=${config.version}`)}" width="1816" height="803" alt="BookLoft">
           <p>Przestrzeń pełna książek</p>
         </div>
       </a>
@@ -379,6 +382,7 @@ function renderStorePage(config, storefront, { category = null, query = "", sort
 
       <h2 class="listing-title" id="listing-title">${escapeHtml(pageMeta.listingTitle)}</h2>
       ${pageMeta.categoryNote ? `<p class="category-seo-note">${escapeHtml(pageMeta.categoryNote)}</p>` : ""}
+      ${renderRelatedCategoryLinks(config, categoryLinks)}
 
       <div class="product-grid" id="product-grid" aria-busy="false">
         ${visibleProducts.map((product, index) => renderProductCard(product, index)).join("\n")}
@@ -430,8 +434,8 @@ function renderProductPage(config, product, storefront) {
   <meta name="twitter:image" content="${escapeAttribute(image)}">
   <script type="application/ld+json">${jsonLd}</script>
   <script type="application/ld+json">${breadcrumbSchema}</script>
-  <link rel="preload" as="image" href="${appPath(config.basePath, `/assets/img/loft-hero.jpg?v=${config.version}`)}" fetchpriority="high">
-  <link rel="preload" as="image" href="${appPath(config.basePath, `/assets/img/logo.png?v=${config.version}`)}" fetchpriority="high">
+  <link rel="preload" as="image" href="${appPath(config.basePath, `/assets/img/loft-hero.webp?v=${config.version}`)}" type="image/webp" media="(min-width: 621px)" fetchpriority="high">
+  <link rel="preload" as="image" href="${appPath(config.basePath, `/assets/img/loft-hero-mobile.webp?v=${config.version}`)}" type="image/webp" media="(max-width: 620px)" fetchpriority="high">
   <link rel="stylesheet" href="${appPath(config.basePath, `/assets/css/fonts.css?v=${config.version}`)}">
   <link rel="icon" type="image/png" sizes="32x32" href="${appPath(config.basePath, `/assets/img/favicon-32.png?v=${config.version}`)}">
   <link rel="icon" type="image/png" sizes="512x512" href="${appPath(config.basePath, `/assets/img/favicon.png?v=${config.version}`)}">
@@ -446,7 +450,7 @@ function renderProductPage(config, product, storefront) {
   <section class="product-visual-shell" aria-label="BookLoft - Przestrzeń pełna książek">
     <a class="shop-brand-hero product-brand-hero" href="${appPath(config.basePath, "/")}" aria-label="BookLoft - wróć na stronę główną">
       <div class="hero-brand-copy">
-        <img class="hero-logo" src="${appPath(config.basePath, `/assets/img/logo.png?v=${config.version}`)}" alt="BookLoft">
+        <img class="hero-logo" src="${appPath(config.basePath, `/assets/img/logo.png?v=${config.version}`)}" width="1816" height="803" alt="BookLoft">
         <p>Przestrzeń pełna książek</p>
       </div>
     </a>
@@ -566,6 +570,41 @@ function renderCategorySelect(categories, activeCategoryId) {
       `<option value="${escapeAttribute(category.id)}"${String(category.id) === String(activeCategoryId) ? " selected" : ""}>${escapeHtml(category.displayName || category.name)}</option>`
     ))
   ].join("\n");
+}
+
+function renderRelatedCategoryLinks(config, categories) {
+  if (!categories.length) return "";
+  return `<nav class="related-category-links" aria-label="Powiązane kategorie">
+    <span>Przeglądaj też</span>
+    <div>${categories.map((category) => `<a href="${appPath(config.basePath, categoryPath(category))}">${escapeHtml(category.displayName || category.name)} <small>${escapeHtml(offerCountLabel(category.totalProductCount || category.productCount || 0))}</small></a>`).join("")}</div>
+  </nav>`;
+}
+
+function relatedCategoryLinks(categories, activeCategory, limit) {
+  const activeId = String(activeCategory.id);
+  const activeParentId = String(activeCategory.parentId || "");
+  const candidates = [
+    ...(activeCategory.children || []),
+    ...categories.filter((category) => activeParentId && String(category.parentId || "") === activeParentId),
+    ...categories
+  ];
+  const seen = new Set([activeId]);
+
+  return candidates.filter((category) => {
+    const id = String(category.id || "");
+    if (!id || seen.has(id) || isGenericAllegroCategory(category)) return false;
+    seen.add(id);
+    return (category.totalProductCount || category.productCount || 0) > 0;
+  }).slice(0, Math.max(1, Number(limit) || 6));
+}
+
+function offerCountLabel(count) {
+  const value = Number(count) || 0;
+  const lastTwo = value % 100;
+  const last = value % 10;
+  if (value === 1) return "1 oferta";
+  if (last >= 2 && last <= 4 && (lastTwo < 12 || lastTwo > 14)) return `${value} oferty`;
+  return `${value} ofert`;
 }
 
 function renderSortSelect(activeSort) {
@@ -714,7 +753,7 @@ function renderMissingProductPage(config, missingProduct) {
     body: `<main class="unavailable-page">
         <a class="shop-brand-hero unavailable-brand-hero" href="${appPath(config.basePath, "/")}" aria-label="BookLoft - wróć na stronę główną">
           <div class="hero-brand-copy">
-            <img class="hero-logo" src="${appPath(config.basePath, `/assets/img/logo.png?v=${config.version}`)}" alt="BookLoft">
+            <img class="hero-logo" src="${appPath(config.basePath, `/assets/img/logo.png?v=${config.version}`)}" width="1816" height="803" alt="BookLoft">
             <p>Przestrzeń pełna książek</p>
           </div>
         </a>
@@ -892,7 +931,7 @@ function storePageMeta(config, { category, query, sort = DEFAULT_SORT, productCo
       robots: sortedVariant ? "noindex,follow,max-image-preview:large" : "index,follow,max-image-preview:large",
       eyebrow: "Kategoria",
       h1: name,
-      copy: categoryIntroCopy(category),
+      copy: categoryIntroCopy(category, productCount),
       listingTitle: page > 1 ? `Dostępne oferty - strona ${page}` : "Dostępne oferty"
     };
   }
@@ -1127,9 +1166,9 @@ function selectedProductFeatures(features, limit = 8, fields = PRODUCT_SPEC_FIEL
   return selected;
 }
 
-function categoryIntroCopy(category) {
+function categoryIntroCopy(category, productCount) {
   const name = category.displayName || category.name || "Kategoria";
-  return `Kategoria ${name} zawiera używane produkty z realnymi zdjęciami konkretnych egzemplarzy oraz opisem stanu.`;
+  return `${name}: ${offerCountLabel(productCount)} z realnymi zdjęciami konkretnych egzemplarzy i opisem ich stanu.`;
 }
 
 function productImageAlt(product) {
@@ -1365,7 +1404,6 @@ function sitemapLastModified(product) {
   const timestamp = Math.max(
     Date.parse(product.contentUpdatedAt || 0) || 0,
     Date.parse(product.sourceUpdatedAt || 0) || 0,
-    Date.parse(product.descriptionFetchedAt || 0) || 0,
     Date.parse(product.addedAt || 0) || 0,
     Date.parse(product.sourceAddedAt || 0) || 0
   );

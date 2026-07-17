@@ -194,14 +194,36 @@ test("search results use a small search label and one concise heading", async ()
   });
 });
 
+test("category pages show the current offer count and useful category links", async () => {
+  await withServer(async (origin, data) => {
+    data.categories.push({
+      id: "crime",
+      name: "Kryminał",
+      displayName: "Kryminał",
+      productCount: 7,
+      totalProductCount: 7,
+      children: []
+    });
+    const response = await fetch(`${origin}/kategoria/fantasy/fantasy`);
+    const html = await response.text();
+
+    assert.equal(response.status, 200);
+    assert.match(html, /Fantasy: 51 ofert z realnymi zdjęciami konkretnych egzemplarzy i opisem ich stanu\./);
+    assert.match(html, /<nav class="related-category-links" aria-label="Powiązane kategorie">/);
+    assert.match(html, /href="\/kategoria\/crime\/kryminal">Kryminał <small>7 ofert<\/small><\/a>/);
+  });
+});
+
 test("sitemap uses per-product lastmod and omits unreliable global hints", async () => {
   await withServer(async (origin, data) => {
+    data.products[1].descriptionFetchedAt = "2026-07-17T12:00:00.000Z";
     const response = await fetch(`${origin}/sitemap.xml`);
     const xml = await response.text();
 
     assert.equal(response.status, 200);
     assert.doesNotMatch(xml, /<changefreq>|<priority>/);
     assert.match(xml, new RegExp(`<loc>https://bookloft\\.pl/product/${data.products[0].id}/[^<]+<\\/loc>\\s+<lastmod>2026-07-14<\\/lastmod>`));
+    assert.match(xml, new RegExp(`<loc>https://bookloft\\.pl/product/${data.products[1].id}/[^<]+<\\/loc>\\s+<lastmod>2026-07-03<\\/lastmod>`));
     const homeEntry = xml.match(/<url>\s*<loc>https:\/\/bookloft\.pl\/<\/loc>([\s\S]*?)<\/url>/)?.[1] || "";
     assert.doesNotMatch(homeEntry, /<lastmod>/);
   });

@@ -79,7 +79,8 @@ const els = {
   introEyebrow: document.querySelector(".shop-intro .eyebrow"),
   introTitle: document.querySelector(".shop-intro h1"),
   introCopy: document.querySelector(".shop-intro .hero-copy"),
-  categoryNote: document.querySelector(".category-seo-note")
+  categoryNote: document.querySelector(".category-seo-note"),
+  relatedCategories: document.querySelector(".related-category-links")
 };
 
 setupBrandIntro();
@@ -580,7 +581,7 @@ function scrollToTop() {
   });
 }
 
-function syncPageText(_count) {
+function syncPageText(count) {
   const category = state.categoryId ? findCategory(state.categoryId) : null;
   if (state.query) {
     setText(els.introEyebrow, "Wyszukiwanie");
@@ -588,15 +589,17 @@ function syncPageText(_count) {
     setText(els.introCopy, "");
     els.listingTitle.textContent = "";
     setCategoryNote("");
+    syncRelatedCategoryLinks(null);
     return;
   }
   if (category) {
     const name = category.displayName || category.name || "Kategoria";
     setText(els.introEyebrow, "Kategoria");
     setText(els.introTitle, name);
-    setText(els.introCopy, categoryIntroCopy(category));
+    setText(els.introCopy, categoryIntroCopy(category, count));
     els.listingTitle.textContent = state.initialPage > 1 ? `Dostępne oferty - strona ${state.initialPage}` : "Dostępne oferty";
     setCategoryNote("");
+    syncRelatedCategoryLinks(category);
     return;
   }
   setText(els.introEyebrow, "Nowości z regału");
@@ -604,6 +607,7 @@ function syncPageText(_count) {
   setText(els.introCopy, "Nowe tytuły z naszego regału. Przeglądaj ostatnio dodane oferty albo wyszukaj książkę po tytule, autorze lub gatunku.");
   els.listingTitle.textContent = state.initialPage > 1 ? `Nowości - strona ${state.initialPage}` : "Nowości";
   setCategoryNote("");
+  syncRelatedCategoryLinks(null);
 }
 
 function setText(element, text) {
@@ -622,9 +626,52 @@ function setCategoryNote(text) {
   els.categoryNote.style.display = text ? "" : "none";
 }
 
-function categoryIntroCopy(category) {
+function categoryIntroCopy(category, count) {
   const name = category.displayName || category.name || "Kategoria";
-  return `Kategoria ${name} zawiera używane produkty z realnymi zdjęciami konkretnych egzemplarzy oraz opisem stanu.`;
+  return `${name}: ${offerCountLabel(count)} z realnymi zdjęciami konkretnych egzemplarzy i opisem ich stanu.`;
+}
+
+function syncRelatedCategoryLinks(category) {
+  const categories = category ? relatedCategoryLinks(visibleCategories(state.categories), category, 6) : [];
+  if (!categories.length) {
+    els.relatedCategories?.remove();
+    els.relatedCategories = null;
+    return;
+  }
+  if (!els.relatedCategories) {
+    els.relatedCategories = document.createElement("nav");
+    els.relatedCategories.className = "related-category-links";
+    els.relatedCategories.setAttribute("aria-label", "Powiązane kategorie");
+    els.listingTitle.insertAdjacentElement("afterend", els.relatedCategories);
+  }
+  els.relatedCategories.innerHTML = `<span>Przeglądaj też</span><div>${categories.map((item) => `<a href="${categoryUrl(item)}">${escapeHtml(item.displayName || item.name)} <small>${escapeHtml(offerCountLabel(item.totalProductCount || item.productCount || 0))}</small></a>`).join("")}</div>`;
+}
+
+function relatedCategoryLinks(categories, activeCategory, limit) {
+  const activeId = String(activeCategory.id);
+  const activeParentId = String(activeCategory.parentId || "");
+  const candidates = [
+    ...(activeCategory.children || []),
+    ...categories.filter((category) => activeParentId && String(category.parentId || "") === activeParentId),
+    ...categories
+  ];
+  const seen = new Set([activeId]);
+
+  return candidates.filter((category) => {
+    const id = String(category.id || "");
+    if (!id || seen.has(id) || isGenericAllegroCategory(category)) return false;
+    seen.add(id);
+    return (category.totalProductCount || category.productCount || 0) > 0;
+  }).slice(0, Math.max(1, Number(limit) || 6));
+}
+
+function offerCountLabel(count) {
+  const value = Number(count) || 0;
+  const lastTwo = value % 100;
+  const last = value % 10;
+  if (value === 1) return "1 oferta";
+  if (last >= 2 && last <= 4 && (lastTwo < 12 || lastTwo > 14)) return `${value} oferty`;
+  return `${value} ofert`;
 }
 
 function setupInfiniteScroll() {
