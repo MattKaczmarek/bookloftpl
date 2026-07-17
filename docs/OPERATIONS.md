@@ -1,11 +1,19 @@
 # Operacje BookLoft sklep
 
-Stan dokumentu: `2026-07-16`.
+Stan dokumentu: `2026-07-17`.
 Wersja produkcyjna: `1.15.3`.
 Branch wersji: `ver-1.15`.
 Stan produkcji: `1.15.3` na `ver-1.15`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
+
+## Wersja oczekujaca 1.16.0
+
+- Branch `ver-1.16` zawiera przygotowana wersje `1.16.0`, ale nie jest branchem produkcyjnym.
+- Wersja nie wymaga migracji danych, zmiany ENV, odswiezenia cache ofert ani modyfikacji Nginx.
+- Zmienia ranking podobnych ofert, linkowanie kategorii, zasady `lastmod` oraz statyczne zasoby bannera.
+- Do czasu osobnego polecenia deployu nie wykonuj na Hetznerze `git switch ver-1.16`, `git pull`, `npm ci` ani restartu `bookloft-shop.service`.
+- Pelny zakres, przeplyw funkcji, testy i rollback opisuje `docs/RELEASE_1.16.0.md`.
 
 ## Granice projektu
 
@@ -87,7 +95,7 @@ Jesli token wygasnie albo zostanie cofniety, w panelu pojawi sie blad i trzeba p
 - Strony produktow maja JSON-LD `Product`/`Offer`, `BreadcrumbList`, sprzedawce `OnlineStore` oraz `PropertyValue` i ISBN/EAN/GTIN budowane z parametrow Allegro, jesli sa dostepne w cache. Hydratacja laczy parametry ofertowe z `parameters` i produktowe z `productSet[].product.parameters`; `brand` preferuje rzeczywiste wydawnictwo, producenta albo marke, a przy braku znanej wartosci zachowuje fallback `BookLoft`.
 - Meta description produktu jest skladane kontrolowanie z nazwy, kategorii, stanu i informacji o zakupie przez Allegro, bez wklejania surowego opisu z Allegro.
 - Wersje `1.15.0`-`1.15.3` nie zmieniaja generatora tytulu ani meta description aktywnej oferty.
-- Sitemap nie uzywa globalnego czasu przebudowy cache jako `lastmod`. Data jest opcjonalna i wyliczana osobno dla produktu na podstawie znanej istotnej zmiany, hydratacji szczegolow albo daty dodania.
+- Sitemap nie uzywa globalnego czasu przebudowy cache jako `lastmod`. Od wersji `1.16.0` data jest opcjonalna i wyliczana osobno na podstawie `contentUpdatedAt`, `sourceUpdatedAt`, `addedAt` i `sourceAddedAt`; samo techniczne pobranie opisu zapisane w `descriptionFetchedAt` nie zmienia `lastmod`.
 - Blok informacyjny pod katalogiem przypomina, ze BookLoft.pl jest katalogiem ofert, a finalizacja zakupu odbywa sie na Allegro.
 
 ## Niedostepne oferty
