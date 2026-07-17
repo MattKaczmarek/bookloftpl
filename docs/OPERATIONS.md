@@ -1,21 +1,23 @@
 # Operacje BookLoft sklep
 
 Stan dokumentu: `2026-07-17`.
-Wersja produkcyjna: `1.16.1`.
-Branch wersji: `ver-1.16`.
-Stan produkcji: `1.16.1` na `ver-1.16`; commit kodu wydania `6bda500`.
+Wersja produkcyjna: `1.17.0`.
+Branch wersji: `ver-1.17`.
+Stan produkcji: `1.17.0` na `ver-1.17`; commit kodu wydania `73d294d`, tag `bookloftpl-v1.17.0`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
 
-## Kandydat 1.17.0 - bez deployu
+## Wersja produkcyjna 1.17.0
 
-- Branch `ver-1.17` zawiera przygotowany, niewdrozony kandydat `1.17.0`; produkcja nadal dziala na `1.16.1`.
+- Wdrozona produkcyjnie `2026-07-17` na branchu `ver-1.17`, commit kodu `73d294d`.
 - Pierwszy listing i karta produktu wykorzystuja gotowy SSR bez natychmiastowego pobierania pelnego katalogu przez JavaScript.
 - Pelny katalog jest pobierany dopiero przy wyszukiwaniu, sortowaniu, zmianie filtra albo infinite scrollu.
 - Mobile produktu ma statyczne atuty i przyklejony pasek z nazwa, cena oraz przejsciem do zakupu na Allegro.
 - Nieznane sciezki maja brandowany, wyszukiwalny ekran `404` z `noindex`; status HTTP pozostaje `404`.
 - Refresh dostepnosci naprawia rozjazd, w ktorym oferta byla jeszcze widoczna w storefront, ale zniknela z listy aktywnych ID; taka wycofana oferta zachowuje snapshot i otrzymuje `410`.
-- Nie ma migracji ENV, Nginx ani formatu cache. Nie trzeba odswiezac calego cache ani zglaszac sitemap po ewentualnym wdrozeniu.
+- Nie ma migracji ENV, Nginx ani formatu cache. Deploy nie wymagal pelnego odswiezenia cache ani ponownego zglaszania sitemap.
+- Produkcyjny smoke test potwierdzil health `1.17.0`, automatyczny refresh Allegro bez bledu, 2044 widoczne oferty, prawidlowe `200`/`404`/`410`, sitemap i robots oraz brak ostrzezen uslugi.
+- Playwright potwierdzil na domenie produkcyjnej CLS `0`, brak overflow i bledow JS, brak wstepnego pobrania pelnego storefrontu oraz dzialajace wyszukiwanie, galerie i mobilny pasek zakupu.
 - Szczegolowy zakres, weryfikacja i rollback sa w `docs/RELEASE_1.17.0.md`.
 
 ## Patch 1.16.1
@@ -130,7 +132,7 @@ Jesli token wygasnie albo zostanie cofniety, w panelu pojawi sie blad i trzeba p
 ```bash
 cd /home/bookloftpl
 git fetch
-git switch ver-1.16
+git switch ver-1.17
 git pull --ff-only
 npm ci --omit=dev
 systemctl restart bookloft-shop.service

@@ -1,6 +1,6 @@
 # BookLoft.pl 1.17.0
 
-Status: przygotowane na branchu `ver-1.17`; bez deployu. Produkcja pozostaje na `1.16.1` z brancha `ver-1.16`.
+Status: wdrozone produkcyjnie `2026-07-17` na branchu `ver-1.17`, commit kodu `73d294d`, tag `bookloftpl-v1.17.0`.
 
 ## Cel
 
@@ -46,9 +46,12 @@ Zmniejszyc koszt pierwszego wejscia do katalogu i na karte produktu, poprawic de
 - `node --check` - skrypty klienta, routing i cache.
 - Playwright na kopii publicznego cache: start i kategoria `0` wywolan `/api/storefront` przed interakcja; produkt `0`; wyszukiwanie `1`; infinite scroll dodaje druga paczke 50 ofert.
 - Playwright: galeria zmienia aktywne zdjecie; status `404` i naglowek `X-Robots-Tag` sa zachowane; brak bledow JavaScript i uszkodzonych obrazow w sprawdzonych widokach.
+- Produkcyjny Playwright potwierdzil te same wyniki na desktopie i mobile: CLS `0`, brak poziomego overflow, uszkodzonych obrazow, bledow JS i nieudanych requestow.
+- Produkcyjny health po automatycznym refreshu Allegro zwrocil wersje `1.17.0`, 2044 widoczne oferty, aktywne polaczenie i brak ostatniego bledu cache.
+- Publiczne testy HTTP potwierdzily `200` dla strony glownej, kategorii i produktu, `404` z `noindex` dla nieznanej sciezki oraz `410` dla historycznie wycofanej oferty.
 
 ## Wdrazanie i rollback
 
-W tym wydaniu nie wykonano deployu. Przed przyszlym wdrozeniem trzeba ponownie uruchomic testy, zrobic health-check i sprawdzic log uslugi po restarcie. Pelne odswiezenie cache nie jest wymagane.
+Deploy wykonano bez zmiany ENV, Nginx i formatu danych. Pelne odswiezenie cache nie bylo wymagane; zwykly refresh startowy zsynchronizowal dane Allegro. Po restarcie usluga pozostala aktywna bez ostrzezen i automatycznych restartow.
 
-Rollback nie wymaga migracji: powrot do tagu/commitu `1.16.1`, `npm ci --omit=dev` i restart `bookloft-shop.service`. Cache pozostaje zgodny w obie strony.
+Rollback nie wymaga migracji: powrot do tagu `bookloftpl-v1.16.1`, `npm ci --omit=dev` i restart `bookloft-shop.service`. Cache pozostaje zgodny w obie strony.
