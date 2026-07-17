@@ -7,6 +7,17 @@ Stan produkcji: `1.16.1` na `ver-1.16`; commit kodu wydania `6bda500`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
 
+## Kandydat 1.17.0 - bez deployu
+
+- Branch `ver-1.17` zawiera przygotowany, niewdrozony kandydat `1.17.0`; produkcja nadal dziala na `1.16.1`.
+- Pierwszy listing i karta produktu wykorzystuja gotowy SSR bez natychmiastowego pobierania pelnego katalogu przez JavaScript.
+- Pelny katalog jest pobierany dopiero przy wyszukiwaniu, sortowaniu, zmianie filtra albo infinite scrollu.
+- Mobile produktu ma statyczne atuty i przyklejony pasek z nazwa, cena oraz przejsciem do zakupu na Allegro.
+- Nieznane sciezki maja brandowany, wyszukiwalny ekran `404` z `noindex`; status HTTP pozostaje `404`.
+- Refresh dostepnosci naprawia rozjazd, w ktorym oferta byla jeszcze widoczna w storefront, ale zniknela z listy aktywnych ID; taka wycofana oferta zachowuje snapshot i otrzymuje `410`.
+- Nie ma migracji ENV, Nginx ani formatu cache. Nie trzeba odswiezac calego cache ani zglaszac sitemap po ewentualnym wdrozeniu.
+- Szczegolowy zakres, weryfikacja i rollback sa w `docs/RELEASE_1.17.0.md`.
+
 ## Patch 1.16.1
 
 - Wdrozony produkcyjnie `2026-07-17` na branchu `ver-1.16`.

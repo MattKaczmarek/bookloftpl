@@ -2,6 +2,7 @@
 
 Wersja produkcyjna: `1.16.1` na branchu `ver-1.16`.
 Deploy wykonano `2026-07-17`; commit kodu wydania: `6bda500`.
+Wersja przygotowywana: `1.17.0` na branchu `ver-1.17`; bez deployu.
 
 Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://bookloft.pl/`. Katalog jest oparty bezposrednio o aktywne oferty Allegro konta BookLoft.
 
@@ -109,7 +110,7 @@ Zasady:
 - lista ofert pokazuje dwie karty w rzedzie rowniez na bardzo waskich ekranach mobilnych,
 - pelny katalog mozna przeszukiwac po tytule, SKU i kategorii,
 - listing domyslnie pokazuje najnowsze oferty; dodatkowo mozna sortowac po cenie i tytule dla calego katalogu, kategorii i wynikow wyszukiwania, a warianty z `sort` sa `noindex,follow` i nie sa dodawane do sitemap,
-- karty listingu pokazuja zdjecie, kategorie, tytul, cene i link `Zobacz`; okladki maja delikatne papierowe passe-partout i subtelny hover na desktopie,
+- karty listingu pokazuja zdjecie, kategorie, tytul, cene i link `Zobacz oferte`; okladki maja delikatne papierowe passe-partout i subtelny hover na desktopie,
 - listing uzywa skalowanych wariantow obrazow Allegro (`s256`/`s400`/`s512`/`s720`) zamiast ciezkich oryginalow,
 - banner uzywa WebP 92 KB na desktopie i osobnego wariantu 47 KB na telefonie, z JPEG jako fallbackiem; logo ma jawne wymiary, zeby ograniczyc przesuniecia ukladu,
 - katalog wplata niskie rotujace notki bez naglowka, z losowym startem rotacji, tekstem glownym i krotkim dopiskiem po prawej; na desktopie mniej wiecej co 36 ofert, na mobile co 18 ofert,
@@ -120,8 +121,9 @@ Zasady:
 - puste i niepuste wyniki zachowuja to samo kremowe tlo strony; pusty stan nie ma zielonego gradientu ani dekoracyjnego monogramu i pozwala wrocic do wszystkich ofert,
 - przy pustym wyniku sortowanie jest ukryte, a pod komunikatem widoczne sa cztery rzeczywiste najnowsze oferty z katalogu,
 - aktywny listing nie wysyla ukrytej tresci pustego wyniku w SSR; komunikat jest tworzony dopiero dla rzeczywiscie pustej listy,
-- pierwsze ladowanie katalogu pokazuje lekkie skeletony kart,
+- pierwsze 50 ofert pozostaje renderowane w HTML, a klient nie pobiera pelnego `/api/storefront` ani `/api/newest`, dopoki uzytkownik nie wyszuka, nie posortuje albo nie zblizy sie do konca pierwszej strony,
 - strona oferty pokazuje przycisk `Kup na Allegro`, informacje ze zakup, platnosc, dostawa, zwrot i reklamacja odbywaja sie w Allegro, pasek zalet BookLoft, galerie ze strzalkami bez tla i przewijaniem swipem, lekki podglad zdjec z przewijaniem swipem, zoomem kolkiem myszy, plynniejszym pinch-to-zoom na mobile i przesuwaniem po powiekszeniu oraz stopke `O nas`,
+- na telefonie strona oferty pokazuje nad galeria przyklejony pasek z nazwa, cena i przyciskiem `Kup na Allegro`; animowany pasek zalet jest zastepowany trzema statycznymi informacjami,
 - strona oferty pokazuje najwazniejsze parametry z Allegro, jesli sa dostepne w cache, np. autora, wydawnictwo, rok wydania, serie, ISBN/EAN, oprawe i jezyk; liczba stron pozostaje ukryta w widocznej specyfikacji,
 - podobne oferty sa sortowane wedlug zgodnosci tytulu, autora, serii, wydawnictwa i kategorii, a dopiero potem wedlug swiezosci,
 - strona oferty nie pokazuje liczby dostepnych egzemplarzy, bo katalog zaklada pojedyncze egzemplarze ksiazek uzywanych,
@@ -138,6 +140,8 @@ Zasady:
 - Niedostepne historyczne oferty zwracaja `410 Gone`, a nieznane identyfikatory `404 Not Found`; obie odpowiedzi sa `noindex`.
 - Strona `410` ma pelnoszerokosciowy uklad na PC i mobile, pokazuje zachowane dane egzemplarza, wyszukiwarke oraz maksymalnie osiem trafnych aktywnych ofert. Pole wyszukiwania jest uzupelniane pierwszymi dwoma slowami oczyszczonego tytulu; ranking alternatyw nadal korzysta z pelnej nazwy snapshotu. Starsze wpisy bez snapshotu buduja fraze ze sluga URL i rowniez skracaja ja do dwoch slow.
 - Nieznane publiczne sciezki HTML zwracaja `404` z `noindex`, zamiast przekierowywac crawlera na strone glowna.
+- Strona `404` zachowuje identyfikacje BookLoft, ma wyszukiwarke katalogu oraz link do wszystkich aktualnych ofert.
+- Strona produktu korzysta bezposrednio z SSR i nie zastepuje gotowego HTML ani nie pobiera pelnego katalogu tylko po to, by uruchomic galerie.
 - `/sitemap.xml` zawiera strone glowna, strony informacyjne, publiczne kategorie, strony paginacji katalogu/kategorii i aktywne produkty. `lastmod` jest podawany tylko dla produktu z wiarygodna data istotnej zmiany; techniczne pobranie opisu i globalne odswiezenie cache nie zmieniaja tej daty.
 - Dane strukturalne na listingach obejmuja `Organization`, `WebSite`, `ItemList` oraz `BreadcrumbList`; karty ofert nie udaja osobnych `Product`/`Offer`, zeby Google nie raportowal brakow z miniaturek.
 - Pelne dane `Product`/`Offer` sa tylko na stronach `/product/:id/:slug`; zawieraja sprzedawce `OnlineStore`, opis, cene, dostepnosc, stan oraz ISBN/EAN/GTIN, jesli sa dostepne w parametrach Allegro. `brand` korzysta najpierw z wydawnictwa, producenta albo marki pobranej z parametrow produktowych Allegro, a przy braku znanej wartosci zachowuje fallback `BookLoft`.

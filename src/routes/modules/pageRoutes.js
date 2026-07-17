@@ -52,7 +52,7 @@ export function createPageRouter(config, storeCache) {
     asyncHandler(async (req, res) => {
       const page = parsePageParam(req.params.page);
       if (!page) {
-        res.status(404).type("html").send(renderNotFoundPage(config, "Nie znaleziono strony katalogu"));
+        sendNotFoundPage(res, config, "Nie znaleziono strony katalogu");
         return;
       }
       const sort = normalizeSort(req.query.sort);
@@ -72,7 +72,7 @@ export function createPageRouter(config, storeCache) {
       const products = listingProducts(storefront.products, { newestProducts, sort });
       const totalPages = pageCount(products.length);
       if (page > totalPages) {
-        res.status(404).type("html").send(renderNotFoundPage(config, "Nie znaleziono strony katalogu"));
+        sendNotFoundPage(res, config, "Nie znaleziono strony katalogu");
         return;
       }
 
@@ -98,7 +98,7 @@ export function createPageRouter(config, storeCache) {
       const category = findCategoryById(storefront.categories, req.params.categoryId);
       const sort = normalizeSort(req.query.sort);
       if (!page || !category) {
-        res.status(404).type("html").send(renderNotFoundPage(config, "Nie znaleziono kategorii"));
+        sendNotFoundPage(res, config, "Nie znaleziono kategorii");
         return;
       }
       if (page === 1) {
@@ -113,7 +113,7 @@ export function createPageRouter(config, storeCache) {
       const products = listingProducts(storefront.products, { categoryId: category.id, sort });
       const totalPages = pageCount(products.length);
       if (page > totalPages) {
-        res.status(404).type("html").send(renderNotFoundPage(config, "Nie znaleziono strony kategorii"));
+        sendNotFoundPage(res, config, "Nie znaleziono strony kategorii");
         return;
       }
 
@@ -134,7 +134,7 @@ export function createPageRouter(config, storeCache) {
       const category = findCategoryById(storefront.categories, req.params.categoryId);
       const sort = normalizeSort(req.query.sort);
       if (!category) {
-        res.status(404).type("html").send(renderNotFoundPage(config, "Nie znaleziono kategorii"));
+        sendNotFoundPage(res, config, "Nie znaleziono kategorii");
         return;
       }
 
@@ -301,6 +301,7 @@ function renderStorePage(config, storefront, { category = null, query = "", sort
   ${breadcrumbSchema ? `<script type="application/ld+json">${breadcrumbSchema}</script>` : ""}
   <link rel="preload" as="image" href="${appPath(config.basePath, `/assets/img/loft-hero.webp?v=${config.version}`)}" type="image/webp" media="(min-width: 621px)" fetchpriority="high">
   <link rel="preload" as="image" href="${appPath(config.basePath, `/assets/img/loft-hero-mobile.webp?v=${config.version}`)}" type="image/webp" media="(max-width: 620px)" fetchpriority="high">
+  ${renderFontPreloads(config)}
   <link rel="stylesheet" href="${appPath(config.basePath, `/assets/css/fonts.css?v=${config.version}`)}">
   <link rel="icon" type="image/png" sizes="32x32" href="${appPath(config.basePath, `/assets/img/favicon-32.png?v=${config.version}`)}">
   <link rel="icon" type="image/png" sizes="512x512" href="${appPath(config.basePath, `/assets/img/favicon.png?v=${config.version}`)}">
@@ -311,6 +312,7 @@ function renderStorePage(config, storefront, { category = null, query = "", sort
     window.BOOKLOFT_INITIAL_QUERY=${JSON.stringify(normalizedQuery)};
     window.BOOKLOFT_INITIAL_SORT=${JSON.stringify(normalizedSort)};
     window.BOOKLOFT_INITIAL_PRODUCT_IDS=${JSON.stringify(visibleProducts.map((product) => String(product.id)))};
+    window.BOOKLOFT_INITIAL_PRODUCT_COUNT=${JSON.stringify(products.length)};
     window.BOOKLOFT_INITIAL_OFFSET=${JSON.stringify(pageOffset)};
     window.BOOKLOFT_INITIAL_PAGE=${JSON.stringify(currentPage)};
     window.BOOKLOFT_ANALYTICS_ID=${JSON.stringify(config.googleAnalyticsId || "")};
@@ -436,6 +438,7 @@ function renderProductPage(config, product, storefront) {
   <script type="application/ld+json">${breadcrumbSchema}</script>
   <link rel="preload" as="image" href="${appPath(config.basePath, `/assets/img/loft-hero.webp?v=${config.version}`)}" type="image/webp" media="(min-width: 621px)" fetchpriority="high">
   <link rel="preload" as="image" href="${appPath(config.basePath, `/assets/img/loft-hero-mobile.webp?v=${config.version}`)}" type="image/webp" media="(max-width: 620px)" fetchpriority="high">
+  ${renderFontPreloads(config)}
   <link rel="stylesheet" href="${appPath(config.basePath, `/assets/css/fonts.css?v=${config.version}`)}">
   <link rel="icon" type="image/png" sizes="32x32" href="${appPath(config.basePath, `/assets/img/favicon-32.png?v=${config.version}`)}">
   <link rel="icon" type="image/png" sizes="512x512" href="${appPath(config.basePath, `/assets/img/favicon.png?v=${config.version}`)}">
@@ -454,8 +457,8 @@ function renderProductPage(config, product, storefront) {
         <p>Przestrzeń pełna książek</p>
       </div>
     </a>
-    <div class="product-trust-strip" aria-label="Atuty BookLoft">
-      <div class="trust-track">
+    <div class="product-trust-strip" aria-label="Realne zdjęcia, opis stanu i zakup przez Allegro">
+      <div class="trust-track" aria-hidden="true">
         <span>Realne zdjęcia</span>
         <span>Rzetelny opis stanu</span>
         <span>Zakup przez Allegro</span>
@@ -466,6 +469,11 @@ function renderProductPage(config, product, storefront) {
         <span>Rzetelny opis stanu</span>
         <span>Bezpieczna wysyłka</span>
         <span>Książki z charakterem</span>
+      </div>
+      <div class="product-trust-summary" aria-hidden="true">
+        <span>Realne zdjęcia</span>
+        <span>Opis stanu</span>
+        <span>Zakup przez Allegro</span>
       </div>
     </div>
     <form class="product-search-box search-box" id="product-search-form" action="${appPath(config.basePath, "/")}" role="search">
@@ -501,6 +509,7 @@ function renderProductBody(config, product, category, categoryOptions, totalCoun
       </aside>
       <div class="product-content">
         ${renderProductBreadcrumbs(config, product, category)}
+        ${renderMobilePurchaseBar(product, price, allegroUrl)}
         <article class="product-detail">
           <section class="detail-gallery">
             <div class="gallery-main">
@@ -542,6 +551,16 @@ function renderProductBody(config, product, category, categoryOptions, totalCoun
       </div>
     </div>
   `;
+}
+
+function renderMobilePurchaseBar(product, price, allegroUrl) {
+  return `<aside class="mobile-purchase-bar" aria-label="Szybki zakup">
+    <span class="mobile-purchase-copy">
+      <span>${escapeHtml(product.name)}</span>
+      <strong>${price}</strong>
+    </span>
+    <a class="buy-action" href="${escapeAttribute(allegroUrl)}" target="_blank" rel="noopener noreferrer" aria-label="Kup ${escapeAttribute(product.name)} na Allegro">Kup na Allegro</a>
+  </aside>`;
 }
 
 function renderCategoryRail(config, categories, { activeCategoryId = "", totalCount = null } = {}) {
@@ -639,7 +658,7 @@ function renderProductCard(product, index = 0) {
         <strong>${price}</strong>
       </div>
       <div class="product-actions">
-        <a class="details-action action-full" href="${link}" aria-label="Zobacz ${escapeAttribute(product.name)}">Zobacz</a>
+        <a class="details-action action-full" href="${link}" aria-label="Zobacz ofertę ${escapeAttribute(product.name)}">Zobacz ofertę</a>
       </div>
     </div>
   </article>`;
@@ -785,21 +804,38 @@ function renderMissingProductPage(config, missingProduct) {
   });
 }
 
-function renderNotFoundPage(config, title) {
+export function renderNotFoundPage(config, title) {
   return renderSimplePage(config, {
     status: 404,
     title,
     description: "Nie znaleziono strony w katalogu BookLoft.",
-    body: `<main class="shop-layout simple-page-shell">
-      <section class="shop-surface simple-page">
-        <div class="empty-state">
-          <h1>${escapeHtml(title)}</h1>
-          <p>Wróć do katalogu i sprawdź aktualne oferty.</p>
-          <a class="secondary-action" href="${appPath(config.basePath, "/")}">Wróć do ofert</a>
+    body: `<main class="not-found-page">
+      <a class="shop-brand-hero unavailable-brand-hero" href="${appPath(config.basePath, "/")}" aria-label="BookLoft - wróć na stronę główną">
+        <div class="hero-brand-copy">
+          <img class="hero-logo" src="${appPath(config.basePath, `/assets/img/logo.png?v=${config.version}`)}" width="1816" height="803" alt="BookLoft">
+          <p>Przestrzeń pełna książek</p>
         </div>
+      </a>
+      <section class="empty-state not-found-content">
+          <p class="eyebrow">Nieznany adres</p>
+          <h1>${escapeHtml(title)}</h1>
+          <p>Ta strona nie istnieje. Wyszukaj tytuł albo wróć do aktualnych ofert BookLoft.</p>
+          <form class="unavailable-search" action="${appPath(config.basePath, "/")}" method="get" role="search">
+            <label for="not-found-search">Znajdź książkę</label>
+            <div>
+              <input id="not-found-search" name="q" type="search" placeholder="Tytuł, autor lub gatunek">
+              <button class="primary-action" type="submit">Szukaj w katalogu</button>
+            </div>
+          </form>
+          <a class="secondary-action" href="${appPath(config.basePath, "/")}">Wróć do wszystkich ofert</a>
       </section>
     </main>`
   });
+}
+
+function sendNotFoundPage(res, config, title) {
+  res.setHeader("X-Robots-Tag", "noindex, nofollow, noarchive");
+  res.status(404).type("html").send(renderNotFoundPage(config, title));
 }
 
 function renderSimplePage(config, { title, description, body }) {
@@ -811,6 +847,7 @@ function renderSimplePage(config, { title, description, body }) {
   <meta name="robots" content="noindex,nofollow,noarchive">
   <meta name="description" content="${escapeAttribute(description)}">
   <title>${escapeHtml(title)} | BookLoft</title>
+  ${renderFontPreloads(config)}
   <link rel="stylesheet" href="${appPath(config.basePath, `/assets/css/fonts.css?v=${config.version}`)}">
   <link rel="icon" type="image/png" sizes="32x32" href="${appPath(config.basePath, `/assets/img/favicon-32.png?v=${config.version}`)}">
   <link rel="stylesheet" href="${appPath(config.basePath, `/assets/css/styles.css?v=${config.version}`)}">
@@ -819,6 +856,15 @@ function renderSimplePage(config, { title, description, body }) {
   ${body}
 </body>
 </html>`;
+}
+
+function renderFontPreloads(config) {
+  return [
+    "nunito-sans-04.woff2",
+    "nunito-sans-05.woff2",
+    "source-serif-4-10.woff2",
+    "source-serif-4-11.woff2"
+  ].map((file) => `<link rel="preload" as="font" href="${appPath(config.basePath, `/assets/fonts/${file}`)}" type="font/woff2" crossorigin>`).join("\n  ");
 }
 
 function renderSitemap(urls) {

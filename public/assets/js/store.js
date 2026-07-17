@@ -60,8 +60,13 @@ const state = {
   modeLimit: INITIAL_LIMIT,
   initialPage: 1,
   autoLoadQueued: false,
+  nextPageQueued: false,
+  catalogLoaded: false,
+  totalProducts: Number(window.BOOKLOFT_INITIAL_PRODUCT_COUNT || 0),
   meta: {}
 };
+
+let catalogRequest = null;
 
 const els = {
   grid: document.querySelector("#product-grid"),
@@ -93,6 +98,33 @@ init().catch((error) => {
 });
 
 async function init() {
+  state.categoryId = categoryIdFromUrl();
+  state.query = queryFromUrl();
+  state.sort = sortFromUrl();
+  state.initialPage = initialPageFromServer();
+
+  bindEvents();
+  els.categorySelect.value = state.categoryId;
+  els.search.value = state.query;
+  syncSortSelects();
+  syncSearchClear();
+  syncCategoryButtons();
+  initializeServerListing();
+}
+
+async function ensureCatalogData() {
+  if (state.catalogLoaded) return;
+  if (catalogRequest) return catalogRequest;
+
+  catalogRequest = loadCatalogData();
+  try {
+    await catalogRequest;
+  } finally {
+    catalogRequest = null;
+  }
+}
+
+async function loadCatalogData() {
   const [response, newestResponse] = await Promise.all([
     fetch("/api/storefront", { credentials: "same-origin" }),
     fetch("/api/newest?limit=50", { credentials: "same-origin" })
@@ -105,67 +137,74 @@ async function init() {
   state.newestProducts = Array.isArray(newestData.products) ? newestData.products : [];
   state.categories = Array.isArray(data.categories) ? data.categories : [];
   state.meta = data.meta || {};
-  state.categoryId = categoryIdFromUrl();
-  state.query = queryFromUrl();
-  state.sort = sortFromUrl();
-  state.initialPage = initialPageFromServer();
+  state.totalProducts = Number(data.meta?.productCount || state.products.length || 0);
+  state.catalogLoaded = true;
 
-  bindEvents();
   renderCategories();
   els.categorySelect.value = state.categoryId;
-  els.search.value = state.query;
   syncSortSelects();
   syncSearchClear();
   syncCategoryButtons();
-  if (!adoptInitialListing()) resetAndRender();
+  if (!serverListingMatchesCatalog()) resetAndRender();
+  else syncLoadedListing();
 }
 
 function bindEvents() {
   els.search.addEventListener("input", debounce(() => {
-    state.query = els.search.value.trim().toLowerCase();
-    state.modeLimit = INITIAL_LIMIT;
-    state.initialPage = 1;
-    updateSearchUrl();
-    syncSearchClear();
-    scrollToTop();
-    resetAndRender();
+    runWithCatalog(() => {
+      state.query = els.search.value.trim().toLowerCase();
+      state.modeLimit = INITIAL_LIMIT;
+      state.initialPage = 1;
+      updateSearchUrl();
+      syncSearchClear();
+      scrollToTop();
+      resetAndRender();
+    });
   }, 120));
 
   els.clearSearch?.addEventListener("click", () => {
-    els.search.value = "";
-    state.query = "";
-    state.modeLimit = INITIAL_LIMIT;
-    state.initialPage = 1;
-    updateSearchUrl();
-    syncSearchClear();
-    els.search.focus();
-    resetAndRender();
+    runWithCatalog(() => {
+      els.search.value = "";
+      state.query = "";
+      state.modeLimit = INITIAL_LIMIT;
+      state.initialPage = 1;
+      updateSearchUrl();
+      syncSearchClear();
+      els.search.focus();
+      resetAndRender();
+    });
   });
 
   els.empty?.addEventListener("click", (event) => {
     if (!event.target.closest("#empty-reset")) return;
-    els.search.value = "";
-    state.query = "";
-    state.initialPage = 1;
-    updateSearchUrl();
-    syncSearchClear();
-    selectCategory("", { scroll: true });
+    runWithCatalog(() => {
+      els.search.value = "";
+      state.query = "";
+      state.initialPage = 1;
+      updateSearchUrl();
+      syncSearchClear();
+      selectCategory("", { scroll: true });
+    });
   });
 
   els.categorySelect.addEventListener("change", () => {
-    selectCategory(els.categorySelect.value, { scroll: true });
+    runWithCatalog(() => selectCategory(els.categorySelect.value, { scroll: true }));
   });
 
-  els.clearCategory?.addEventListener("click", () => selectCategory("", { scroll: true }));
+  els.clearCategory?.addEventListener("click", () => {
+    runWithCatalog(() => selectCategory("", { scroll: true }));
+  });
   els.sortSelects.forEach((sortSelect) => {
     sortSelect.addEventListener("change", () => {
-      state.sort = normalizeSort(sortSelect.value);
-      syncSortSelects(sortSelect);
-      state.modeLimit = INITIAL_LIMIT;
-      state.initialPage = 1;
-      updateListingUrl();
-      scrollToTop();
-      resetAndRender();
+      runWithCatalog(() => {
+        state.sort = normalizeSort(sortSelect.value);
+        syncSortSelects(sortSelect);
+        state.modeLimit = INITIAL_LIMIT;
+        state.initialPage = 1;
+        updateListingUrl();
+        scrollToTop();
+        resetAndRender();
+      });
     });
   });
 
@@ -220,7 +259,24 @@ function resetAndRender() {
   renderProducts();
 }
 
-function adoptInitialListing() {
+function initializeServerListing() {
+  const initialIds = Array.isArray(window.BOOKLOFT_INITIAL_PRODUCT_IDS)
+    ? window.BOOKLOFT_INITIAL_PRODUCT_IDS.map(String)
+    : [];
+  if (!initialIds.length || !els.grid?.querySelector(".product-card")) return false;
+
+  const offset = initialOffsetFromServer();
+  state.rendered = offset + initialIds.length;
+  state.modeLimit = Math.max(state.modeLimit, state.rendered);
+  insertShelfNotesIntoInitialListing(offset, state.totalProducts);
+  els.grid.classList.remove("is-loading");
+  els.grid.removeAttribute("aria-busy");
+  els.loadSentinel.hidden = state.totalProducts === 0 || state.rendered >= state.totalProducts;
+  queueAutoLoadIfNeeded();
+  return true;
+}
+
+function serverListingMatchesCatalog() {
   const initialIds = Array.isArray(window.BOOKLOFT_INITIAL_PRODUCT_IDS)
     ? window.BOOKLOFT_INITIAL_PRODUCT_IDS.map(String)
     : [];
@@ -229,19 +285,38 @@ function adoptInitialListing() {
   const products = currentProducts();
   const offset = initialOffsetFromServer();
   const expectedIds = products.slice(offset, offset + initialIds.length).map((product) => String(product.id));
-  const matchesServerHtml = initialIds.every((id, index) => id === expectedIds[index]);
-  if (!matchesServerHtml) return false;
+  return initialIds.every((id, index) => id === expectedIds[index]);
+}
 
-  state.rendered = Math.min(offset + initialIds.length, products.length);
+function syncLoadedListing() {
+  const products = currentProducts();
+  state.rendered = Math.min(state.rendered, products.length);
   state.modeLimit = Math.max(state.modeLimit, state.rendered);
-  insertShelfNotesIntoInitialListing(offset, products.length);
-  els.grid.classList.remove("is-loading");
-  els.grid.removeAttribute("aria-busy");
   syncEmptyState(products.length);
   els.loadSentinel.hidden = products.length === 0 || state.rendered >= products.length;
   syncPageText(products.length);
   queueAutoLoadIfNeeded();
-  return true;
+}
+
+function runWithCatalog(action) {
+  ensureCatalogData()
+    .then(action)
+    .catch((error) => {
+      els.listingTitle.textContent = `Nie udało się odświeżyć katalogu: ${error.message}`;
+    });
+}
+
+function queueNextPageLoad() {
+  if (state.nextPageQueued) return;
+  state.nextPageQueued = true;
+  ensureCatalogData()
+    .then(loadNextPage)
+    .catch((error) => {
+      els.listingTitle.textContent = `Nie udało się wczytać kolejnych ofert: ${error.message}`;
+    })
+    .finally(() => {
+      state.nextPageQueued = false;
+    });
 }
 
 function insertShelfNotesIntoInitialListing(offset, total) {
@@ -455,7 +530,7 @@ function renderProduct(product, index = 0) {
         <strong>${price}</strong>
       </div>
       <div class="product-actions">
-        <a class="details-action action-full" href="${link}" aria-label="Zobacz ${escapeAttribute(product.name)}">Zobacz</a>
+        <a class="details-action action-full" href="${link}" aria-label="Zobacz ofertę ${escapeAttribute(product.name)}">Zobacz ofertę</a>
       </div>
     </div>
   `;
@@ -678,7 +753,9 @@ function setupInfiniteScroll() {
 
   if ("IntersectionObserver" in window) {
     const observer = new IntersectionObserver((entries) => {
-      if (entries.some((entry) => entry.isIntersecting)) loadNextPage();
+      if (entries.some((entry) => entry.isIntersecting)) {
+        queueNextPageLoad();
+      }
     }, {
       root: null,
       rootMargin: "900px 0px",
@@ -691,7 +768,7 @@ function setupInfiniteScroll() {
   window.addEventListener("scroll", debounce(() => {
     if (els.loadSentinel.hidden) return;
     const rect = els.loadSentinel.getBoundingClientRect();
-    if (rect.top < window.innerHeight + 900) loadNextPage();
+    if (rect.top < window.innerHeight + 900) queueNextPageLoad();
   }, 80), { passive: true });
 }
 
@@ -702,7 +779,7 @@ function queueAutoLoadIfNeeded() {
     state.autoLoadQueued = false;
     if (els.loadSentinel.hidden) return;
     const rect = els.loadSentinel.getBoundingClientRect();
-    if (rect.top < window.innerHeight + 900) loadNextPage();
+    if (rect.top < window.innerHeight + 900) queueNextPageLoad();
   });
 }
 

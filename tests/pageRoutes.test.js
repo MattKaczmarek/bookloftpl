@@ -107,6 +107,8 @@ test("active product metadata stays unchanged and schema prefers Allegro publish
     assert.match(html, /Książka 1\. Stan: DOBRY\. Fantasy w BookLoft z realnymi zdjęciami, rzetelnym opisem i zakupem przez Allegro\./);
     assert.match(html, /"brand":\{"@type":"Brand","name":"BookLoft"\}/);
     assert.doesNotMatch(html, /MerchantReturnPolicy|ShippingService|hasMerchantReturnPolicy/);
+    assert.match(html, /class="mobile-purchase-bar"/);
+    assert.match(html, /class="product-trust-summary"/);
 
     data.products[0].features.push(
       { name: "Wydawnictwo", value: "Fabryka Słów" },
@@ -145,6 +147,8 @@ test("catalog hides no-result copy from populated SSR and protects pagination sn
     assert.equal(response.status, 200);
     assert.doesNotMatch(html, /Nie znaleźliśmy pasujących ofert/);
     assert.match(html, /class="catalog-pagination-shell" data-nosnippet hidden/);
+    assert.match(html, /window\.BOOKLOFT_INITIAL_PRODUCT_COUNT=51/);
+    assert.match(html, />Zobacz ofertę<\/a>/);
 
     const emptyResponse = await fetch(`${origin}/?q=nieistniejacy-tytul`);
     const emptyHtml = await emptyResponse.text();
@@ -155,6 +159,21 @@ test("catalog hides no-result copy from populated SSR and protects pagination sn
     assert.match(emptyHtml, /<div class="sort-box mobile-sort-box" hidden>/);
     assert.match(emptyHtml, /<h2 id="empty-suggestions-title">Najnowsze oferty<\/h2>/);
     assert.equal((emptyHtml.match(/class="related-card"/g) || []).length, 4);
+  });
+});
+
+test("catalog 404 keeps noindex headers, BookLoft branding and a working search form", async () => {
+  await withServer(async (origin) => {
+    const response = await fetch(`${origin}/strona/niepoprawna`);
+    const html = await response.text();
+
+    assert.equal(response.status, 404);
+    assert.equal(response.headers.get("x-robots-tag"), "noindex, nofollow, noarchive");
+    assert.match(html, /class="not-found-page"/);
+    assert.match(html, /class="hero-logo"/);
+    assert.match(html, /id="not-found-search" name="q"/);
+    assert.match(html, /Szukaj w katalogu/);
+    assert.match(html, /rel="preload" as="font"/);
   });
 });
 

@@ -342,12 +342,20 @@ export class StoreCache {
 
   async refreshAvailabilityLocked(_reason, listingMap) {
     const timestamp = nowIso();
-    const published = await this.readPublished();
+    const [published, previousStorefront] = await Promise.all([
+      this.readPublished(),
+      this.getStorefront()
+    ]);
     assertReasonableActiveOfferSnapshot(published.activeOfferIds, listingMap);
     const nextActiveIds = [];
     const removedIds = [];
+    const previouslyVisibleIds = (previousStorefront.products || []).map((product) => String(product.id));
+    const trackedIds = new Set([
+      ...published.activeOfferIds.map(String),
+      ...previouslyVisibleIds
+    ]);
 
-    for (const offerId of published.activeOfferIds.map(String)) {
+    for (const offerId of trackedIds) {
       if (listingMap[offerId]) {
         nextActiveIds.push(offerId);
         delete published.removedByUnavailable[offerId];
@@ -359,7 +367,7 @@ export class StoreCache {
     }
 
     await this.captureRemovedOfferSnapshots(published, removedIds, timestamp);
-    published.activeOfferIds = nextActiveIds.sort(sortIds);
+    published.activeOfferIds = [...new Set(nextActiveIds)].sort(sortIds);
     await writeJson(this.files.published, published);
     await this.refreshOfferCacheLocked("refresh-availability", listingMap);
 

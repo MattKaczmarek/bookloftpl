@@ -29,7 +29,17 @@ async function init() {
   const productId = productIdFromPath();
   if (!productId) throw new Error("Brak identyfikatora produktu");
 
-  const product = window.__BOOKLOFT_PRODUCT__ || await fetchProduct(productId);
+  const bootstrappedProduct = window.__BOOKLOFT_PRODUCT__;
+  if (bootstrappedProduct) {
+    document.title = `${bootstrappedProduct.name} | BookLoft`;
+    initProductGallery(
+      Array.isArray(bootstrappedProduct.images) ? bootstrappedProduct.images.filter(Boolean) : [],
+      bootstrappedProduct.name
+    );
+    return;
+  }
+
+  const product = await fetchProduct(productId);
   if (!product) return;
   document.title = `${product.name} | BookLoft`;
   renderProduct(product);
@@ -67,6 +77,13 @@ function renderProduct(product) {
       </aside>
       <div class="product-content">
         ${renderProductBreadcrumbs(product, category)}
+        <aside class="mobile-purchase-bar" aria-label="Szybki zakup">
+          <span class="mobile-purchase-copy">
+            <span>${escapeHtml(product.name)}</span>
+            <strong>${price}</strong>
+          </span>
+          <a class="buy-action" href="${escapeAttribute(allegroUrl)}" target="_blank" rel="noopener noreferrer" aria-label="Kup ${escapeAttribute(product.name)} na Allegro">Kup na Allegro</a>
+        </aside>
         <article class="product-detail">
           <section class="detail-gallery">
             <div class="gallery-main">

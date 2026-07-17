@@ -107,6 +107,60 @@ test("removed offers retain a lightweight snapshot and clear it after reactivati
   assert.equal(await cache.getMissingProductStatus("1"), 404);
 });
 
+test("availability refresh repairs a product visible in storefront but missing from published ids", async (t) => {
+  const dataDir = await mkdtemp(path.join(tmpdir(), "bookloft-cache-drift-test-"));
+  t.after(() => rm(dataDir, { recursive: true, force: true }));
+  const cache = new StoreCache({
+    version: "1.17.0",
+    dataDir,
+    allegroMarketplaceId: "allegro-pl",
+    allegroSellingFormats: ["BUY_NOW"]
+  });
+  await cache.init();
+
+  await writeJson(cache.files.published, {
+    version: 3,
+    activeOfferIds: ["2"],
+    addedAtByOfferId: {
+      "1": "2026-07-01T08:00:00.000Z",
+      "2": "2026-07-01T08:00:00.000Z"
+    },
+    removedByUnavailable: {},
+    removedOfferSnapshots: {}
+  });
+  await writeJson(cache.files.catalog, {
+    version: "1.16.1",
+    updatedAt: "2026-07-17T08:00:00.000Z",
+    context: { source: "Allegro", currency: "PLN" },
+    categories: [{ category_id: "fantasy", name: "Fantasy", parent_id: "" }],
+    offers: {
+      "1": cachedOffer(1, "Shrek / Film DVD / Polska Wersja"),
+      "2": cachedOffer(2, "Achaja Tom 1 / Andrzej Ziemiański")
+    }
+  });
+  await writeJson(cache.files.storefront, {
+    version: "1.16.1",
+    updatedAt: "2026-07-17T08:00:00.000Z",
+    products: [
+      cachedOffer(1, "Shrek / Film DVD / Polska Wersja"),
+      cachedOffer(2, "Achaja Tom 1 / Andrzej Ziemiański")
+    ],
+    categories: [],
+    meta: { productCount: 2, categoryCount: 0, hiddenByStockCount: 0, currency: "PLN" }
+  });
+  cache.fetchCategoriesForOffers = async (_offers, previousCategories) => previousCategories;
+
+  await cache.refreshAvailabilityLocked("test-drift", {
+    "2": listing(2, "Achaja Tom 1 / Andrzej Ziemiański")
+  });
+
+  const repaired = JSON.parse(await readFile(cache.files.published, "utf8"));
+  assert.equal(typeof repaired.removedByUnavailable["1"], "string");
+  assert.equal(repaired.removedOfferSnapshots["1"].name, "Shrek / Film DVD / Polska Wersja");
+  assert.deepEqual(repaired.activeOfferIds, ["2"]);
+  assert.equal(await cache.getMissingProductStatus("1"), 410);
+});
+
 test("offer hydration merges offer and Allegro product parameters", async (t) => {
   const dataDir = await mkdtemp(path.join(tmpdir(), "bookloft-cache-test-"));
   t.after(() => rm(dataDir, { recursive: true, force: true }));
