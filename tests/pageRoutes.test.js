@@ -208,7 +208,8 @@ test("category pages show the current offer count and useful category links", as
     const html = await response.text();
 
     assert.equal(response.status, 200);
-    assert.match(html, /Fantasy: 51 ofert z realnymi zdjęciami konkretnych egzemplarzy i opisem ich stanu\./);
+    assert.match(html, />51 ofert z realnymi zdjęciami konkretnych egzemplarzy i opisem ich stanu\.<\/p>/);
+    assert.doesNotMatch(html, /Fantasy: 51 ofert/);
     assert.match(html, /<nav class="related-category-links" aria-label="Powiązane kategorie">/);
     assert.match(html, /href="\/kategoria\/crime\/kryminal">Kryminał <small>7 ofert<\/small><\/a>/);
   });

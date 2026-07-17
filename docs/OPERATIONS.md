@@ -1,11 +1,18 @@
 # Operacje BookLoft sklep
 
 Stan dokumentu: `2026-07-17`.
-Wersja produkcyjna: `1.16.0`.
+Wersja produkcyjna: `1.16.0`; patch `1.16.1` oczekuje na deploy.
 Branch wersji: `ver-1.16`.
 Stan produkcji: `1.16.0` na `ver-1.16`; commit kodu wydania `8b61e4b`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
+
+## Patch 1.16.1
+
+- Usuwa powtorzenie nazwy kategorii z tekstu pod duzym naglowkiem, np. `Fantasy: 565 ofert...` zmienia na `565 ofert...`.
+- Zmiana jest zgodna w SSR oraz po klientowej zmianie kategorii bez przeladowania.
+- Nie zmienia meta title, meta description, URL-i, canonicali, danych ofert, cache ani integracji Allegro.
+- Zakres, testy i rollback opisuje `docs/RELEASE_1.16.1.md`.
 
 ## Wersja produkcyjna 1.16.0
 

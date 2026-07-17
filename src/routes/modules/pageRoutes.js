@@ -931,7 +931,7 @@ function storePageMeta(config, { category, query, sort = DEFAULT_SORT, productCo
       robots: sortedVariant ? "noindex,follow,max-image-preview:large" : "index,follow,max-image-preview:large",
       eyebrow: "Kategoria",
       h1: name,
-      copy: categoryIntroCopy(category, productCount),
+      copy: categoryIntroCopy(productCount),
       listingTitle: page > 1 ? `Dostępne oferty - strona ${page}` : "Dostępne oferty"
     };
   }
@@ -1166,9 +1166,8 @@ function selectedProductFeatures(features, limit = 8, fields = PRODUCT_SPEC_FIEL
   return selected;
 }
 
-function categoryIntroCopy(category, productCount) {
-  const name = category.displayName || category.name || "Kategoria";
-  return `${name}: ${offerCountLabel(productCount)} z realnymi zdjęciami konkretnych egzemplarzy i opisem ich stanu.`;
+function categoryIntroCopy(productCount) {
+  return `${offerCountLabel(productCount)} z realnymi zdjęciami konkretnych egzemplarzy i opisem ich stanu.`;
 }
 
 function productImageAlt(product) {

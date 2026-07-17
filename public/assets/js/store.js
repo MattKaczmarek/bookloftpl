@@ -596,7 +596,7 @@ function syncPageText(count) {
     const name = category.displayName || category.name || "Kategoria";
     setText(els.introEyebrow, "Kategoria");
     setText(els.introTitle, name);
-    setText(els.introCopy, categoryIntroCopy(category, count));
+    setText(els.introCopy, categoryIntroCopy(count));
     els.listingTitle.textContent = state.initialPage > 1 ? `Dostępne oferty - strona ${state.initialPage}` : "Dostępne oferty";
     setCategoryNote("");
     syncRelatedCategoryLinks(category);
@@ -626,9 +626,8 @@ function setCategoryNote(text) {
   els.categoryNote.style.display = text ? "" : "none";
 }
 
-function categoryIntroCopy(category, count) {
-  const name = category.displayName || category.name || "Kategoria";
-  return `${name}: ${offerCountLabel(count)} z realnymi zdjęciami konkretnych egzemplarzy i opisem ich stanu.`;
+function categoryIntroCopy(count) {
+  return `${offerCountLabel(count)} z realnymi zdjęciami konkretnych egzemplarzy i opisem ich stanu.`;
 }
 
 function syncRelatedCategoryLinks(category) {
