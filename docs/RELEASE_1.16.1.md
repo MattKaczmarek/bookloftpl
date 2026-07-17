@@ -1,6 +1,6 @@
 # BookLoft.pl 1.16.1
 
-Status: przygotowane na branchu `ver-1.16`, przed deployem.
+Status: wdrozone produkcyjnie `2026-07-17` na branchu `ver-1.16`, commit `6bda500`.
 
 ## Cel i zakres
 
@@ -12,7 +12,10 @@ Status: przygotowane na branchu `ver-1.16`, przed deployem.
 ## Weryfikacja
 
 - Test SSR wymaga tekstu `51 ofert...` i jawnie odrzuca stare `Fantasy: 51 ofert...`.
-- Po deployu sprawdz strone kategorii na desktopie i mobile oraz brak bledow w `bookloft-shop.service`.
+- Pelny zestaw `npm test` przechodzi: 16/16 testow.
+- Produkcyjny SSR kategorii pokazuje `565 ofert...` bez prefiksu `Fantasy:`.
+- Playwright potwierdzil ten sam wynik po klientowej zmianie kategorii na desktopie i przez mobilny selektor, bez overflow ani nakladania tekstu.
+- Health zwraca wersje `1.16.1`, cache i polaczenie Allegro pozostaja zdrowe, a log uslugi nie zawiera bledow po restarcie.
 
 ## Rollback
 

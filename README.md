@@ -1,7 +1,7 @@
 # BookLoft sklep
 
-Wersja przygotowana: `1.16.1` na branchu `ver-1.16`.
-Wersja produkcyjna: `1.16.0`; patch `1.16.1` usuwa powtorzenie nazwy kategorii w opisie pod jej naglowkiem.
+Wersja produkcyjna: `1.16.1` na branchu `ver-1.16`.
+Deploy wykonano `2026-07-17`; commit kodu wydania: `6bda500`.
 
 Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://bookloft.pl/`. Katalog jest oparty bezposrednio o aktywne oferty Allegro konta BookLoft.
 
