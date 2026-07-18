@@ -1,7 +1,7 @@
 # BookLoft sklep
 
-Wersja produkcyjna: `1.17.2` na branchu `ver-1.17`.
-Deploy wykonano `2026-07-18`; commit kodu wydania: `92f9eb1`, tag `bookloftpl-v1.17.2`.
+Wersja produkcyjna: `1.17.3` na branchu `ver-1.17`.
+Deploy wykonano `2026-07-18`; commit kodu wydania: `ffa4f6d`, tag `bookloftpl-v1.17.3`.
 
 Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://bookloft.pl/`. Katalog jest oparty bezposrednio o aktywne oferty Allegro konta BookLoft.
 
@@ -134,18 +134,18 @@ Zasady:
 ## SEO
 
 - `/`, `/strona/:page`, `/kategoria/:id/:slug`, `/kategoria/:id/:slug/strona/:page` i `/product/:id/:slug` sa renderowane po stronie serwera, z realnymi linkami do ofert bez wymagania JavaScriptu.
-- SSR listingu pozostaje ograniczony do 50 produktow na strone, ale katalog i kategorie maja techniczna, indeksowalna paginacje HTML w sitemapie i `rel=prev/next`. Dla uzytkownikow glowne przegladanie nadal dziala przez infinite scroll po stronie klienta.
+- SSR listingu pozostaje ograniczony do 50 produktow na strone. Katalog i kategorie maja techniczna paginacje HTML z realnymi linkami, ale strony 2+ sa `noindex,follow` i nie trafiaja do sitemap. Dla uzytkownikow glowne przegladanie nadal dziala przez infinite scroll po stronie klienta.
 - Stare lub bledne slugi produktu i kategorii przekierowuja 301 na adres kanoniczny.
 - Niedostepne historyczne oferty zwracaja `410 Gone`, a nieznane identyfikatory `404 Not Found`; obie odpowiedzi sa `noindex`.
 - Strona `410` ma pelnoszerokosciowy uklad na PC i mobile, pokazuje zachowane dane egzemplarza, wyszukiwarke oraz maksymalnie osiem trafnych aktywnych ofert. Pole wyszukiwania jest uzupelniane pierwszymi dwoma slowami oczyszczonego tytulu; ranking alternatyw nadal korzysta z pelnej nazwy snapshotu. Starsze wpisy bez snapshotu buduja fraze ze sluga URL i rowniez skracaja ja do dwoch slow.
 - Nieznane publiczne sciezki HTML zwracaja `404` z `noindex`, zamiast przekierowywac crawlera na strone glowna.
 - Strona `404` zachowuje identyfikacje BookLoft, ma wyszukiwarke katalogu oraz link do wszystkich aktualnych ofert.
 - Strona produktu korzysta bezposrednio z SSR i nie zastepuje gotowego HTML ani nie pobiera pelnego katalogu tylko po to, by uruchomic galerie.
-- `/sitemap.xml` zawiera strone glowna, strony informacyjne, publiczne kategorie, strony paginacji katalogu/kategorii i aktywne produkty. `lastmod` jest podawany tylko dla produktu z wiarygodna data istotnej zmiany; techniczne pobranie opisu i globalne odswiezenie cache nie zmieniaja tej daty.
+- `/sitemap.xml` zawiera strone glowna, strony informacyjne, pierwsze strony publicznych kategorii i aktywne produkty. Nie zawiera technicznej paginacji. `lastmod` jest podawany tylko dla produktu z wiarygodna data istotnej zmiany; techniczne pobranie opisu i globalne odswiezenie cache nie zmieniaja tej daty.
 - Dane strukturalne na listingach obejmuja `Organization`, `WebSite`, `ItemList` oraz `BreadcrumbList`; karty ofert nie udaja osobnych `Product`/`Offer`, zeby Google nie raportowal brakow z miniaturek.
 - Pelne dane `Product`/`Offer` sa tylko na stronach `/product/:id/:slug`; zawieraja sprzedawce `OnlineStore`, opis, cene, dostepnosc i stan. Ksiazkowy ISBN jest walidowany, konwertowany do ISBN-13 i publikowany na laczonym typie `Product`/`Book`; pozostale EAN/GTIN trafiaja do pola zgodnego z dlugoscia dopiero po kontroli sumy. `brand` korzysta najpierw z wydawnictwa, producenta albo marki pobranej z parametrow produktowych Allegro, a przy braku znanej wartosci zachowuje fallback `BookLoft`.
 - `OnlineStore` ma wspolna `MerchantReturnPolicy`, a kazdy `Offer` wskazuje ja przez `@id`; polityka prowadzi do instrukcji zwrotow Allegro bez deklarowania sztucznych, wspolnych kosztow ani terminow BookLoft.
-- Techniczna paginacja pozostaje linkowalna dla crawlerow, ale ma `data-nosnippet`, zeby jej numery i etykiety nie trafialy do opisu wyniku wyszukiwania.
+- Techniczna paginacja pozostaje linkowalna dla crawlerow, ale ma `noindex,follow` i `data-nosnippet`, zeby strony oraz ich numery nie pojawialy sie jako osobne wyniki Google.
 - Publiczne API listingu zwraca tylko pierwsze zdjecie produktu, zeby ograniczyc wage `/api/storefront`; pelna galeria zostaje na `/api/products/:id`.
 - Dynamiczne publiczne API katalogu (`/api/storefront`, `/api/newest`, `/api/products/:id`) wysyla `Cache-Control: no-cache`, zeby zwykle odswiezenie strony po dodaniu ofert rewalidowalo dane bez wymuszania `Ctrl+F5`.
 - Miniatury i karty uzywaja mniejszych wariantow obrazow Allegro, a pelny podglad zdjecia nadal korzysta z pelnego adresu obrazu.

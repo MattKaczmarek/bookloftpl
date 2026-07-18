@@ -1,15 +1,15 @@
 # Operacje BookLoft sklep
 
 Stan dokumentu: `2026-07-18`.
-Wersja produkcyjna: `1.17.2`.
+Wersja produkcyjna: `1.17.3`.
 Branch wersji: `ver-1.17`.
-Stan produkcji: `1.17.2` na `ver-1.17`; commit kodu wydania `92f9eb1`, tag `bookloftpl-v1.17.2`.
+Stan produkcji: `1.17.3` na `ver-1.17`; commit kodu wydania `ffa4f6d`, tag `bookloftpl-v1.17.3`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
 
-## Wersja produkcyjna 1.17.2
+## Wersja produkcyjna 1.17.3
 
-- Wdrozona produkcyjnie `2026-07-18` na branchu `ver-1.17`, commit kodu `92f9eb1`.
+- Wdrozona produkcyjnie `2026-07-18` na branchu `ver-1.17`, commit kodu `ffa4f6d`.
 - Pierwszy listing i karta produktu wykorzystuja gotowy SSR bez natychmiastowego pobierania pelnego katalogu przez JavaScript.
 - Pelny katalog jest pobierany dopiero przy wyszukiwaniu, sortowaniu, zmianie filtra albo infinite scrollu.
 - Mobile produktu ma ruchomy pasek atutow i przyklejony pasek z nazwa, cena oraz przejsciem do zakupu na Allegro.
@@ -17,10 +17,13 @@ Usluga aplikacji: `bookloft-shop.service`.
 - Refresh dostepnosci naprawia rozjazd, w ktorym oferta byla jeszcze widoczna w storefront, ale zniknela z listy aktywnych ID; taka wycofana oferta zachowuje snapshot i otrzymuje `410`.
 - Ksiazkowe ISBN sa walidowane i publikowane jako ISBN-13 na typie `Product`/`Book`; filmy i pozostale produkty korzystaja z walidowanego EAN/GTIN bez pola ISBN.
 - Wspolna `MerchantReturnPolicy` oraz kazdy `Offer` prowadza do zasad zwrotu obslugiwanych przez Allegro, bez deklarowania stalych warunkow BookLoft.
-- Nie ma migracji ENV, Nginx ani formatu cache. Deploy nie wymagal pelnego odswiezenia cache ani ponownego zglaszania sitemap.
-- Produkcyjny smoke test potwierdzil health `1.17.2`, aktywne polaczenie Allegro bez bledu, 2028 widocznych ofert, status 200 dla katalogu, sitemap, robots i health oraz brak restartow procesu.
+- Techniczne strony 2+ katalogu i kategorii pozostaja dostepne dla crawlerow, ale maja `noindex,follow` i nie sa juz wpisywane do sitemap.
+- Nie ma migracji ENV, Nginx ani formatu cache. Deploy nie wymagal pelnego odswiezenia cache.
+- Produkcyjny smoke test potwierdzil health `1.17.3`, aktywne polaczenie Allegro bez bledu, 2027 widocznych ofert, status 200 i prawidlowy `noindex,follow` na stronach 2, 3, 40 oraz paginacji kategorii Fantasy.
+- Sitemap zawiera 2027 produktow oraz zero adresow paginacji katalogu i kategorii. Zostala ponownie zgloszona w Search Console ze stanem oczekujacym, 0 bledow i 0 ostrzezen.
+- Usluga pozostala aktywna bez ostrzezen, bledow i automatycznych restartow.
 - Live-check JSON-LD potwierdzil ksiazke z `Product`/`Book` i ISBN-13, film Shrek z `Product` i `gtin13`, canonicale oraz odwolanie zakupu i zwrotow do Allegro.
-- Szczegolowy zakres, weryfikacja i rollback sa w `docs/RELEASE_1.17.0.md`, `docs/RELEASE_1.17.1.md` i `docs/RELEASE_1.17.2.md`.
+- Szczegolowy zakres, weryfikacja i rollback sa w dokumentach `docs/RELEASE_1.17.*.md`.
 
 ## Patch 1.16.1
 
@@ -112,7 +115,7 @@ Jesli token wygasnie albo zostanie cofniety, w panelu pojawi sie blad i trzeba p
 ## SEO i rendering publiczny
 
 - SSR listingu zostaje ograniczony do 50 produktow na strone; kolejne produkty laduja sie po scrollowaniu po stronie klienta.
-- Katalog ma techniczna, indeksowalna paginacje HTML pod `/strona/:page`, a kategorie pod `/kategoria/:id/:slug/strona/:page`, z publicznymi canonicalami, linkami `prev`/`next`, wpisami w sitemap i realnymi linkami do ofert bez JavaScriptu. Paginacja jest ukryta w UI; dla uzytkownikow glowne przegladanie nadal dziala przez infinite scroll.
+- Katalog ma techniczna paginacje HTML pod `/strona/:page`, a kategorie pod `/kategoria/:id/:slug/strona/:page`, z publicznymi canonicalami, linkami do sasiednich stron i realnymi linkami do ofert bez JavaScriptu. Strony 2+ sa `noindex,follow` i nie trafiaja do sitemap, ale pozostaja crawlable jako zaplecze infinite scrolla. Paginacja jest ukryta w UI.
 - Kontener technicznej paginacji ma `data-nosnippet`; linki pozostaja w SSR, ale ich numery i etykiety nie powinny byc uzywane przez Google jako snippet wyniku.
 - Listing i kategorie maja tylko `ItemList`/`BreadcrumbList`; karty ofert nie maja microdata `Product`/`Offer`, zeby Search Console nie traktowal miniaturek jako niepelnych produktow.
 - Strony produktow maja JSON-LD `Product`/`Offer`, `BreadcrumbList`, sprzedawce `OnlineStore` oraz `PropertyValue`. ISBN jest walidowany, konwertowany do ISBN-13 i publikowany na laczonym typie `Product`/`Book`; EAN/GTIN innych produktow jest publikowany tylko z poprawna dlugoscia i suma kontrolna. `OnlineStore` publikuje wspolna `MerchantReturnPolicy` z linkiem do Pomocy Allegro, a kazdy `Offer` wskazuje ja przez `@id`. Hydratacja laczy parametry ofertowe z `parameters` i produktowe z `productSet[].product.parameters`; `brand` preferuje rzeczywiste wydawnictwo, producenta albo marke, a przy braku znanej wartosci zachowuje fallback `BookLoft`.
@@ -220,7 +223,7 @@ Oczekiwane publicznie:
 - strona glowna pokazuje nowosci i katalog, a kolejne oferty dociagaja sie automatycznie podczas scrollowania,
 - strona glowna, kategorie i produkty maja server-rendered HTML z realnymi linkami widocznymi bez JavaScriptu,
 - `robots.txt` dopuszcza katalog, blokuje panel/login/admin API i wskazuje publiczny `/sitemap.xml`,
-- `/sitemap.xml` jest publiczne i zawiera strone glowna, strony informacyjne, kategorie, strony paginacji oraz produkty,
+- `/sitemap.xml` jest publiczne i zawiera strone glowna, strony informacyjne, pierwsze strony kategorii oraz produkty; techniczna paginacja jest wykluczona,
 - niedostepna historyczna oferta zwraca `410 Gone`, a nieznany produkt `404 Not Found`,
 - strona `410` zajmuje pelna dostepna szerokosc, nie ucina logo i pokazuje aktywne alternatywy na PC oraz mobile,
 - aktywna strona katalogu nie zawiera w SSR tekstu `Nie znalezlismy pasujacych ofert`; tekst pojawia sie dopiero przy pustym wyniku,

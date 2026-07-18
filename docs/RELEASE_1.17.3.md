@@ -1,6 +1,6 @@
 # BookLoft.pl 1.17.3
 
-Status: przygotowane i przetestowane na branchu `ver-1.17`; przed deployem.
+Status: wdrozone produkcyjnie `2026-07-18` na branchu `ver-1.17`, commit kodu `ffa4f6d`, tag `bookloftpl-v1.17.3`.
 
 ## Cel
 
@@ -26,9 +26,13 @@ Usunac z wynikow Google techniczne strony paginacji katalogu, zachowujac je jako
 - Test routingu potwierdza `200`, `noindex,follow`, self-canonical i link `prev` dla paginacji katalogu oraz `noindex,follow` i self-canonical dla paginacji kategorii.
 - Test sitemap potwierdza brak adresow paginacji katalogu i kategorii przy zachowaniu wpisow produktow i ich `lastmod`.
 - `node --check src/routes/modules/pageRoutes.js` i `git diff --check`: bez bledow.
+- Testy na Hetznerze przeszly 20/20 przed restartem uslugi.
+- Live-check potwierdzil `200`, `noindex,follow`, self-canonical i linki produktow na stronach 2, 3, 40 oraz drugiej stronie kategorii Fantasy.
+- Produkcyjna sitemap zawiera 2027 produktow oraz zero adresow paginacji katalogu i kategorii.
+- Health potwierdzil wersje `1.17.3`, aktywne Allegro, brak ostatniego bledu cache oraz brak ostrzezen, bledow i automatycznych restartow procesu.
 
 ## Deploy i rollback
 
-Zmiana nie wymaga odswiezenia cache ofert. Po deployu sitemap nalezy wyslac ponownie w Search Console, poniewaz istotnie zmienia sie jej zbior adresow. Google usunie juz zindeksowane strony 2+ dopiero po ponownym crawlowaniu i odczytaniu `noindex`.
+Zmiana nie wymagala odswiezenia cache ofert. Sitemap zostala ponownie wyslana w Search Console, poniewaz istotnie zmienil sie jej zbior adresow; po wyslaniu ma stan oczekujacy, 0 bledow i 0 ostrzezen. Google usunie juz zindeksowane strony 2+ dopiero po ponownym crawlowaniu i odczytaniu `noindex`.
 
 Rollback nie wymaga migracji: powrot do tagu `bookloftpl-v1.17.2`, `npm ci --omit=dev` i restart `bookloft-shop.service`.
