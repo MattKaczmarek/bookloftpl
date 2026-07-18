@@ -1,7 +1,7 @@
 # BookLoft sklep
 
-Wersja produkcyjna: `1.17.0` na branchu `ver-1.17`.
-Deploy wykonano `2026-07-17`; commit kodu wydania: `73d294d`, tag `bookloftpl-v1.17.0`.
+Wersja produkcyjna: `1.17.2` na branchu `ver-1.17`.
+Deploy wykonano `2026-07-18`; commit kodu wydania: `92f9eb1`, tag `bookloftpl-v1.17.2`.
 
 Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://bookloft.pl/`. Katalog jest oparty bezposrednio o aktywne oferty Allegro konta BookLoft.
 
@@ -143,7 +143,8 @@ Zasady:
 - Strona produktu korzysta bezposrednio z SSR i nie zastepuje gotowego HTML ani nie pobiera pelnego katalogu tylko po to, by uruchomic galerie.
 - `/sitemap.xml` zawiera strone glowna, strony informacyjne, publiczne kategorie, strony paginacji katalogu/kategorii i aktywne produkty. `lastmod` jest podawany tylko dla produktu z wiarygodna data istotnej zmiany; techniczne pobranie opisu i globalne odswiezenie cache nie zmieniaja tej daty.
 - Dane strukturalne na listingach obejmuja `Organization`, `WebSite`, `ItemList` oraz `BreadcrumbList`; karty ofert nie udaja osobnych `Product`/`Offer`, zeby Google nie raportowal brakow z miniaturek.
-- Pelne dane `Product`/`Offer` sa tylko na stronach `/product/:id/:slug`; zawieraja sprzedawce `OnlineStore`, opis, cene, dostepnosc, stan oraz ISBN/EAN/GTIN, jesli sa dostepne w parametrach Allegro. `brand` korzysta najpierw z wydawnictwa, producenta albo marki pobranej z parametrow produktowych Allegro, a przy braku znanej wartosci zachowuje fallback `BookLoft`.
+- Pelne dane `Product`/`Offer` sa tylko na stronach `/product/:id/:slug`; zawieraja sprzedawce `OnlineStore`, opis, cene, dostepnosc i stan. Ksiazkowy ISBN jest walidowany, konwertowany do ISBN-13 i publikowany na laczonym typie `Product`/`Book`; pozostale EAN/GTIN trafiaja do pola zgodnego z dlugoscia dopiero po kontroli sumy. `brand` korzysta najpierw z wydawnictwa, producenta albo marki pobranej z parametrow produktowych Allegro, a przy braku znanej wartosci zachowuje fallback `BookLoft`.
+- `OnlineStore` ma wspolna `MerchantReturnPolicy`, a kazdy `Offer` wskazuje ja przez `@id`; polityka prowadzi do instrukcji zwrotow Allegro bez deklarowania sztucznych, wspolnych kosztow ani terminow BookLoft.
 - Techniczna paginacja pozostaje linkowalna dla crawlerow, ale ma `data-nosnippet`, zeby jej numery i etykiety nie trafialy do opisu wyniku wyszukiwania.
 - Publiczne API listingu zwraca tylko pierwsze zdjecie produktu, zeby ograniczyc wage `/api/storefront`; pelna galeria zostaje na `/api/products/:id`.
 - Dynamiczne publiczne API katalogu (`/api/storefront`, `/api/newest`, `/api/products/:id`) wysyla `Cache-Control: no-cache`, zeby zwykle odswiezenie strony po dodaniu ofert rewalidowalo dane bez wymuszania `Ctrl+F5`.
@@ -153,7 +154,7 @@ Zasady:
 
 - Dane firmy na stronie: `BookLoft Mateusz Kaczmarek`, Pogórska Wola 334c, 33-152 Pogórska Wola, NIP `9930688202`, REGON `522042224`, `bookloft.store@gmail.com`, `518 104 941`.
 - `/informacje-prawne` nie jest pelnym regulaminem samodzielnego sklepu, bo aplikacja nie ma koszyka ani platnosci.
-- `/informacje-prawne#zwroty-dostawa` opisuje, ze finalne metody, koszty i terminy dostawy oraz zwroty/reklamacje sa potwierdzane w konkretnej ofercie Allegro; nie wpisujemy sztucznych kosztow dostawy w schema.org.
+- `/informacje-prawne#zwroty-dostawa` opisuje, ze finalne metody, koszty i terminy dostawy oraz zwroty/reklamacje sa potwierdzane w konkretnej ofercie Allegro; schema.org podaje link do instrukcji Allegro, ale nie wpisuje sztucznych wspolnych kosztow ani terminow.
 - Google Analytics używa `BOOKLOFT_GA_ID`; domyślnie jest to identyfikator z dotychczasowego landingu.
 - Skrypt `public/assets/js/analytics.js` startuje GA dopiero po akceptacji cookies analitycznych, obsługuje cofnięcie zgody z poziomu `/informacje-prawne`, czyści cookies GA i wysyła event kliknięcia w ofertę Allegro tylko po zgodzie.
 

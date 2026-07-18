@@ -1,6 +1,6 @@
 # BookLoft.pl 1.17.2
 
-Status: przygotowane i przetestowane na branchu `ver-1.17`; przed deployem.
+Status: wdrozone produkcyjnie `2026-07-18` na branchu `ver-1.17`, commit kodu `92f9eb1`, tag `bookloftpl-v1.17.2`.
 
 ## Cel
 
@@ -28,6 +28,9 @@ Usunac ostrzezenia danych produktowych Google bez zmiany tresci ofert ani proces
 - `node --check src/routes/modules/pageRoutes.js` i `git diff --check`: bez bledow.
 - Test routingu potwierdza konwersje ISBN-10, laczony typ `Product`/`Book`, osobny GTIN filmu, odrzucenie blednych sum kontrolnych oraz polaczenie `Offer` z polityka Allegro.
 - Test na kopii pelnego produkcyjnego cache potwierdzil poprawny wynik dla ISBN-10, ISBN-13, UPC/EAN oraz niepelnego ISBN; po tescie nie pozostal lokalny serwer.
+- Testy na Hetznerze przeszly 19/19 przed restartem uslugi.
+- Produkcyjny health potwierdzil wersje `1.17.2`, aktywne polaczenie z Allegro, 2028 widocznych ofert, brak ostatniego bledu cache i brak automatycznych restartow.
+- Live-check potwierdzil status 200 dla katalogu, sitemap, robots i health oraz poprawny JSON-LD ksiazki ISBN-13 i filmu z EAN/GTIN.
 
 ## Deploy i rollback
 

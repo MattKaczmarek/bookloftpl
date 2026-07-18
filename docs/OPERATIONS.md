@@ -1,24 +1,26 @@
 # Operacje BookLoft sklep
 
-Stan dokumentu: `2026-07-17`.
-Wersja produkcyjna: `1.17.0`.
+Stan dokumentu: `2026-07-18`.
+Wersja produkcyjna: `1.17.2`.
 Branch wersji: `ver-1.17`.
-Stan produkcji: `1.17.0` na `ver-1.17`; commit kodu wydania `73d294d`, tag `bookloftpl-v1.17.0`.
+Stan produkcji: `1.17.2` na `ver-1.17`; commit kodu wydania `92f9eb1`, tag `bookloftpl-v1.17.2`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
 
-## Wersja produkcyjna 1.17.0
+## Wersja produkcyjna 1.17.2
 
-- Wdrozona produkcyjnie `2026-07-17` na branchu `ver-1.17`, commit kodu `73d294d`.
+- Wdrozona produkcyjnie `2026-07-18` na branchu `ver-1.17`, commit kodu `92f9eb1`.
 - Pierwszy listing i karta produktu wykorzystuja gotowy SSR bez natychmiastowego pobierania pelnego katalogu przez JavaScript.
 - Pelny katalog jest pobierany dopiero przy wyszukiwaniu, sortowaniu, zmianie filtra albo infinite scrollu.
-- Mobile produktu ma statyczne atuty i przyklejony pasek z nazwa, cena oraz przejsciem do zakupu na Allegro.
+- Mobile produktu ma ruchomy pasek atutow i przyklejony pasek z nazwa, cena oraz przejsciem do zakupu na Allegro.
 - Nieznane sciezki maja brandowany, wyszukiwalny ekran `404` z `noindex`; status HTTP pozostaje `404`.
 - Refresh dostepnosci naprawia rozjazd, w ktorym oferta byla jeszcze widoczna w storefront, ale zniknela z listy aktywnych ID; taka wycofana oferta zachowuje snapshot i otrzymuje `410`.
+- Ksiazkowe ISBN sa walidowane i publikowane jako ISBN-13 na typie `Product`/`Book`; filmy i pozostale produkty korzystaja z walidowanego EAN/GTIN bez pola ISBN.
+- Wspolna `MerchantReturnPolicy` oraz kazdy `Offer` prowadza do zasad zwrotu obslugiwanych przez Allegro, bez deklarowania stalych warunkow BookLoft.
 - Nie ma migracji ENV, Nginx ani formatu cache. Deploy nie wymagal pelnego odswiezenia cache ani ponownego zglaszania sitemap.
-- Produkcyjny smoke test potwierdzil health `1.17.0`, automatyczny refresh Allegro bez bledu, 2044 widoczne oferty, prawidlowe `200`/`404`/`410`, sitemap i robots oraz brak ostrzezen uslugi.
-- Playwright potwierdzil na domenie produkcyjnej CLS `0`, brak overflow i bledow JS, brak wstepnego pobrania pelnego storefrontu oraz dzialajace wyszukiwanie, galerie i mobilny pasek zakupu.
-- Szczegolowy zakres, weryfikacja i rollback sa w `docs/RELEASE_1.17.0.md`.
+- Produkcyjny smoke test potwierdzil health `1.17.2`, aktywne polaczenie Allegro bez bledu, 2028 widocznych ofert, status 200 dla katalogu, sitemap, robots i health oraz brak restartow procesu.
+- Live-check JSON-LD potwierdzil ksiazke z `Product`/`Book` i ISBN-13, film Shrek z `Product` i `gtin13`, canonicale oraz odwolanie zakupu i zwrotow do Allegro.
+- Szczegolowy zakres, weryfikacja i rollback sa w `docs/RELEASE_1.17.0.md`, `docs/RELEASE_1.17.1.md` i `docs/RELEASE_1.17.2.md`.
 
 ## Patch 1.16.1
 
@@ -113,7 +115,7 @@ Jesli token wygasnie albo zostanie cofniety, w panelu pojawi sie blad i trzeba p
 - Katalog ma techniczna, indeksowalna paginacje HTML pod `/strona/:page`, a kategorie pod `/kategoria/:id/:slug/strona/:page`, z publicznymi canonicalami, linkami `prev`/`next`, wpisami w sitemap i realnymi linkami do ofert bez JavaScriptu. Paginacja jest ukryta w UI; dla uzytkownikow glowne przegladanie nadal dziala przez infinite scroll.
 - Kontener technicznej paginacji ma `data-nosnippet`; linki pozostaja w SSR, ale ich numery i etykiety nie powinny byc uzywane przez Google jako snippet wyniku.
 - Listing i kategorie maja tylko `ItemList`/`BreadcrumbList`; karty ofert nie maja microdata `Product`/`Offer`, zeby Search Console nie traktowal miniaturek jako niepelnych produktow.
-- Strony produktow maja JSON-LD `Product`/`Offer`, `BreadcrumbList`, sprzedawce `OnlineStore` oraz `PropertyValue` i ISBN/EAN/GTIN budowane z parametrow Allegro, jesli sa dostepne w cache. Hydratacja laczy parametry ofertowe z `parameters` i produktowe z `productSet[].product.parameters`; `brand` preferuje rzeczywiste wydawnictwo, producenta albo marke, a przy braku znanej wartosci zachowuje fallback `BookLoft`.
+- Strony produktow maja JSON-LD `Product`/`Offer`, `BreadcrumbList`, sprzedawce `OnlineStore` oraz `PropertyValue`. ISBN jest walidowany, konwertowany do ISBN-13 i publikowany na laczonym typie `Product`/`Book`; EAN/GTIN innych produktow jest publikowany tylko z poprawna dlugoscia i suma kontrolna. `OnlineStore` publikuje wspolna `MerchantReturnPolicy` z linkiem do Pomocy Allegro, a kazdy `Offer` wskazuje ja przez `@id`. Hydratacja laczy parametry ofertowe z `parameters` i produktowe z `productSet[].product.parameters`; `brand` preferuje rzeczywiste wydawnictwo, producenta albo marke, a przy braku znanej wartosci zachowuje fallback `BookLoft`.
 - Meta description produktu jest skladane kontrolowanie z nazwy, kategorii, stanu i informacji o zakupie przez Allegro, bez wklejania surowego opisu z Allegro.
 - Wersje `1.15.0`-`1.15.3` nie zmieniaja generatora tytulu ani meta description aktywnej oferty.
 - Sitemap nie uzywa globalnego czasu przebudowy cache jako `lastmod`. Od wersji `1.16.0` data jest opcjonalna i wyliczana osobno na podstawie `contentUpdatedAt`, `sourceUpdatedAt`, `addedAt` i `sourceAddedAt`; samo techniczne pobranie opisu zapisane w `descriptionFetchedAt` nie zmienia `lastmod`.
