@@ -416,10 +416,10 @@ a {
   border-radius: var(--radius);
   background:
     linear-gradient(90deg, rgba(255, 250, 241, 0.98) 0%, rgba(255, 250, 241, 0.9) 36%, rgba(255, 250, 241, 0.24) 68%, rgba(255, 250, 241, 0.02) 100%),
-    url("/assets/img/loft-hero.jpg?v=1.17.1") center right / cover no-repeat;
+    url("/assets/img/loft-hero.jpg?v=1.17.2") center right / cover no-repeat;
   background:
     linear-gradient(90deg, rgba(255, 250, 241, 0.98) 0%, rgba(255, 250, 241, 0.9) 36%, rgba(255, 250, 241, 0.24) 68%, rgba(255, 250, 241, 0.02) 100%),
-    image-set(url("/assets/img/loft-hero.webp?v=1.17.1") type("image/webp"), url("/assets/img/loft-hero.jpg?v=1.17.1") type("image/jpeg")) center right / cover no-repeat;
+    image-set(url("/assets/img/loft-hero.webp?v=1.17.2") type("image/webp"), url("/assets/img/loft-hero.jpg?v=1.17.2") type("image/jpeg")) center right / cover no-repeat;
   color: inherit;
   box-shadow: var(--shadow-soft);
   text-decoration: none;
@@ -2412,10 +2412,10 @@ h2 {
     min-height: 220px;
     background:
       linear-gradient(90deg, rgba(255, 250, 241, 0.98) 0%, rgba(255, 250, 241, 0.91) 50%, rgba(255, 250, 241, 0.25) 100%),
-      url("/assets/img/loft-hero.jpg?v=1.17.1") center right / cover no-repeat;
+      url("/assets/img/loft-hero.jpg?v=1.17.2") center right / cover no-repeat;
     background:
       linear-gradient(90deg, rgba(255, 250, 241, 0.98) 0%, rgba(255, 250, 241, 0.91) 50%, rgba(255, 250, 241, 0.25) 100%),
-      image-set(url("/assets/img/loft-hero.webp?v=1.17.1") type("image/webp"), url("/assets/img/loft-hero.jpg?v=1.17.1") type("image/jpeg")) center right / cover no-repeat;
+      image-set(url("/assets/img/loft-hero.webp?v=1.17.2") type("image/webp"), url("/assets/img/loft-hero.jpg?v=1.17.2") type("image/jpeg")) center right / cover no-repeat;
   }
 
   .hero-brand-copy {
@@ -2537,10 +2537,10 @@ h2 {
     margin-right: auto;
     background:
       linear-gradient(90deg, rgba(255, 250, 241, 0.99) 0%, rgba(255, 250, 241, 0.94) 52%, rgba(255, 250, 241, 0.24) 78%, rgba(255, 250, 241, 0.04) 100%),
-      url("/assets/img/loft-hero.jpg?v=1.17.1") 72% center / cover no-repeat;
+      url("/assets/img/loft-hero.jpg?v=1.17.2") 72% center / cover no-repeat;
     background:
       linear-gradient(90deg, rgba(255, 250, 241, 0.99) 0%, rgba(255, 250, 241, 0.94) 52%, rgba(255, 250, 241, 0.24) 78%, rgba(255, 250, 241, 0.04) 100%),
-      image-set(url("/assets/img/loft-hero-mobile.webp?v=1.17.1") type("image/webp"), url("/assets/img/loft-hero.jpg?v=1.17.1") type("image/jpeg")) 72% center / cover no-repeat;
+      image-set(url("/assets/img/loft-hero-mobile.webp?v=1.17.2") type("image/webp"), url("/assets/img/loft-hero.jpg?v=1.17.2") type("image/jpeg")) 72% center / cover no-repeat;
   }
 
   .product-brand-hero {

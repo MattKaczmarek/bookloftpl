@@ -9,6 +9,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 const SSR_PRODUCT_LIMIT = 50;
 const DEFAULT_SORT = "date-desc";
 const SORT_OPTIONS = new Set(["date-desc", "price-asc", "price-desc", "name-asc", "name-desc"]);
+const ALLEGRO_RETURN_POLICY_URL = "https://allegro.pl/pomoc/dla-kupujacych/zasady-zwrotow-i-reklamacji/jak-zwrocic-zakup-i-odeslac-produkt-do-sprzedajacego-GDeq5VeKRHD";
 
 export function createPageRouter(config, storeCache) {
   const router = express.Router();
@@ -1010,10 +1011,11 @@ function productJsonLd(config, product, url, image, description, category) {
         availability: Number(product.stock || 0) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
         itemCondition: "https://schema.org/UsedCondition",
         url: schemaText(product.allegroUrl || url, url),
-        seller: { "@id": organizationId(config) }
+        seller: { "@id": organizationId(config) },
+        hasMerchantReturnPolicy: { "@id": merchantReturnPolicyId(config) }
       };
   const productData = {
-    "@type": "Product",
+    "@type": identifiers.isbn ? ["Product", "Book"] : "Product",
     "@id": `${url}#product`,
     name: schemaText(product.name, "Oferta BookLoft"),
     description: schemaText(description, "Używana książka dostępna w BookLoft."),
@@ -1065,6 +1067,10 @@ function organizationId(config) {
   return `${config.publicOrigin}/#organization`;
 }
 
+function merchantReturnPolicyId(config) {
+  return `${config.publicOrigin}/#merchant-return-policy`;
+}
+
 function storeIdentityJsonLd(config) {
   return compactJsonLd({
     "@type": "OnlineStore",
@@ -1082,7 +1088,12 @@ function storeIdentityJsonLd(config) {
       addressLocality: "Pogórska Wola",
       addressCountry: "PL"
     },
-    vatID: "PL9930688202"
+    vatID: "PL9930688202",
+    hasMerchantReturnPolicy: {
+      "@type": "MerchantReturnPolicy",
+      "@id": merchantReturnPolicyId(config),
+      merchantReturnLink: ALLEGRO_RETURN_POLICY_URL
+    }
   });
 }
 
@@ -1118,7 +1129,7 @@ const PRODUCT_SPEC_FIELDS = [
   { label: "Rok wydania", keys: ["rok wydania", "data wydania"] },
   { label: "Seria", keys: ["seria"] },
   { label: "ISBN", keys: ["isbn"] },
-  { label: "EAN", keys: ["ean", "kod producenta"] },
+  { label: "EAN", keys: ["ean", "ean (gtin)", "gtin", "kod producenta"] },
   { label: "Oprawa", keys: ["oprawa"] },
   { label: "Liczba stron", keys: ["liczba stron", "ilosc stron"] },
   { label: "Język", keys: ["jezyk"] }
@@ -1473,8 +1484,8 @@ function knownProductFeatureValue(product, keys) {
 
 function productIdentifiers(product) {
   const isbn = normalizeIsbn(productFeatureValue(product, ["isbn"]));
-  const ean = normalizeDigits(productFeatureValue(product, ["ean", "kod ean", "kod producenta"]));
-  const gtin = ean || (isbn.length === 13 ? isbn : "");
+  const ean = normalizeGtin(productFeatureValue(product, ["ean", "ean (gtin)", "gtin", "kod ean", "kod producenta"]));
+  const gtin = ean || isbn;
   const identifiers = {};
 
   if (isbn) identifiers.isbn = isbn;
@@ -1491,7 +1502,43 @@ function normalizeDigits(value) {
 
 function normalizeIsbn(value) {
   const normalized = String(value || "").replace(/[^0-9Xx]/g, "").toUpperCase();
-  return normalized.length === 10 || normalized.length === 13 ? normalized : "";
+  if (normalized.length === 13 && /^(978|979)/.test(normalized) && hasValidGtinChecksum(normalized)) {
+    return normalized;
+  }
+  if (normalized.length === 10 && hasValidIsbn10Checksum(normalized)) {
+    const body = `978${normalized.slice(0, 9)}`;
+    return `${body}${gtinCheckDigit(body)}`;
+  }
+  return "";
+}
+
+function normalizeGtin(value) {
+  const normalized = normalizeDigits(value);
+  return hasValidGtinChecksum(normalized) ? normalized : "";
+}
+
+function hasValidIsbn10Checksum(value) {
+  if (!/^\d{9}[\dX]$/.test(value)) return false;
+  const checksum = [...value].reduce((sum, digit, index) => {
+    const numericDigit = digit === "X" ? 10 : Number(digit);
+    return sum + numericDigit * (10 - index);
+  }, 0);
+  return checksum % 11 === 0;
+}
+
+function hasValidGtinChecksum(value) {
+  if (!/^\d+$/.test(value) || ![8, 12, 13, 14].includes(value.length)) return false;
+  return Number(value.at(-1)) === gtinCheckDigit(value.slice(0, -1));
+}
+
+function gtinCheckDigit(body) {
+  let sum = 0;
+  let weight = 3;
+  for (let index = body.length - 1; index >= 0; index -= 1) {
+    sum += Number(body[index]) * weight;
+    weight = weight === 3 ? 1 : 3;
+  }
+  return (10 - (sum % 10)) % 10;
 }
 
 function cleanImageList(images) {

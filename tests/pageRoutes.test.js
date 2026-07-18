@@ -97,6 +97,12 @@ async function withServer(run) {
   }
 }
 
+function productGraphFromHtml(html) {
+  const match = html.match(/<script type="application\/ld\+json">([^<]+)<\/script>/);
+  assert.ok(match, "product JSON-LD should be present");
+  return JSON.parse(match[1])["@graph"];
+}
+
 test("active product metadata stays unchanged and schema prefers Allegro publisher for brand", async () => {
   await withServer(async (origin, data) => {
     const response = await fetch(`${origin}/product/${data.products[0].id}/${data.products[0].slug}`);
@@ -106,7 +112,9 @@ test("active product metadata stays unchanged and schema prefers Allegro publish
     assert.match(html, /<title>Książka 1 \| BookLoft<\/title>/);
     assert.match(html, /Książka 1\. Stan: DOBRY\. Fantasy w BookLoft z realnymi zdjęciami, rzetelnym opisem i zakupem przez Allegro\./);
     assert.match(html, /"brand":\{"@type":"Brand","name":"BookLoft"\}/);
-    assert.doesNotMatch(html, /MerchantReturnPolicy|ShippingService|hasMerchantReturnPolicy/);
+    assert.match(html, /"hasMerchantReturnPolicy":\{"@id":"https:\/\/bookloft\.pl\/#merchant-return-policy"\}/);
+    assert.match(html, /"merchantReturnLink":"https:\/\/allegro\.pl\/pomoc\/dla-kupujacych\/zasady-zwrotow-i-reklamacji\/jak-zwrocic-zakup/);
+    assert.doesNotMatch(html, /ShippingService/);
     assert.match(html, /class="mobile-purchase-bar"/);
     assert.match(html, /class="trust-track" aria-hidden="true"/);
     assert.doesNotMatch(html, /class="product-trust-summary"/);
@@ -121,6 +129,41 @@ test("active product metadata stays unchanged and schema prefers Allegro publish
     assert.doesNotMatch(publisherHtml, /"brand":\{"@type":"Brand","name":"BookLoft"\}/);
     assert.doesNotMatch(publisherHtml, /<dt>Liczba stron<\/dt>/);
     assert.match(publisherHtml, /"name":"Liczba stron","value":"432"/);
+  });
+});
+
+test("product schema emits validated ISBN-13 for books and EAN as GTIN for films", async () => {
+  await withServer(async (origin, data) => {
+    const currentProduct = data.products[0];
+    currentProduct.features.push({ name: "ISBN", value: "0-593-12497-9" });
+
+    const bookResponse = await fetch(`${origin}/product/${currentProduct.id}/${currentProduct.slug}`);
+    const bookGraph = productGraphFromHtml(await bookResponse.text());
+    const bookSchema = bookGraph.find((item) => Array.isArray(item["@type"]) && item["@type"].includes("Product"));
+    assert.deepEqual(bookSchema["@type"], ["Product", "Book"]);
+    assert.equal(bookSchema.isbn, "9780593124970");
+    assert.equal(bookSchema.gtin13, "9780593124970");
+
+    currentProduct.features = [
+      { name: "Stan", value: "Używany" },
+      { name: "EAN (GTIN)", value: "5902115605109" }
+    ];
+    const filmResponse = await fetch(`${origin}/product/${currentProduct.id}/${currentProduct.slug}`);
+    const filmGraph = productGraphFromHtml(await filmResponse.text());
+    const filmSchema = filmGraph.find((item) => item["@type"] === "Product");
+    assert.equal(filmSchema.isbn, undefined);
+    assert.equal(filmSchema.gtin13, "5902115605109");
+
+    currentProduct.features = [
+      { name: "Stan", value: "Używany" },
+      { name: "ISBN", value: "9780593124971" },
+      { name: "EAN (GTIN)", value: "5902115605108" }
+    ];
+    const invalidResponse = await fetch(`${origin}/product/${currentProduct.id}/${currentProduct.slug}`);
+    const invalidGraph = productGraphFromHtml(await invalidResponse.text());
+    const invalidSchema = invalidGraph.find((item) => item["@type"] === "Product");
+    assert.equal(invalidSchema.isbn, undefined);
+    assert.equal(invalidSchema.gtin13, undefined);
   });
 });
 

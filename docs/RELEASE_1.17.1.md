@@ -1,6 +1,6 @@
 # BookLoft.pl 1.17.1
 
-Status: przygotowane i przetestowane na branchu `ver-1.17`; przed deployem.
+Status: wdrozone produkcyjnie `2026-07-18` na branchu `ver-1.17`, commit kodu `0f14dbe`, tag `bookloftpl-v1.17.1`.
 
 ## Zakres
 
@@ -13,6 +13,7 @@ Status: przygotowane i przetestowane na branchu `ver-1.17`; przed deployem.
 - `npm test`: 18/18 testow.
 - Playwright na szerokosciach 320 px i 390 px: `trustTicker` ma stan `running`, transformacja zmienia sie w czasie, a statyczny zamiennik nie jest renderowany.
 - Oba widoki nie maja poziomego overflow ani bledow JavaScript; pasek zakupu pozostaje widoczny i przyklejony.
+- Produkcyjny health zwrocil wersje `1.17.1`, aktywne polaczenie z Allegro, 2029 widocznych ofert i brak ostatniego bledu cache.
 
 ## Rollback
 
