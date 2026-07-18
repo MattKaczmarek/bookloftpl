@@ -212,8 +212,6 @@ export function createPageRouter(config, storeCache) {
         ...categories.map((category) => ({
           loc: absoluteUrl(config, categoryPath(category))
         })),
-        ...catalogPaginationUrls(config, storefront.products.length),
-        ...categoryPaginationUrls(config, storefront.products, categories),
         ...storefront.products.map((product) => ({
           loc: absoluteUrl(config, productPath(product)),
           lastmod: sitemapLastModified(product)
@@ -876,21 +874,6 @@ ${url.lastmod ? `    <lastmod>${escapeHtml(url.lastmod)}</lastmod>\n` : ""}  </u
 </urlset>`;
 }
 
-function catalogPaginationUrls(config, productCount) {
-  return Array.from({ length: Math.max(0, pageCount(productCount) - 1) }, (_item, index) => ({
-    loc: absoluteUrl(config, catalogPagePath(index + 2))
-  }));
-}
-
-function categoryPaginationUrls(config, products, categories) {
-  return categories.flatMap((category) => {
-    const count = listingProducts(products, { categoryId: category.id }).length;
-    return Array.from({ length: Math.max(0, pageCount(count) - 1) }, (_item, index) => ({
-      loc: absoluteUrl(config, categoryPagePath(category, index + 2))
-    }));
-  });
-}
-
 function catalogPagination(config, { category, currentPage, totalPages, productCount }) {
   if (totalPages <= 1) return null;
   const pageUrl = (page) => absoluteUrl(config, category ? categoryPagePath(category, page) : catalogPagePath(page));
@@ -970,7 +953,7 @@ function storePageMeta(config, { category, query, sort = DEFAULT_SORT, productCo
       title: `${name} - używane produkty${pageSuffix} | BookLoft`,
       description: `${name} w BookLoft: używane produkty z realnymi zdjęciami, rzetelnym opisem stanu i zakupem przez Allegro.${pageCopy}`,
       canonical: absoluteUrl(config, categoryPagePath(category, page)),
-      robots: sortedVariant ? "noindex,follow,max-image-preview:large" : "index,follow,max-image-preview:large",
+      robots: sortedVariant || page > 1 ? "noindex,follow,max-image-preview:large" : "index,follow,max-image-preview:large",
       eyebrow: "Kategoria",
       h1: name,
       copy: categoryIntroCopy(productCount),
@@ -984,7 +967,7 @@ function storePageMeta(config, { category, query, sort = DEFAULT_SORT, productCo
     title: `BookLoft - używane książki z drugiego obiegu${pageSuffix}`,
     description: `BookLoft - używane książki z realnymi zdjęciami, rzetelnym opisem stanu i zakupem finalizowanym na Allegro.${pageCopy}`,
     canonical: absoluteUrl(config, catalogPagePath(page)),
-    robots: sortedVariant ? "noindex,follow,max-image-preview:large" : "index,follow,max-image-preview:large",
+    robots: sortedVariant || page > 1 ? "noindex,follow,max-image-preview:large" : "index,follow,max-image-preview:large",
     eyebrow: "Nowości z regału",
     h1: "Wybierz kolejną historię",
     copy: "Nowe tytuły z naszego regału. Przeglądaj ostatnio dodane oferty albo wyszukaj książkę po tytule, autorze lub gatunku.",

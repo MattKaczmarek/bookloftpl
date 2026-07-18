@@ -288,7 +288,26 @@ test("sitemap uses per-product lastmod and omits unreliable global hints", async
     assert.doesNotMatch(xml, /<changefreq>|<priority>/);
     assert.match(xml, new RegExp(`<loc>https://bookloft\\.pl/product/${data.products[0].id}/[^<]+<\\/loc>\\s+<lastmod>2026-07-14<\\/lastmod>`));
     assert.match(xml, new RegExp(`<loc>https://bookloft\\.pl/product/${data.products[1].id}/[^<]+<\\/loc>\\s+<lastmod>2026-07-03<\\/lastmod>`));
+    assert.doesNotMatch(xml, /<loc>https:\/\/bookloft\.pl\/strona\/\d+<\/loc>/);
+    assert.doesNotMatch(xml, /<loc>https:\/\/bookloft\.pl\/kategoria\/[^<]+\/strona\/\d+<\/loc>/);
     const homeEntry = xml.match(/<url>\s*<loc>https:\/\/bookloft\.pl\/<\/loc>([\s\S]*?)<\/url>/)?.[1] || "";
     assert.doesNotMatch(homeEntry, /<lastmod>/);
+  });
+});
+
+test("technical pagination stays crawlable but is excluded from search results", async () => {
+  await withServer(async (origin) => {
+    const catalogResponse = await fetch(`${origin}/strona/2`);
+    const catalogHtml = await catalogResponse.text();
+    assert.equal(catalogResponse.status, 200);
+    assert.match(catalogHtml, /<meta name="robots" content="noindex,follow,max-image-preview:large">/);
+    assert.match(catalogHtml, /<link rel="canonical" href="https:\/\/bookloft\.pl\/strona\/2">/);
+    assert.match(catalogHtml, /<link rel="prev" href="https:\/\/bookloft\.pl\/">/);
+
+    const categoryResponse = await fetch(`${origin}/kategoria/fantasy/fantasy/strona/2`);
+    const categoryHtml = await categoryResponse.text();
+    assert.equal(categoryResponse.status, 200);
+    assert.match(categoryHtml, /<meta name="robots" content="noindex,follow,max-image-preview:large">/);
+    assert.match(categoryHtml, /<link rel="canonical" href="https:\/\/bookloft\.pl\/kategoria\/fantasy\/fantasy\/strona\/2">/);
   });
 });
