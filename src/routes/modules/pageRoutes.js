@@ -470,11 +470,6 @@ function renderProductPage(config, product, storefront) {
         <span>Bezpieczna wysyłka</span>
         <span>Książki z charakterem</span>
       </div>
-      <div class="product-trust-summary" aria-hidden="true">
-        <span>Realne zdjęcia</span>
-        <span>Opis stanu</span>
-        <span>Zakup przez Allegro</span>
-      </div>
     </div>
     <form class="product-search-box search-box" id="product-search-form" action="${appPath(config.basePath, "/")}" role="search">
       <label class="visually-hidden" for="product-page-search">Szukaj</label>

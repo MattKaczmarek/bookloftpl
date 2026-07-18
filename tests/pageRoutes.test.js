@@ -108,7 +108,8 @@ test("active product metadata stays unchanged and schema prefers Allegro publish
     assert.match(html, /"brand":\{"@type":"Brand","name":"BookLoft"\}/);
     assert.doesNotMatch(html, /MerchantReturnPolicy|ShippingService|hasMerchantReturnPolicy/);
     assert.match(html, /class="mobile-purchase-bar"/);
-    assert.match(html, /class="product-trust-summary"/);
+    assert.match(html, /class="trust-track" aria-hidden="true"/);
+    assert.doesNotMatch(html, /class="product-trust-summary"/);
 
     data.products[0].features.push(
       { name: "Wydawnictwo", value: "Fabryka Słów" },

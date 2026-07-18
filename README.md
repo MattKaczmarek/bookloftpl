@@ -122,7 +122,7 @@ Zasady:
 - aktywny listing nie wysyla ukrytej tresci pustego wyniku w SSR; komunikat jest tworzony dopiero dla rzeczywiscie pustej listy,
 - pierwsze 50 ofert pozostaje renderowane w HTML, a klient nie pobiera pelnego `/api/storefront` ani `/api/newest`, dopoki uzytkownik nie wyszuka, nie posortuje albo nie zblizy sie do konca pierwszej strony,
 - strona oferty pokazuje przycisk `Kup na Allegro`, informacje ze zakup, platnosc, dostawa, zwrot i reklamacja odbywaja sie w Allegro, pasek zalet BookLoft, galerie ze strzalkami bez tla i przewijaniem swipem, lekki podglad zdjec z przewijaniem swipem, zoomem kolkiem myszy, plynniejszym pinch-to-zoom na mobile i przesuwaniem po powiekszeniu oraz stopke `O nas`,
-- na telefonie strona oferty pokazuje nad galeria przyklejony pasek z nazwa, cena i przyciskiem `Kup na Allegro`; animowany pasek zalet jest zastepowany trzema statycznymi informacjami,
+- na telefonie strona oferty pokazuje nad galeria przyklejony pasek z nazwa, cena i przyciskiem `Kup na Allegro`; pasek zalet nadal przesuwa sie poziomo,
 - strona oferty pokazuje najwazniejsze parametry z Allegro, jesli sa dostepne w cache, np. autora, wydawnictwo, rok wydania, serie, ISBN/EAN, oprawe i jezyk; liczba stron pozostaje ukryta w widocznej specyfikacji,
 - podobne oferty sa sortowane wedlug zgodnosci tytulu, autora, serii, wydawnictwa i kategorii, a dopiero potem wedlug swiezosci,
 - strona oferty nie pokazuje liczby dostepnych egzemplarzy, bo katalog zaklada pojedyncze egzemplarze ksiazek uzywanych,
