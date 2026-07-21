@@ -1,6 +1,6 @@
 # BookLoft.pl 1.18.1
 
-Status: patch gotowy na branchu `ver-1.18`; przed deployem. Produkcja dziala na `1.18.0`.
+Status: wdrozone produkcyjnie `2026-07-21` na branchu `ver-1.18`, commit kodu `9997708`, tag `bookloftpl-v1.18.1`.
 
 ## Cel
 
@@ -33,8 +33,16 @@ Nie zmieniono tytulow ani opisow ofert, meta title, meta description, canonicali
 - Kontrola wizualna przy `280`, `300`, `320` i `390 px`: widoczny poczatek kart ofert na pierwszym ekranie, rowny wiersz filtrow i brak sekcji `Przegladaj tez`.
 - Tymczasowy serwer i zrzuty zostaly usuniete po kontroli.
 
-## Deploy i rollback
+## Weryfikacja produkcyjna
 
-Deploy nie zostal jeszcze wykonany. Po wdrozeniu nalezy sprawdzic health `1.18.1`, logi, strone kategorii na mobile, zmiane obu selektow oraz brak overflow.
+- Testy na Hetznerze przeszly `22/22` przed restartem uslugi.
+- Publiczny i lokalny health zwracaja `status=ok` oraz wersje `1.18.1`; Allegro jest polaczone, widocznych jest 1985 ofert, a cache nie raportuje bledu.
+- `bookloft-shop.service` jest `active/running`, `NRestarts=0`; journal od restartu nie zawiera warningow ani bledow.
+- Live-check publicznej kategorii przy `280`, `300`, `320`, `360`, `390` i `430 px` potwierdzil rowny wiersz kontrolek, brak `Przegladaj tez`, widoczne karty, brak overflow, bledow JavaScript i nieudanych requestow.
+- Live-check przy `1440 px` potwierdzil ukrycie mobilnego `Popularne` i kontrolek oraz zachowanie lewego panelu kategorii i `Przegladaj tez`.
+- Linki `Przegladaj tez` pozostaja w SSR, canonical i adres kategorii sa niezmienione. Sitemap nie zostala ponownie wyslana.
+- Cache ofert zostal zachowany; nie wykonano migracji danych, zmian ENV ani Nginx.
+
+## Rollback
 
 Rollback polega na powrocie do tagu `bookloftpl-v1.18.0` i restarcie `bookloft-shop.service`; dane i cache nie wymagaja zmian.
