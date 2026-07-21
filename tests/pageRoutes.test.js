@@ -105,6 +105,7 @@ function productGraphFromHtml(html) {
 
 test("active product metadata stays unchanged and schema prefers Allegro publisher for brand", async () => {
   await withServer(async (origin, data) => {
+    data.products[0].images.push("https://a.allegroimg.com/original/example-detail.jpg");
     const response = await fetch(`${origin}/product/${data.products[0].id}/${data.products[0].slug}`);
     const html = await response.text();
 
@@ -116,6 +117,8 @@ test("active product metadata stays unchanged and schema prefers Allegro publish
     assert.match(html, /"merchantReturnLink":"https:\/\/allegro\.pl\/pomoc\/dla-kupujacych\/zasady-zwrotow-i-reklamacji\/jak-zwrocic-zakup/);
     assert.doesNotMatch(html, /ShippingService/);
     assert.match(html, /class="mobile-purchase-bar"/);
+    assert.match(html, /class="gallery-arrow gallery-arrow-prev"[^>]*><svg viewBox="0 0 24 24"/);
+    assert.match(html, /class="gallery-arrow gallery-arrow-next"[^>]*><svg viewBox="0 0 24 24"/);
     assert.match(html, /class="trust-track" aria-hidden="true"/);
     assert.doesNotMatch(html, /class="product-trust-summary"/);
 
@@ -189,6 +192,10 @@ test("catalog hides no-result copy from populated SSR and protects pagination sn
     const html = await response.text();
 
     assert.equal(response.status, 200);
+    assert.match(html, /<body class="catalog-page">/);
+    assert.doesNotMatch(html, /brand-intro|bookloft_intro_seen/);
+    assert.match(html, /<nav class="popular-category-links" aria-label="Popularne kategorie">/);
+    assert.match(html, /data-category-id="" aria-current="page">Wszystkie/);
     assert.doesNotMatch(html, /Nie znaleźliśmy pasujących ofert/);
     assert.match(html, /class="catalog-pagination-shell" data-nosnippet hidden/);
     assert.match(html, /window\.BOOKLOFT_INITIAL_PRODUCT_COUNT=51/);
@@ -246,9 +253,10 @@ test("search results use a small search label and one concise heading", async ()
   await withServer(async (origin) => {
     const response = await fetch(`${origin}/?q=Książka`);
     const html = await response.text();
-    const body = html.match(/<body>([\s\S]*)<\/body>/)?.[1] || "";
+    const body = html.match(/<body[^>]*>([\s\S]*)<\/body>/)?.[1] || "";
 
     assert.equal(response.status, 200);
+    assert.match(body, /<div class="shop-intro shop-intro--search">/);
     assert.match(body, /<p class="eyebrow">Wyszukiwanie<\/p>/);
     assert.match(body, /<h1>Oferty dla „książka”<\/h1>/);
     assert.doesNotMatch(body, /Wyniki wyszukiwania w BookLoft/);
@@ -273,6 +281,7 @@ test("category pages show the current offer count and useful category links", as
     assert.equal(response.status, 200);
     assert.match(html, />51 ofert z realnymi zdjęciami konkretnych egzemplarzy i opisem ich stanu\.<\/p>/);
     assert.doesNotMatch(html, /Fantasy: 51 ofert/);
+    assert.match(html, /data-category-id="fantasy" aria-current="page">Fantasy/);
     assert.match(html, /<nav class="related-category-links" aria-label="Powiązane kategorie">/);
     assert.match(html, /href="\/kategoria\/crime\/kryminal">Kryminał <small>7 ofert<\/small><\/a>/);
   });

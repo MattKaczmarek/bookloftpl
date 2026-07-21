@@ -189,11 +189,11 @@ function openImageLightbox(images, startIndex, productName) {
   dialog.setAttribute("aria-label", "Podgląd zdjęcia produktu");
   dialog.innerHTML = `
     <button class="lightbox-close" type="button" data-lightbox-close aria-label="Zamknij podgląd">&times;</button>
-    ${images.length > 1 ? '<button class="lightbox-arrow lightbox-arrow-prev" type="button" data-lightbox-prev aria-label="Poprzednie zdjęcie">&lsaquo;</button>' : ""}
+    ${images.length > 1 ? `<button class="lightbox-arrow lightbox-arrow-prev" type="button" data-lightbox-prev aria-label="Poprzednie zdjęcie">${galleryArrowIcon("previous")}</button>` : ""}
     <div class="lightbox-stage">
       <img src="${escapeAttribute(images[currentIndex])}" alt="${escapeAttribute(productName)} - zdjęcie ${currentIndex + 1}" data-lightbox-image>
     </div>
-    ${images.length > 1 ? '<button class="lightbox-arrow lightbox-arrow-next" type="button" data-lightbox-next aria-label="Następne zdjęcie">&rsaquo;</button>' : ""}
+    ${images.length > 1 ? `<button class="lightbox-arrow lightbox-arrow-next" type="button" data-lightbox-next aria-label="Następne zdjęcie">${galleryArrowIcon("next")}</button>` : ""}
     <span class="lightbox-counter" data-lightbox-counter></span>
   `;
 
@@ -416,6 +416,11 @@ function openImageLightbox(images, startIndex, productName) {
   document.body.appendChild(dialog);
   render();
   dialog.focus({ preventScroll: true });
+}
+
+function galleryArrowIcon(direction) {
+  const points = direction === "previous" ? "15 18 9 12 15 6" : "9 18 15 12 9 6";
+  return `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><polyline points="${points}"></polyline></svg>`;
 }
 
 function wrapImageIndex(index, length) {

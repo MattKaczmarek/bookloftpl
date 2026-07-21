@@ -264,6 +264,7 @@ function renderStorePage(config, storefront, { category = null, query = "", sort
     totalCount: storefront.meta?.productCount || storefront.products.length
   });
   const categorySelect = renderCategorySelect(categoryOptions, category?.id || "");
+  const popularCategories = popularCategoryLinks(categoryOptions, category?.id || "", 6);
   const categoryLinks = category && !normalizedQuery
     ? relatedCategoryLinks(categoryOptions, category, 6)
     : [];
@@ -319,14 +320,7 @@ function renderStorePage(config, storefront, { category = null, query = "", sort
   <script defer src="${appPath(config.basePath, `/assets/js/analytics.js?v=${config.version}`)}"></script>
   <script defer src="${appPath(config.basePath, `/assets/js/store.js?v=${config.version}`)}"></script>
 </head>
-<body>
-  <div class="brand-intro is-visible" id="brand-intro">
-    <div class="brand-intro-inner">
-      <img src="${appPath(config.basePath, `/assets/img/logo.png?v=${config.version}`)}" width="1816" height="803" alt="BookLoft">
-      <p>Wejdź do przestrzeni pełnej książek</p>
-    </div>
-  </div>
-
+<body class="catalog-page">
   <main class="shop-layout">
     <aside class="category-rail" aria-label="Kategorie">
       <div class="rail-head">
@@ -344,7 +338,7 @@ function renderStorePage(config, storefront, { category = null, query = "", sort
       </a>
 
       <div class="shop-toolbar">
-        <div class="shop-intro">
+        <div class="shop-intro${normalizedQuery ? " shop-intro--search" : ""}">
           <p class="eyebrow">${escapeHtml(pageMeta.eyebrow)}</p>
           <h1>${escapeHtml(pageMeta.h1)}</h1>
           <p class="hero-copy">${escapeHtml(pageMeta.copy)}</p>
@@ -368,6 +362,7 @@ function renderStorePage(config, storefront, { category = null, query = "", sort
         </div>
       </div>
 
+      ${renderPopularCategoryLinks(config, popularCategories, category?.id || "", storefront.meta?.productCount || storefront.products.length)}
       <div class="mobile-categories">
         <label for="category-select">Kategoria</label>
         <select id="category-select">
@@ -448,7 +443,7 @@ function renderProductPage(config, product, storefront) {
   <script defer src="${appPath(config.basePath, `/assets/js/analytics.js?v=${config.version}`)}"></script>
   <script defer src="${appPath(config.basePath, `/assets/js/product.js?v=${config.version}`)}"></script>
 </head>
-<body>
+<body class="product-view-page">
   <section class="product-visual-shell" aria-label="BookLoft - Przestrzeń pełna książek">
     <a class="shop-brand-hero product-brand-hero" href="${appPath(config.basePath, "/")}" aria-label="BookLoft - wróć na stronę główną">
       <div class="hero-brand-copy">
@@ -507,13 +502,13 @@ function renderProductBody(config, product, category, categoryOptions, totalCoun
         <article class="product-detail">
           <section class="detail-gallery">
             <div class="gallery-main">
-              ${images.length > 1 ? '<button class="gallery-arrow gallery-arrow-prev" type="button" data-gallery-prev aria-label="Poprzednie zdjęcie">&lsaquo;</button>' : ""}
+              ${images.length > 1 ? `<button class="gallery-arrow gallery-arrow-prev" type="button" data-gallery-prev aria-label="Poprzednie zdjęcie">${galleryArrowIcon("previous")}</button>` : ""}
               ${image ? `
                 <button class="detail-main-trigger" type="button" data-gallery-open aria-label="Otwórz zdjęcie produktu">
                   <img class="detail-main-image" src="${escapeAttribute(allegroImageVariant(image, "s720"))}" ${imageSrcset(image, ["s512", "s720", "s1024"])} sizes="(max-width: 760px) 92vw, 520px" alt="${escapeAttribute(productImageAlt(product))}" data-gallery-main>
                 </button>
               ` : '<div class="image-fallback">BookLoft</div>'}
-              ${images.length > 1 ? '<button class="gallery-arrow gallery-arrow-next" type="button" data-gallery-next aria-label="Następne zdjęcie">&rsaquo;</button>' : ""}
+              ${images.length > 1 ? `<button class="gallery-arrow gallery-arrow-next" type="button" data-gallery-next aria-label="Następne zdjęcie">${galleryArrowIcon("next")}</button>` : ""}
             </div>
             <div class="thumb-strip">
               ${images.slice(0, 8).map((src, index) => `
@@ -585,12 +580,53 @@ function renderCategorySelect(categories, activeCategoryId) {
   ].join("\n");
 }
 
+function popularCategoryLinks(categories, activeCategoryId, limit) {
+  const seen = new Set();
+  const activeId = String(activeCategoryId || "");
+  return categories
+    .filter((category) => {
+      const id = String(category.id || "");
+      if (!id || seen.has(id) || isGenericAllegroCategory(category)) return false;
+      seen.add(id);
+      return (category.totalProductCount || category.productCount || 0) > 0;
+    })
+    .sort((left, right) => {
+      const countDifference = (right.totalProductCount || right.productCount || 0)
+        - (left.totalProductCount || left.productCount || 0);
+      if (countDifference !== 0) return countDifference;
+      if (String(left.id) === activeId) return -1;
+      if (String(right.id) === activeId) return 1;
+      return String(left.displayName || left.name).localeCompare(String(right.displayName || right.name), "pl-PL");
+    })
+    .slice(0, Math.max(1, Number(limit) || 6));
+}
+
+function renderPopularCategoryLinks(config, categories, activeCategoryId, totalCount) {
+  if (!categories.length) return "";
+  const allActive = !activeCategoryId;
+  return `<nav class="popular-category-links" aria-label="Popularne kategorie">
+    <span>Popularne</span>
+    <div>
+      <a${allActive ? ' class="active"' : ""} href="${appPath(config.basePath, "/")}" data-category-id=""${allActive ? ' aria-current="page"' : ""}>Wszystkie <small>${escapeHtml(offerCountLabel(totalCount))}</small></a>
+      ${categories.map((category) => {
+        const active = String(category.id) === String(activeCategoryId || "");
+        return `<a${active ? ' class="active"' : ""} href="${appPath(config.basePath, categoryPath(category))}" data-category-id="${escapeAttribute(category.id)}"${active ? ' aria-current="page"' : ""}>${escapeHtml(category.displayName || category.name)} <small>${escapeHtml(offerCountLabel(category.totalProductCount || category.productCount || 0))}</small></a>`;
+      }).join("")}
+    </div>
+  </nav>`;
+}
+
 function renderRelatedCategoryLinks(config, categories) {
   if (!categories.length) return "";
   return `<nav class="related-category-links" aria-label="Powiązane kategorie">
     <span>Przeglądaj też</span>
     <div>${categories.map((category) => `<a href="${appPath(config.basePath, categoryPath(category))}">${escapeHtml(category.displayName || category.name)} <small>${escapeHtml(offerCountLabel(category.totalProductCount || category.productCount || 0))}</small></a>`).join("")}</div>
   </nav>`;
+}
+
+function galleryArrowIcon(direction) {
+  const points = direction === "previous" ? "15 18 9 12 15 6" : "9 18 15 12 9 6";
+  return `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><polyline points="${points}"></polyline></svg>`;
 }
 
 function relatedCategoryLinks(categories, activeCategory, limit) {

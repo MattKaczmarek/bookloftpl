@@ -88,8 +88,6 @@ const els = {
   relatedCategories: document.querySelector(".related-category-links")
 };
 
-setupBrandIntro();
-
 init().catch((error) => {
   els.listingTitle.textContent = `Nie udało się załadować sklepu: ${error.message}`;
   els.grid.classList.remove("is-loading");
@@ -581,8 +579,11 @@ function currentShelfNoteInterval() {
 }
 
 function syncCategoryButtons() {
-  document.querySelectorAll(".category-button").forEach((button) => {
-    button.classList.toggle("active", button.dataset.categoryId === state.categoryId);
+  document.querySelectorAll(".category-button, .popular-category-links a").forEach((button) => {
+    const active = button.dataset.categoryId === state.categoryId;
+    button.classList.toggle("active", active);
+    if (active) button.setAttribute("aria-current", "page");
+    else button.removeAttribute("aria-current");
   });
 }
 
@@ -954,73 +955,6 @@ function sortProductIdAsc(a, b) {
   const right = Number(b);
   if (Number.isFinite(left) && Number.isFinite(right)) return left - right;
   return String(a).localeCompare(String(b), "pl-PL", { numeric: true });
-}
-
-function setupBrandIntro() {
-  const intro = document.querySelector("#brand-intro");
-  if (!intro) return;
-  const storageKey = "bookloft_intro_seen";
-
-  if (!isHomeIntroPage()) {
-    try {
-      window.sessionStorage.setItem(storageKey, "1");
-    } catch {
-      // sessionStorage may be unavailable in restricted webviews.
-    }
-    intro.hidden = true;
-    intro.classList.remove("is-visible", "is-ready", "is-hiding");
-    return;
-  }
-
-  let shouldShow = true;
-  try {
-    shouldShow = window.sessionStorage.getItem(storageKey) !== "1";
-    window.sessionStorage.setItem(storageKey, "1");
-  } catch {
-    shouldShow = true;
-  }
-
-  if (!shouldShow) {
-    intro.hidden = true;
-    intro.classList.remove("is-visible", "is-ready", "is-hiding");
-    return;
-  }
-
-  const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
-  intro.hidden = false;
-  intro.classList.add("is-visible");
-
-  const visibleFor = prefersReducedMotion ? 338 : 1388;
-  const fadeFor = prefersReducedMotion ? 90 : 488;
-  waitForIntroFont().then(() => {
-    intro.classList.add("is-ready");
-    window.setTimeout(() => {
-      intro.classList.add("is-hiding");
-      window.setTimeout(() => {
-        intro.hidden = true;
-        intro.classList.remove("is-visible", "is-ready", "is-hiding");
-      }, fadeFor);
-    }, visibleFor);
-  });
-}
-
-function isHomeIntroPage() {
-  const path = window.location.pathname.replace(/\/+$/, "") || "/";
-  if (path !== "/") return false;
-  const params = new URLSearchParams(window.location.search);
-  return !params.get("q") && !params.get("category") && !params.get("sort");
-}
-
-function waitForIntroFont() {
-  const fonts = document.fonts;
-  if (!fonts?.load) return Promise.resolve();
-  const headingFont = fonts.load('600 32px "Source Serif 4"');
-  const bodyFont = fonts.load('700 18px "Nunito Sans"');
-  const timeout = new Promise((resolve) => window.setTimeout(resolve, 420));
-  return Promise.race([
-    Promise.allSettled([headingFont, bodyFont]),
-    timeout
-  ]);
 }
 
 function productUrl(product) {
