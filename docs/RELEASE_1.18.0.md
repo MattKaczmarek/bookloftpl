@@ -1,6 +1,6 @@
 # BookLoft.pl 1.18.0
 
-Status: wersja rozwojowa gotowa na branchu `ver-1.18`; bez deployu. Produkcja pozostaje na `1.17.3` (`ver-1.17`).
+Status: wdrozone produkcyjnie `2026-07-21` na branchu `ver-1.18`, commit kodu `8be1f13`, tag `bookloftpl-v1.18.0`.
 
 ## Cel
 
@@ -46,11 +46,20 @@ Nie zmieniono:
 - Pole czyszczenia wyszukiwania zmierzone jako `44 x 44 px`; pasek kategorii jest widoczny tylko w ukladzie mobilnym.
 - Zrzuty i tymczasowy serwer testowy zostaly usuniete po weryfikacji.
 
-## Przyszly deploy
+## Weryfikacja produkcyjna
 
-Deploy nie zostal wykonany. Przed wdrozeniem nalezy potwierdzic czysty branch `ver-1.18`, uruchomic `npm test`, wykonac standardowy backup runtime i wdrozyc zgodnie z `docs/OPERATIONS.md`. Zmiana nie wymaga odswiezenia cache ofert ani migracji danych.
+- Repo Hetznera po deployu: branch `ver-1.18`, commit `8be1f13`, czysty status.
+- `bookloft-shop.service`: `active/running`, `NRestarts=0`; journal od restartu bez warningow i bledow.
+- Lokalny i publiczny health: `status=ok`, wersja `1.18.0`, Allegro polaczone, 1985 widocznych ofert i brak ostatniego bledu cache.
+- Publiczne `/` zwraca `200`, prawidlowy canonical, zasoby `1.18.0`, semantyczny pasek kategorii i nie zawiera dawnego intro.
+- Playwright przy `320`, `390` i `1440 px`: brak poziomego overflow, bledow JavaScript i nieudanych requestow.
+- Galeria zmienia zdjecie, lightbox otwiera sie i zamyka, a strzalki SVG maja `44 x 44 px` na mobile.
+- Czyszczenie wyszukiwania, przejscie do kategorii i `aria-current` dzialaja. Przy `prefers-reduced-motion: reduce` animacja jest wylaczona, a tresc od razu widoczna.
+- Cache ofert zostal zachowany. Nie wykonywano pelnego odswiezenia cache, migracji danych, zmian ENV ani Nginx.
+- Sitemap, canonicale i architektura URL nie zmienily sie, dlatego sitemap nie zostala ponownie wyslana do Search Console.
+- `npm audit --omit=dev` raportuje jedna niska podatnosc posredniego `body-parser`; brak podatnosci moderate, high i critical. Nie byla zwiazana z zakresem wydania.
 
-Po przyszlym wdrozeniu nalezy sprawdzic `/health`, status uslugi, logi, strone glowna, wyszukiwanie, kategorie i karte produktu na mobile oraz desktopie. Dopiero wtedy mozna utworzyc tag `bookloftpl-v1.18.0` i oznaczyc ten dokument jako wdrozony.
+Wplyw na Search Analytics nalezy ocenic dopiero po zebraniu pelnych danych po wdrozeniu; obecny raport potwierdza stan techniczny, nie zmiane zasiegu organicznego.
 
 ## Rollback
 

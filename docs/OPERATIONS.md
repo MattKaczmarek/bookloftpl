@@ -1,23 +1,24 @@
 # Operacje BookLoft sklep
 
 Stan dokumentu: `2026-07-21`.
-Wersja produkcyjna: `1.17.3`.
-Branch produkcyjny: `ver-1.17`.
-Wersja rozwojowa: `1.18.0` na branchu `ver-1.18` (bez deployu).
-Stan produkcji: `1.17.3` na `ver-1.17`; commit kodu wydania `ffa4f6d`, tag `bookloftpl-v1.17.3`.
+Wersja produkcyjna: `1.18.0`.
+Branch produkcyjny: `ver-1.18`.
+Stan produkcji: `1.18.0` na `ver-1.18`; commit kodu wydania `8be1f13`, tag `bookloftpl-v1.18.0`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
 
-## Wersja rozwojowa 1.18.0
+## Wersja produkcyjna 1.18.0
 
-- Branch `ver-1.18` jest gotowy do osobnego przegladu i przyszlego wdrozenia, ale nie zostal wdrozony.
+- Wdrozona `2026-07-21` na branchu `ver-1.18`, commit kodu `8be1f13`, tag `bookloftpl-v1.18.0`.
 - Usuwa blokujacy ekran startowy i jego timery oraz zapis w `sessionStorage`.
 - Wlasciwa tresc katalogu i produktu pojawia sie od razu z krotkim, kaskadowym wejsciem CSS. Ustawienie `prefers-reduced-motion` wylacza ruch.
 - Mobile ma serwerowo renderowany, przewijany pasek popularnych kategorii. Zmiana kategorii po stronie klienta synchronizuje aktywny link i `aria-current`.
 - Dluzsze zapytania wyszukiwania maja spokojniejsza skale naglowka bez zmiany jego tekstu.
 - Przycisk czyszczenia wyszukiwania, linki popularnych kategorii, strzalki galerii i przyciski cookies maja co najmniej `44 px` pola dotykowego. Strzalki galerii sa SVG.
 - Nie zmieniono nazw ofert, `title`, meta title, meta description, canonicali, schema, sitemap, URL-i, cache, ENV ani integracji Allegro.
-- Pelny zakres, testy, kontrola wizualna i procedura wdrozenia sa w `docs/RELEASE_1.18.0.md`.
+- Testy produkcyjne przeszly `22/22`. Health potwierdzil wersje `1.18.0`, aktywne Allegro, 1985 ofert, brak ostatniego bledu i `NRestarts=0`.
+- Live-check przy `320`, `390` i `1440 px` potwierdzil brak overflow, bledow JavaScript i nieudanych requestow oraz poprawne dzialanie galerii, lightboxa, wyszukiwania, kategorii i ograniczonego ruchu.
+- Pelny zakres, weryfikacja i rollback sa w `docs/RELEASE_1.18.0.md`.
 
 ## Wersja produkcyjna 1.17.3
 
