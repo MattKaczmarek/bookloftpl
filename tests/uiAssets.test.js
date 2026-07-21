@@ -29,6 +29,8 @@ test("page reveal respects motion preferences and touch targets stay accessible"
   assert.match(styles, /@media \(prefers-reduced-motion: no-preference\)/);
   assert.match(styles, /animation: pageHeroReveal 520ms/);
   assert.match(styles, /\.popular-category-links a \{[\s\S]*?min-height: 44px/);
+  assert.match(styles, /\.mobile-catalog-controls \{[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(styles, /@media \(max-width: 620px\)[\s\S]*?\.related-category-links \{\s*display: none/);
   assert.match(styles, /\.search-clear \{[\s\S]*?width: 44px;[\s\S]*?height: 44px/);
   assert.match(styles, /\.cookie-consent-actions button \{\s*min-height: 44px/);
   assert.match(productScript, /class="lightbox-arrow lightbox-arrow-prev"[^\n]+galleryArrowIcon\("previous"\)/);

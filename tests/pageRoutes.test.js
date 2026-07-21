@@ -195,6 +195,7 @@ test("catalog hides no-result copy from populated SSR and protects pagination sn
     assert.match(html, /<body class="catalog-page">/);
     assert.doesNotMatch(html, /brand-intro|bookloft_intro_seen/);
     assert.match(html, /<nav class="popular-category-links" aria-label="Popularne kategorie">/);
+    assert.match(html, /<div class="mobile-catalog-controls">/);
     assert.match(html, /data-category-id="" aria-current="page">Wszystkie/);
     assert.doesNotMatch(html, /Nie znaleźliśmy pasujących ofert/);
     assert.match(html, /class="catalog-pagination-shell" data-nosnippet hidden/);

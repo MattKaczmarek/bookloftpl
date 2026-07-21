@@ -3,9 +3,19 @@
 Stan dokumentu: `2026-07-21`.
 Wersja produkcyjna: `1.18.0`.
 Branch produkcyjny: `ver-1.18`.
+Wersja rozwojowa: `1.18.1` na `ver-1.18` (przed deployem).
 Stan produkcji: `1.18.0` na `ver-1.18`; commit kodu wydania `8be1f13`, tag `bookloftpl-v1.18.0`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
+
+## Wersja rozwojowa 1.18.1
+
+- Mobile laczy pola `Kategoria` i `Sortuj` w jeden wiersz z rownymi kolumnami.
+- Sekcja `Przegladaj tez` pozostaje w SSR i na desktopie, ale jest ukryta wizualnie ponizej `620 px`, gdzie dublowala pasek popularnych kategorii.
+- Przy `320 px` pierwsza oferta zaczyna sie na `y=582` zamiast `y=803`; przy `390 px` na `y=604` zamiast `y=799`.
+- Kontrola przy `280`, `300`, `320`, `360`, `390` i `430 px` potwierdzila brak overflow i bledow oraz rowne kontrolki.
+- Nie zmieniono tytulow, opisow, SEO, linkow SSR, API, cache, danych Allegro, ENV ani Nginx.
+- Szczegoly i rollback sa w `docs/RELEASE_1.18.1.md`.
 
 ## Wersja produkcyjna 1.18.0
 

@@ -1,9 +1,10 @@
 # BookLoft sklep
 
+Wersja rozwojowa: `1.18.1` na branchu `ver-1.18` (przed deployem).
 Wersja produkcyjna: `1.18.0` na branchu `ver-1.18`.
 Deploy wykonano `2026-07-21`; commit kodu wydania: `8be1f13`, tag `bookloftpl-v1.18.0`.
 
-Zakres i weryfikacja wydania sa opisane w `docs/RELEASE_1.18.0.md`.
+Zakres patcha mobilnego jest opisany w `docs/RELEASE_1.18.1.md`, a wydania bazowego w `docs/RELEASE_1.18.0.md`.
 
 Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://bookloft.pl/`. Katalog jest oparty bezposrednio o aktywne oferty Allegro konta BookLoft.
 

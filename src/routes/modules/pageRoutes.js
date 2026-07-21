@@ -363,17 +363,19 @@ function renderStorePage(config, storefront, { category = null, query = "", sort
       </div>
 
       ${renderPopularCategoryLinks(config, popularCategories, category?.id || "", storefront.meta?.productCount || storefront.products.length)}
-      <div class="mobile-categories">
-        <label for="category-select">Kategoria</label>
-        <select id="category-select">
-          ${categorySelect}
-        </select>
-      </div>
-      <div class="sort-box mobile-sort-box"${products.length ? "" : " hidden"}>
-        <label for="mobile-product-sort">Sortuj</label>
-        <select id="mobile-product-sort" data-product-sort>
-          ${sortSelect}
-        </select>
+      <div class="mobile-catalog-controls">
+        <div class="mobile-categories">
+          <label for="category-select">Kategoria</label>
+          <select id="category-select">
+            ${categorySelect}
+          </select>
+        </div>
+        <div class="sort-box mobile-sort-box"${products.length ? "" : " hidden"}>
+          <label for="mobile-product-sort">Sortuj</label>
+          <select id="mobile-product-sort" data-product-sort>
+            ${sortSelect}
+          </select>
+        </div>
       </div>
 
       <h2 class="listing-title" id="listing-title">${escapeHtml(pageMeta.listingTitle)}</h2>
