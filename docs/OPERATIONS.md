@@ -7,6 +7,22 @@ Stan produkcji: `1.18.1` na `ver-1.18`; commit kodu wydania `9997708`, tag `book
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
 
+## Wersja 1.19.0 - kandydat do wdrozenia
+
+- Dodaje nowe aktywne oferty z Allegro codziennie o `22:00`
+  `Europe/Warsaw`.
+- Automat wywoluje te sama metode i korzysta z tej samej kolejki co reczny
+  przycisk `Dodaj nowe`; reczny endpoint i UI pozostaja dostepne.
+- Zmiana czasu letniego i zimowego jest obslugiwana przez jawna strefe IANA,
+  a start po przestoju nadgania jedna pominieta probe.
+- Chroniony status panelu pokazuje konfiguracje, kolejny termin, ostatni wynik
+  i osobny blad automatu. Lokalny health pokazuje ograniczony stan bez tresci
+  bledu.
+- `cache-meta.json` dostaje addytywne pola proby, sukcesu, wyniku i bledu; nie
+  ma migracji pozostalych danych ani zmiany formatu ofert.
+- Testy przed wdrozeniem: `27/27`; `npm audit --omit=dev`: `0` podatnosci.
+- Szczegoly przeplywu, logow i rollbacku: `docs/RELEASE_1.19.0.md`.
+
 ## Wersja produkcyjna 1.18.1
 
 - Wdrozona `2026-07-21` na branchu `ver-1.18`, commit kodu `9997708`, tag `bookloftpl-v1.18.1`.
@@ -109,6 +125,10 @@ Opcjonalne:
 ```bash
 BOOKLOFT_STOCK_REFRESH_MS=1800000
 BOOKLOFT_CATALOG_REFRESH_MS=10800000
+BOOKLOFT_DAILY_ADD_NEW_ENABLED=true
+BOOKLOFT_DAILY_ADD_NEW_HOUR=22
+BOOKLOFT_DAILY_ADD_NEW_MINUTE=0
+BOOKLOFT_DAILY_ADD_NEW_TIME_ZONE=Europe/Warsaw
 ALLEGRO_REQUEST_TIMEOUT_MS=30000
 ALLEGRO_SCOPE=allegro:api:sale:offers:read
 ```
@@ -188,6 +208,27 @@ Skrypt najpierw synchronizuje liste aktywnych ofert, a potem wzbogaca brakujace 
 Zabezpieczenie dostepnosci przerywa zwykly refresh, gdy Allegro zwroci mniej niz 75% poprzedniej liczby aktywnych ofert przy katalogu majacym co najmniej 20 pozycji. Taki blad trzeba wyjasnic; nie obchodzic progu przez reczne kasowanie `published-offers.json`.
 
 Postep pelnego wzbogacenia jest zapisywany co 100 ofert w `journalctl -u bookloft-shop.service`. Szczegolowy lokalny status `/health` i chroniony `/api/status` zawieraja ostatni wynik wzbogacenia.
+
+## Automatyczne dodawanie nowych ofert
+
+Wersja `1.19.0` uruchamia odpowiednik panelowej akcji `Dodaj nowe` codziennie
+o `22:00` w strefie `Europe/Warsaw`. Nie tworz osobnego crona ani timera
+systemd: harmonogram jest czescia procesu sklepu i korzysta ze wspolnej
+kolejki operacji cache.
+
+Diagnostyka:
+
+```bash
+curl -s http://127.0.0.1:3205/health
+journalctl -u bookloft-shop.service --since today --no-pager \
+  | grep 'bookloft.daily_add_new'
+```
+
+Oczekiwane zdarzenia to `scheduled`, `started`, `completed` albo `failed`.
+Po przestoju start po `22:00` wykonuje jedno nadrobienie, jesli
+`lastAutomaticAddNewAttemptAt` nie pochodzi z biezacego polskiego dnia.
+Nie kasuj tego pola recznie w celu ponawiania; najpierw usun przyczyne bledu,
+a w razie potrzeby skorzystaj z istniejacego przycisku w `/panel`.
 
 ## Nginx
 

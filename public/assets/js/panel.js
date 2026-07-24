@@ -10,6 +10,8 @@ const fields = {
   catalog: document.querySelector("#catalog-updated"),
   context: document.querySelector("#allegro-context"),
   connection: document.querySelector("#allegro-connection"),
+  automaticAddNew: document.querySelector("#automatic-add-new"),
+  automaticAddNewLast: document.querySelector("#automatic-add-new-last"),
   error: document.querySelector("#last-error")
 };
 
@@ -54,6 +56,10 @@ async function loadStatus() {
   fields.connection.textContent = status.allegro?.connected
     ? `Połączone, token do ${formatDate(status.allegro.expiresAt)}`
     : "Niepołączone";
+  fields.automaticAddNew.textContent = status.automaticAddNew?.enabled
+    ? `${formatScheduleTime(status.automaticAddNew)}; następne: ${formatDate(status.automaticAddNew.nextRunAt)}`
+    : "Wyłączone";
+  fields.automaticAddNewLast.textContent = formatAutomaticAddNewResult(status.automaticAddNew);
   fields.error.textContent = status.lastError ? `${status.lastErrorAt || ""} ${status.lastError}` : "Brak";
 }
 
@@ -67,4 +73,23 @@ function formatDate(value) {
     dateStyle: "short",
     timeStyle: "short"
   }).format(new Date(value));
+}
+
+function formatScheduleTime(schedule) {
+  const hour = String(schedule.hour ?? 0).padStart(2, "0");
+  const minute = String(schedule.minute ?? 0).padStart(2, "0");
+  return `codziennie ${hour}:${minute} (${schedule.timeZone || "Europe/Warsaw"})`;
+}
+
+function formatAutomaticAddNewResult(schedule) {
+  if (!schedule) return "Jeszcze nie uruchomiono";
+  const lastSuccessAt = Date.parse(schedule.lastSuccessAt || "");
+  const lastErrorAt = Date.parse(schedule.lastErrorAt || "");
+  if (Number.isFinite(lastErrorAt) && (!Number.isFinite(lastSuccessAt) || lastErrorAt > lastSuccessAt)) {
+    return `Błąd ${formatDate(schedule.lastErrorAt)}: ${schedule.lastError || "nie udało się dodać ofert"}`;
+  }
+  if (schedule.lastSuccessAt) {
+    return `${formatDate(schedule.lastSuccessAt)}; dodano: ${schedule.lastResult?.addedCount ?? 0}`;
+  }
+  return "Jeszcze nie uruchomiono";
 }

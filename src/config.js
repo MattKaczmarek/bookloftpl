@@ -49,7 +49,7 @@ export function appPath(basePath, relativePath = "") {
 const resolvedBasePath = normalizeBasePath(env("BOOKLOFT_BASE_PATH") || "/");
 
 export const config = {
-  version: "1.18.1",
+  version: "1.19.0",
   appRoot,
   publicDir: path.join(appRoot, "public"),
   port: intEnv("BOOKLOFT_PORT", 3205),
@@ -78,6 +78,10 @@ export const config = {
   allegroOfferLimit: intEnv("ALLEGRO_OFFER_LIMIT", 1000),
   stockRefreshMs: msEnv("BOOKLOFT_STOCK_REFRESH_MS", 30 * 60 * 1000),
   catalogRefreshMs: msEnv("BOOKLOFT_CATALOG_REFRESH_MS", 3 * 60 * 60 * 1000),
+  dailyAddNewEnabled: boolEnv("BOOKLOFT_DAILY_ADD_NEW_ENABLED", true),
+  dailyAddNewHour: intEnv("BOOKLOFT_DAILY_ADD_NEW_HOUR", 22),
+  dailyAddNewMinute: intEnv("BOOKLOFT_DAILY_ADD_NEW_MINUTE", 0),
+  dailyAddNewTimeZone: env("BOOKLOFT_DAILY_ADD_NEW_TIME_ZONE") || "Europe/Warsaw",
   requestTimeoutMs: msEnv(["ALLEGRO_REQUEST_TIMEOUT_MS", "BOOKLOFT_REQUEST_TIMEOUT_MS"], 30000)
 };
 

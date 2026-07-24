@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import path from "node:path";
 import { AllegroClient } from "../lib/allegroClient.js";
+import { DailyTaskScheduler } from "../lib/dailyTaskScheduler.js";
 import { normalizeDescriptionHtml, richTextToHtml, stripHtml } from "../lib/html.js";
 import { ensureDir, readJson, writeJson } from "../lib/jsonStore.js";
 
@@ -70,6 +71,11 @@ function emptyMeta(version) {
     lastStockRefreshAt: null,
     lastCatalogRefreshAt: null,
     lastAddNewAt: null,
+    lastAutomaticAddNewAttemptAt: null,
+    lastAutomaticAddNewAt: null,
+    lastAutomaticAddNewResult: null,
+    lastAutomaticAddNewErrorAt: null,
+    lastAutomaticAddNewError: null,
     lastDetailEnrichmentAt: null,
     lastDetailEnrichment: null,
     lastOAuthAt: null,
@@ -92,6 +98,14 @@ export class StoreCache {
     };
     this.queue = Promise.resolve();
     this.detailEnrichmentQueued = false;
+    this.dailyAddNewScheduler = new DailyTaskScheduler({
+      enabled: config.dailyAddNewEnabled !== false,
+      hour: Number.isInteger(config.dailyAddNewHour) ? config.dailyAddNewHour : 22,
+      minute: Number.isInteger(config.dailyAddNewMinute) ? config.dailyAddNewMinute : 0,
+      timeZone: config.dailyAddNewTimeZone || "Europe/Warsaw",
+      task: () => this.addNewProducts("daily-schedule"),
+      onEvent: (event, details) => this.logDailyAddNewEvent(event, details)
+    });
   }
 
   async init() {
@@ -105,7 +119,7 @@ export class StoreCache {
     await this.rebuildStorefront();
   }
 
-  schedule() {
+  async schedule() {
     setInterval(() => {
       this.refreshStock("schedule").catch((error) => this.rememberScheduledError(error));
     }, this.config.stockRefreshMs).unref();
@@ -117,6 +131,11 @@ export class StoreCache {
     setTimeout(() => {
       this.refreshStock("startup").catch((error) => this.rememberScheduledError(error));
     }, 2500).unref();
+
+    const meta = await this.readMeta();
+    await this.dailyAddNewScheduler.start({
+      lastAttemptAt: meta.lastAutomaticAddNewAttemptAt || null
+    });
   }
 
   async getStorefront() {
@@ -213,6 +232,15 @@ export class StoreCache {
       allegro: this.publicAllegroStatus(auth),
       lastError: meta.lastError,
       lastErrorAt: meta.lastErrorAt,
+      lastAddNewAt: meta.lastAddNewAt || null,
+      automaticAddNew: {
+        ...this.dailyAddNewScheduler.getStatus(),
+        lastAttemptAt: meta.lastAutomaticAddNewAttemptAt || null,
+        lastSuccessAt: meta.lastAutomaticAddNewAt || null,
+        lastResult: meta.lastAutomaticAddNewResult || null,
+        lastErrorAt: meta.lastAutomaticAddNewErrorAt || null,
+        lastError: meta.lastAutomaticAddNewError || null
+      },
       lastDetailEnrichmentAt: meta.lastDetailEnrichmentAt || null,
       lastDetailEnrichment: meta.lastDetailEnrichment || null,
       runningAction: meta.runningAction
@@ -252,12 +280,19 @@ export class StoreCache {
     return this.publicAllegroStatus(auth);
   }
 
-  async addNewProducts() {
+  async addNewProducts(reason = "manual") {
     return this.runExclusive("add-new-offers", async () => {
-      await this.markRunning("add-new-offers");
+      const automatic = reason === "daily-schedule";
+      await this.markRunning(automatic ? "add-new-offers:daily-schedule" : "add-new-offers");
       const startedAt = nowIso();
 
       try {
+        if (automatic) {
+          const meta = await this.readMeta();
+          meta.lastAutomaticAddNewAttemptAt = startedAt;
+          await writeJson(this.files.meta, meta);
+        }
+
         const listingMap = await this.fetchActiveOfferMap();
         const published = await this.readPublished();
         assertReasonableActiveOfferSnapshot(published.activeOfferIds, listingMap);
@@ -288,21 +323,33 @@ export class StoreCache {
         await writeJson(this.files.published, published);
         await this.refreshOfferCacheLocked("add-new-offers", listingMap);
 
-        const meta = await this.readMeta();
-        meta.lastAddNewAt = startedAt;
-        meta.lastStockRefreshAt = startedAt;
-        meta.lastError = null;
-        meta.lastErrorAt = null;
-        await writeJson(this.files.meta, meta);
-
-        return {
+        const result = {
           addedCount: addedIds.length,
           addedOfferIds: addedIds,
           availableOfferCount: Object.keys(listingMap).length,
           activeProductCount: published.activeOfferIds.length
         };
+        const meta = await this.readMeta();
+        meta.lastAddNewAt = startedAt;
+        meta.lastStockRefreshAt = startedAt;
+        meta.lastError = null;
+        meta.lastErrorAt = null;
+        if (automatic) {
+          meta.lastAutomaticAddNewAt = startedAt;
+          meta.lastAutomaticAddNewResult = {
+            completedAt: nowIso(),
+            addedCount: result.addedCount,
+            availableOfferCount: result.availableOfferCount,
+            activeProductCount: result.activeProductCount
+          };
+          meta.lastAutomaticAddNewErrorAt = null;
+          meta.lastAutomaticAddNewError = null;
+        }
+        await writeJson(this.files.meta, meta);
+
+        return result;
       } catch (error) {
-        await this.rememberError(error);
+        await this.rememberAddNewError(error, { automatic });
         throw error;
       } finally {
         await this.clearRunning();
@@ -766,6 +813,19 @@ export class StoreCache {
     await writeJson(this.files.meta, meta);
   }
 
+  async rememberAddNewError(error, { automatic = false } = {}) {
+    const meta = await this.readMeta();
+    const errorAt = nowIso();
+    const message = error.message || String(error);
+    meta.lastErrorAt = errorAt;
+    meta.lastError = message;
+    if (automatic) {
+      meta.lastAutomaticAddNewErrorAt = errorAt;
+      meta.lastAutomaticAddNewError = message;
+    }
+    await writeJson(this.files.meta, meta);
+  }
+
   async rememberScheduledError(error) {
     if (isMissingAllegroAuthError(error)) return;
     await this.rememberError(error);
@@ -780,6 +840,26 @@ export class StoreCache {
     const run = this.queue.then(fn, fn);
     this.queue = run.catch(() => undefined);
     return run;
+  }
+
+  logDailyAddNewEvent(event, details = {}) {
+    const payload = {
+      timestamp: nowIso(),
+      event: `bookloft.daily_add_new.${event}`,
+      trigger: details.trigger || undefined,
+      scheduledFor: details.scheduledFor || undefined,
+      nextRunAt: details.nextRunAt || undefined
+    };
+    if (details.result) {
+      payload.addedCount = Number(details.result.addedCount) || 0;
+      payload.availableOfferCount = Number(details.result.availableOfferCount) || 0;
+      payload.activeProductCount = Number(details.result.activeProductCount) || 0;
+    }
+    if (details.error) payload.error = String(details.error);
+
+    const line = JSON.stringify(payload);
+    if (event === "failed") console.error(line);
+    else console.log(line);
   }
 }
 

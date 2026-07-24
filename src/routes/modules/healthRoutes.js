@@ -28,7 +28,16 @@ export function createHealthRouter(config, storeCache) {
           catalogUpdatedAt: status.catalogUpdatedAt,
           visibleProductCount: status.visibleProductCount,
           lastErrorAt: status.lastErrorAt,
-          allegroConnected: Boolean(status.allegro?.connected)
+          allegroConnected: Boolean(status.allegro?.connected),
+          automaticAddNew: {
+            enabled: Boolean(status.automaticAddNew?.enabled),
+            hour: status.automaticAddNew?.hour,
+            minute: status.automaticAddNew?.minute,
+            timeZone: status.automaticAddNew?.timeZone,
+            nextRunAt: status.automaticAddNew?.nextRunAt,
+            lastSuccessAt: status.automaticAddNew?.lastSuccessAt,
+            lastErrorAt: status.automaticAddNew?.lastErrorAt
+          }
         }
       });
     })

@@ -16,6 +16,8 @@ Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://booklo
 - API katalogu pod `/api`,
 - publiczny katalog bez logowania oraz panel administratora chroniony logowaniem na podstawie zmiennych ENV,
 - OAuth Allegro dla konta sprzedawcy,
+- automatyczne dodawanie nowych aktywnych ofert codziennie o `22:00`
+  `Europe/Warsaw`, z zachowaniem recznej akcji w panelu,
 - cache ofert, cen, zdjec, stanow i kategorii z Allegro,
 - linki `Kup na Allegro` prowadzace bezposrednio do `https://allegro.pl/oferta/:id`,
 - osobna strona `/o-nas` z opisem BookLoft,
@@ -62,6 +64,10 @@ Opcjonalne:
 ```bash
 BOOKLOFT_STOCK_REFRESH_MS=1800000
 BOOKLOFT_CATALOG_REFRESH_MS=10800000
+BOOKLOFT_DAILY_ADD_NEW_ENABLED=true
+BOOKLOFT_DAILY_ADD_NEW_HOUR=22
+BOOKLOFT_DAILY_ADD_NEW_MINUTE=0
+BOOKLOFT_DAILY_ADD_NEW_TIME_ZONE=Europe/Warsaw
 ALLEGRO_REQUEST_TIMEOUT_MS=30000
 ALLEGRO_SCOPE=allegro:api:sale:offers:read
 ```
@@ -92,9 +98,13 @@ Zasady:
 
 - stany/ceny aktywnych ofert odswiezaja sie co 30 minut,
 - katalog/kategorie odswiezaja sie co 3 godziny,
-- automatyczny refresh nie dodaje nowych ofert do katalogu,
+- cykliczny refresh stanow i katalogu nie publikuje nowych ID samodzielnie,
 - oferta bez stanu `>= 1` albo nieaktywna znika z katalogu,
-- nowa oferta aktywna na Allegro pojawia sie po akcji `Dodaj nowe` w panelu.
+- nowe aktywne oferty sa dodawane codziennie o `22:00`
+  `Europe/Warsaw`; po przestoju pierwsze uruchomienie po tej godzinie wykonuje
+  jedno nadrobienie,
+- przycisk `Dodaj nowe` w panelu pozostaje dostepny i korzysta z tej samej
+  kolejki oraz logiki co automat,
 - przy wycofaniu oferty zapisywane sa tylko dane potrzebne stronie `410`: identyfikator, nazwa, slug, pierwsze zdjecie, kategoria i data usuniecia; cena i opis nie sa utrwalane w historycznym snapshotcie,
 - ponowne dodanie tej samej oferty usuwa jej znacznik wycofania i snapshot.
 - pelne wzbogacenie cache laczy parametry ofertowe i produktowe Allegro w paczkach po 5 ofert; stary cache pozostaje dostepny do atomowego zapisu wyniku, a blad pojedynczej oferty zachowuje jej poprzednie dane,

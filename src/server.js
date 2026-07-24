@@ -13,7 +13,7 @@ app.locals.config = config;
 app.use(securityHeaders);
 
 await storeCache.init();
-storeCache.schedule();
+await storeCache.schedule();
 
 app.use(config.basePath, createRouter(config, storeCache));
 

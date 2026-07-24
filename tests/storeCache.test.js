@@ -99,12 +99,17 @@ test("removed offers retain a lightweight snapshot and clear it after reactivati
     "1": listing(1, "Achaja Tomy 1-3 / Andrzej Ziemiański"),
     "2": listing(2, "Achaja Tom 1 / Andrzej Ziemiański")
   });
-  await cache.addNewProducts();
+  await cache.addNewProducts("daily-schedule");
 
   const reactivated = JSON.parse(await readFile(cache.files.published, "utf8"));
   assert.equal(reactivated.removedByUnavailable["1"], undefined);
   assert.equal(reactivated.removedOfferSnapshots["1"], undefined);
   assert.equal(await cache.getMissingProductStatus("1"), 404);
+  const status = await cache.getStatus();
+  assert.equal(typeof status.automaticAddNew.lastAttemptAt, "string");
+  assert.equal(typeof status.automaticAddNew.lastSuccessAt, "string");
+  assert.equal(status.automaticAddNew.lastResult.addedCount, 1);
+  assert.equal(status.automaticAddNew.lastError, null);
 });
 
 test("availability refresh repairs a product visible in storefront but missing from published ids", async (t) => {

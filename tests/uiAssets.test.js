@@ -35,3 +35,16 @@ test("page reveal respects motion preferences and touch targets stay accessible"
   assert.match(styles, /\.cookie-consent-actions button \{\s*min-height: 44px/);
   assert.match(productScript, /class="lightbox-arrow lightbox-arrow-prev"[^\n]+galleryArrowIcon\("previous"\)/);
 });
+
+test("admin panel keeps manual Allegro import and exposes the daily schedule", async () => {
+  const [panelTemplate, panelScript] = await Promise.all([
+    asset("public/panel.html"),
+    asset("public/assets/js/panel.js")
+  ]);
+
+  assert.match(panelTemplate, /id="add-new"[^>]*>Dodaj nowe</);
+  assert.match(panelTemplate, /id="automatic-add-new"/);
+  assert.match(panelTemplate, /id="automatic-add-new-last"/);
+  assert.match(panelScript, /fetch\("\/api\/admin\/add-new"/);
+  assert.match(panelScript, /codziennie \$\{hour\}:\$\{minute\}/);
+});
