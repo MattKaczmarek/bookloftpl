@@ -90,6 +90,19 @@ identyfikatory dodanych ofert nie sa logowane.
 5. Po pierwszym wykonaniu o `22:00` nalezy potwierdzic zdarzenia
    `started` i `completed` oraz zapis `lastSuccessAt`.
 
+Wdrozenie `2026-07-24` na branchu `ver-1.19`, commit kodu `3822480`:
+
+- produkcyjne testy `27/27`,
+- `npm audit --omit=dev`: `0` podatnosci,
+- lokalny health: `status=ok`, `version=1.19.0`, Allegro polaczone, brak
+  bledu cache,
+- harmonogram aktywny, `nextRunAt=2026-07-24T20:00:00.000Z`, czyli `22:00`
+  `Europe/Warsaw`,
+- chroniony `/api/status` i panel potwierdzily automat oraz zachowany reczny
+  przycisk bez uruchamiania operacji,
+- `bookloft-shop.service`: `active/running`, `NRestarts=0`, brak warningow od
+  restartu.
+
 ## Rollback
 
 Powrot do `ver-1.18` wylacza harmonogram. Istniejace pliki ofert pozostaja

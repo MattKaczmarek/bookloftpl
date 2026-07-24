@@ -1,14 +1,16 @@
 # Operacje BookLoft sklep
 
-Stan dokumentu: `2026-07-21`.
-Wersja produkcyjna: `1.18.1`.
-Branch produkcyjny: `ver-1.18`.
-Stan produkcji: `1.18.1` na `ver-1.18`; commit kodu wydania `9997708`, tag `bookloftpl-v1.18.1`.
+Stan dokumentu: `2026-07-24`.
+Wersja produkcyjna: `1.19.0`.
+Branch produkcyjny: `ver-1.19`.
+Stan produkcji: `1.19.0` na `ver-1.19`; commit kodu wydania `3822480`, tag `bookloftpl-v1.19.0`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service`.
 
-## Wersja 1.19.0 - kandydat do wdrozenia
+## Wersja produkcyjna 1.19.0
 
+- Wdrozona `2026-07-24` na branchu `ver-1.19`, commit kodu `3822480`, tag
+  `bookloftpl-v1.19.0`.
 - Dodaje nowe aktywne oferty z Allegro codziennie o `22:00`
   `Europe/Warsaw`.
 - Automat wywoluje te sama metode i korzysta z tej samej kolejki co reczny
@@ -21,6 +23,12 @@ Usluga aplikacji: `bookloft-shop.service`.
 - `cache-meta.json` dostaje addytywne pola proby, sukcesu, wyniku i bledu; nie
   ma migracji pozostalych danych ani zmiany formatu ofert.
 - Testy przed wdrozeniem: `27/27`; `npm audit --omit=dev`: `0` podatnosci.
+- Te same testy produkcyjne przeszly `27/27`. Health pokazal wersje `1.19.0`,
+  aktywne Allegro, `2023` widoczne oferty, brak bledu oraz nastepny termin
+  `2026-07-24T20:00:00.000Z`, czyli `22:00` czasu polskiego.
+- Uwierzytelniony live-check potwierdzil panel, reczny przycisk i chroniony
+  status automatu. Usluga pozostala `active/running` z `NRestarts=0`, a log od
+  restartu nie zawieral ostrzezen.
 - Szczegoly przeplywu, logow i rollbacku: `docs/RELEASE_1.19.0.md`.
 
 ## Wersja produkcyjna 1.18.1
@@ -182,7 +190,7 @@ Jesli token wygasnie albo zostanie cofniety, w panelu pojawi sie blad i trzeba p
 ```bash
 cd /home/bookloftpl
 git fetch
-git switch ver-1.17
+git switch ver-1.19
 git pull --ff-only
 npm ci --omit=dev
 systemctl restart bookloft-shop.service

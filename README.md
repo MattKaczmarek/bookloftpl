@@ -1,9 +1,9 @@
 # BookLoft sklep
 
-Wersja produkcyjna: `1.18.1` na branchu `ver-1.18`.
-Deploy wykonano `2026-07-21`; commit kodu wydania: `9997708`, tag `bookloftpl-v1.18.1`.
+Wersja produkcyjna: `1.19.0` na branchu `ver-1.19`.
+Deploy wykonano `2026-07-24`; commit kodu wydania: `3822480`, tag `bookloftpl-v1.19.0`.
 
-Zakres patcha mobilnego jest opisany w `docs/RELEASE_1.18.1.md`, a wydania bazowego w `docs/RELEASE_1.18.0.md`.
+Automatyczne dodawanie ofert jest opisane w `docs/RELEASE_1.19.0.md`.
 
 Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://bookloft.pl/`. Katalog jest oparty bezposrednio o aktywne oferty Allegro konta BookLoft.
 
@@ -200,7 +200,7 @@ Standard:
 
 1. zmiana lokalna,
 2. `git push`,
-3. na Hetznerze: `cd /home/bookloftpl && git fetch && git switch ver-1.17 && git pull --ff-only`,
+3. na Hetznerze: `cd /home/bookloftpl && git fetch && git switch ver-1.19 && git pull --ff-only`,
 4. uzupelnienie ENV Allegro w `/etc/bookloft-shop/bookloft-shop.env`,
 5. `npm ci --omit=dev`,
 6. restart uslugi sklepu,
