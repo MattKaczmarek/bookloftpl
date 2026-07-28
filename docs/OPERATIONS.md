@@ -18,8 +18,8 @@ Patrz `1.19.1` i `deploy/bookloft-shop.service.example`.
   `ReadWritePaths=/var/lib/bookloft-shop`, `UMask=0077`,
   `InaccessiblePaths` m.in. `/etc/bookloft-asystent` i `/home/bookloft`).
 - `ExecStart` uzywa `/usr/bin/node .../src/server.js` zamiast `npm start`.
-- Przed restartem: `useradd` `bookloft-shop` (jednorazowo),
-  `chown root:bookloft-shop` + `chmod 640` na ENV sklepu oraz
+- Przed restartem: `useradd` `bookloft-shop` (jednorazowo), katalog ENV
+  `root:bookloft-shop` + `0750`, sam plik ENV `root:bookloft-shop` + `0640` oraz
   `chown -R bookloft-shop:bookloft-shop /var/lib/bookloft-shop`.
 - Po starcie weryfikuj: `User=bookloft-shop` oraz ze `bookloft-shop`
   **nie** czyta ENV Asystenta ani kluczy w `/home/bookloft/.ssh`.
@@ -216,14 +216,20 @@ npm ci --omit=dev
 id bookloft-shop 2>/dev/null || useradd --system --home /var/lib/bookloft-shop \
   --shell /usr/sbin/nologin --user-group bookloft-shop
 install -m 644 deploy/bookloft-shop.service.example /etc/systemd/system/bookloft-shop.service
+chown root:bookloft-shop /etc/bookloft-shop
+chmod 750 /etc/bookloft-shop
 chown root:bookloft-shop /etc/bookloft-shop/bookloft-shop.env
 chmod 640 /etc/bookloft-shop/bookloft-shop.env
 chown -R bookloft-shop:bookloft-shop /var/lib/bookloft-shop
 chmod 750 /var/lib/bookloft-shop
+systemd-analyze verify /etc/systemd/system/bookloft-shop.service
 systemctl daemon-reload
 systemctl restart bookloft-shop.service
 systemctl show bookloft-shop.service -p User -p ActiveState --value
 curl -sS http://127.0.0.1:3205/health
+# konto uslugi musi czytac wlasny ENV przez katalog nadrzedny
+sudo -u bookloft-shop test -r /etc/bookloft-shop/bookloft-shop.env \
+  && echo OK_shop_env || echo FAIL_shop_env
 # izolacja: bookloft-shop nie moze czytac ENV Asystenta
 sudo -u bookloft-shop test -r /etc/bookloft-asystent/bookloft-asystent.env \
   && echo FAIL || echo OK_isolated

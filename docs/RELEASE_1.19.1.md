@@ -27,7 +27,8 @@ formatu cache.
    - `InaccessiblePaths` obejmuje m.in. `/home/bookloft`,
      `/home/bookloft-asystent`, `/etc/bookloft-asystent` oraz katalogi botow
 2. Numer wersji aplikacji: `1.19.1` (`package.json`, `src/config.js`).
-3. Dokumentacja OPERATIONS/README opisuje `useradd` i uprawnienia plikow.
+3. Dokumentacja OPERATIONS/README opisuje `useradd` i uprawnienia katalogu
+   oraz pliku ENV.
 
 ## Wymagane kroki na serwerze (przy deployu)
 
@@ -36,7 +37,10 @@ formatu cache.
 id bookloft-shop 2>/dev/null || useradd --system --home /var/lib/bookloft-shop \
   --shell /usr/sbin/nologin --user-group bookloft-shop
 
-# 2. ENV tylko dla sklepu — NIE root:bookloft
+# 2. ENV tylko dla sklepu — katalog musi pozwalac grupie na przejscie;
+#    NIE root:bookloft
+chown root:bookloft-shop /etc/bookloft-shop
+chmod 750 /etc/bookloft-shop
 chown root:bookloft-shop /etc/bookloft-shop/bookloft-shop.env
 chmod 640 /etc/bookloft-shop/bookloft-shop.env
 
@@ -51,6 +55,7 @@ chmod 750 /var/lib/bookloft-shop
 # 5. Unit z repo
 install -m 644 /home/bookloftpl/deploy/bookloft-shop.service.example \
   /etc/systemd/system/bookloft-shop.service
+systemd-analyze verify /etc/systemd/system/bookloft-shop.service
 systemctl daemon-reload
 systemctl restart bookloft-shop.service
 
@@ -68,7 +73,7 @@ curl -sS http://127.0.0.1:3205/health
 Oczekiwane:
 
 - proces Node sklepu jako **`bookloft-shop`**, nie `root` i nie `bookloft`
-- health `ok`, wersja `1.19.1`
+- `shop_env_ok`, health `ok`, wersja `1.19.1`
 - `OK_cannot_read_asystent_env` i `OK_cannot_read_upload_key`
 - `NRestarts=0` po stabilnym starcie
 
