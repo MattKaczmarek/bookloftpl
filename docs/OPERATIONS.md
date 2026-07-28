@@ -3,14 +3,14 @@
 Stan dokumentu: `2026-07-28`.
 Wersja w tej galezi: `1.19.1`.
 Branch produkcyjny: `ver-1.19`.
-Stan produkcji na Hetznerze do deployu `1.19.1`: `1.19.0` na `ver-1.19`;
-commit kodu wydania `3822480`, tag `bookloftpl-v1.19.0`.
+Stan produkcji na Hetznerze: `1.19.1` na `ver-1.19`; commit kodu
+`f861b4c`, tag `bookloftpl-v1.19.1`, wdrozone `2026-07-28`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service` — **musi dzialac jako
 `User=bookloft-shop`**, nie jako `root` i nie jako `bookloft` (Asystent).
 Patrz `1.19.1` i `deploy/bookloft-shop.service.example`.
 
-## Wersja 1.19.1 (Git; deploy osobno)
+## Wersja produkcyjna 1.19.1
 
 - Patch bezpieczenstwa: unit systemd sklepu jako **`bookloft-shop:bookloft-shop`**
   (osobne konto; **nie** `root` i **nie** shared `bookloft` z Asystentem) z
@@ -25,6 +25,11 @@ Patrz `1.19.1` i `deploy/bookloft-shop.service.example`.
   **nie** czyta ENV Asystenta ani kluczy w `/home/bookloft/.ssh`.
 - Brak zmian storefront, Allegro, cache, SEO, ENV aplikacji.
 - Pelny runbook: `docs/RELEASE_1.19.1.md`.
+- Deploy `2026-07-28`: lokalnie `27/27` testow i `0` podatnosci; produkcyjny
+  health `ok`, aktywne Allegro, brak ostatniego bledu cache, `NRestarts=0`
+  i zero warningow/bledow od startu. Unit dziala jako
+  `bookloft-shop:bookloft-shop`; konto czyta wlasny ENV, ale nie czyta ENV
+  Asystenta ani jego klucza uploadowego. Publiczny katalog zwraca `200`.
 
 ## Wersja produkcyjna 1.19.0
 

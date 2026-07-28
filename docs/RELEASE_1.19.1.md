@@ -82,6 +82,20 @@ Oczekiwane:
 `systemd-run` do `refresh-production-cache.js` musi uzywac
 `User=bookloft-shop` / `Group=bookloft-shop` (nie `bookloft`).
 
+## Deploy 2026-07-28
+
+Produkcja dziala na branchu `ver-1.19`, commicie kodu `f861b4c` i tagu
+`bookloftpl-v1.19.1`. Lokalnie przeszlo `27/27` testow oraz
+`npm audit --omit=dev` z wynikiem `0` podatnosci.
+
+Po wdrozeniu unit i proces Node dzialaja jako osobne konto
+`bookloft-shop:bookloft-shop` (`NRestarts=0`). Katalog ENV ma
+`root:bookloft-shop 0750`, plik ENV `root:bookloft-shop 0640`, a runtime
+`bookloft-shop:bookloft-shop 0750`. Konto czyta wlasny ENV i kod, ale nie
+czyta ENV Asystenta ani jego klucza uploadowego. Health `1.19.1` jest `ok`,
+Allegro pozostaje polaczone, ostatni blad cache jest pusty, publiczny katalog
+zwraca `200`, a journal od startu nie zawiera warningow ani bledow.
+
 ## Rollback
 
 Przywroc poprzedni unit i commit `1.19.0`, `daemon-reload`, restart.

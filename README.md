@@ -1,8 +1,8 @@
 # BookLoft sklep
 
 Wersja w tej galezi: `1.19.1` na branchu `ver-1.19`.
-Ostatni deploy produkcyjny do czasu wdrozenia `1.19.1`: `1.19.0`
-(`2026-07-24`, commit `3822480`, tag `bookloftpl-v1.19.0`).
+Produkcja: `1.19.1`, wdrozone `2026-07-28`, commit kodu `f861b4c`, tag
+`bookloftpl-v1.19.1`; usluga dziala jako osobne konto `bookloft-shop`.
 
 - Automatyczne dodawanie ofert: `docs/RELEASE_1.19.0.md`
 - Off-root systemd jako `bookloft-shop` (nie shared `bookloft`):
