@@ -1,15 +1,46 @@
 [Unit]
 Description=BookLoft shop
 After=network.target
+Documentation=file:///home/bookloftpl/docs/OPERATIONS.md
 
 [Service]
 Type=simple
+User=bookloft
+Group=bookloft
 WorkingDirectory=/home/bookloftpl
 EnvironmentFile=/etc/bookloft-shop/bookloft-shop.env
-ExecStart=/usr/bin/npm start
+# Prefer direct node over `npm start` so the service does not depend on npm
+# writing caches under the service user.
+ExecStart=/usr/bin/node /home/bookloftpl/src/server.js
 Restart=always
 RestartSec=5
-User=root
+
+# Least privilege: the shop process must not run as root.
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=read-only
+# Runtime cache, OAuth tokens and storefront JSON live here only.
+ReadWritePaths=/var/lib/bookloft-shop
+InaccessiblePaths=/root /home/bookloft-asystent /home/bot-andrzej /home/bot-jaroslaw
+ProtectHostname=true
+ProtectClock=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectProc=invisible
+ProcSubset=pid
+RestrictRealtime=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+LockPersonality=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+SystemCallArchitectures=native
+UMask=0077
 
 [Install]
 WantedBy=multi-user.target
