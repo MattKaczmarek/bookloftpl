@@ -6,18 +6,23 @@ Branch produkcyjny: `ver-1.19`.
 Stan produkcji na Hetznerze do deployu `1.19.1`: `1.19.0` na `ver-1.19`;
 commit kodu wydania `3822480`, tag `bookloftpl-v1.19.0`.
 Repo na Hetznerze: `/home/bookloftpl`.
-Usluga aplikacji: `bookloft-shop.service` — **musi dzialac jako `User=bookloft`**,
-nie jako `root` (patrz `1.19.1` i `deploy/bookloft-shop.service.example`).
+Usluga aplikacji: `bookloft-shop.service` — **musi dzialac jako
+`User=bookloft-shop`**, nie jako `root` i nie jako `bookloft` (Asystent).
+Patrz `1.19.1` i `deploy/bookloft-shop.service.example`.
 
 ## Wersja 1.19.1 (Git; deploy osobno)
 
-- Patch bezpieczenstwa: unit systemd sklepu jako `bookloft:bookloft` z
+- Patch bezpieczenstwa: unit systemd sklepu jako **`bookloft-shop:bookloft-shop`**
+  (osobne konto; **nie** `root` i **nie** shared `bookloft` z Asystentem) z
   hardeningiem (`NoNewPrivileges`, `ProtectSystem=strict`,
-  `ReadWritePaths=/var/lib/bookloft-shop`, `UMask=0077`).
+  `ReadWritePaths=/var/lib/bookloft-shop`, `UMask=0077`,
+  `InaccessiblePaths` m.in. `/etc/bookloft-asystent` i `/home/bookloft`).
 - `ExecStart` uzywa `/usr/bin/node .../src/server.js` zamiast `npm start`.
-- Przed restartem na serwerze: `chown root:bookloft` + `chmod 640` na
-  `/etc/bookloft-shop/bookloft-shop.env` oraz
-  `chown -R bookloft:bookloft /var/lib/bookloft-shop`.
+- Przed restartem: `useradd` `bookloft-shop` (jednorazowo),
+  `chown root:bookloft-shop` + `chmod 640` na ENV sklepu oraz
+  `chown -R bookloft-shop:bookloft-shop /var/lib/bookloft-shop`.
+- Po starcie weryfikuj: `User=bookloft-shop` oraz ze `bookloft-shop`
+  **nie** czyta ENV Asystenta ani kluczy w `/home/bookloft/.ssh`.
 - Brak zmian storefront, Allegro, cache, SEO, ENV aplikacji.
 - Pelny runbook: `docs/RELEASE_1.19.1.md`.
 
@@ -207,17 +212,21 @@ git fetch
 git switch ver-1.19
 git pull --ff-only
 npm ci --omit=dev
-# Od 1.19.1: proces NIE moze byc root.
+# Od 1.19.1: osobne konto bookloft-shop (nie root, nie bookloft/Asystent).
+id bookloft-shop 2>/dev/null || useradd --system --home /var/lib/bookloft-shop \
+  --shell /usr/sbin/nologin --user-group bookloft-shop
 install -m 644 deploy/bookloft-shop.service.example /etc/systemd/system/bookloft-shop.service
-chown root:bookloft /etc/bookloft-shop/bookloft-shop.env
+chown root:bookloft-shop /etc/bookloft-shop/bookloft-shop.env
 chmod 640 /etc/bookloft-shop/bookloft-shop.env
-chown -R bookloft:bookloft /var/lib/bookloft-shop
+chown -R bookloft-shop:bookloft-shop /var/lib/bookloft-shop
 chmod 750 /var/lib/bookloft-shop
 systemctl daemon-reload
 systemctl restart bookloft-shop.service
-# potwierdz user=bookloft i health 1.19.1
 systemctl show bookloft-shop.service -p User -p ActiveState --value
 curl -sS http://127.0.0.1:3205/health
+# izolacja: bookloft-shop nie moze czytac ENV Asystenta
+sudo -u bookloft-shop test -r /etc/bookloft-asystent/bookloft-asystent.env \
+  && echo FAIL || echo OK_isolated
 ```
 
 Reload Nginx jest potrzebny tylko po zmianie konfiguracji reverse proxy. Zwykle zmiany UI/API wymagaja restartu `bookloft-shop.service`. Przy pierwszym
@@ -229,8 +238,8 @@ Po deployu wersji zmieniajacej schemat szczegolow ofert uruchom synchronizacje p
 
 ```bash
 systemd-run --quiet --wait --pipe --collect \
-  -p User=bookloft \
-  -p Group=bookloft \
+  -p User=bookloft-shop \
+  -p Group=bookloft-shop \
   -p WorkingDirectory=/home/bookloftpl \
   -p EnvironmentFile=/etc/bookloft-shop/bookloft-shop.env \
   /usr/bin/node /home/bookloftpl/scripts/refresh-production-cache.js

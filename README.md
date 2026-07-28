@@ -5,7 +5,8 @@ Ostatni deploy produkcyjny do czasu wdrozenia `1.19.1`: `1.19.0`
 (`2026-07-24`, commit `3822480`, tag `bookloftpl-v1.19.0`).
 
 - Automatyczne dodawanie ofert: `docs/RELEASE_1.19.0.md`
-- Off-root systemd / hardening uslugi: `docs/RELEASE_1.19.1.md`
+- Off-root systemd jako `bookloft-shop` (nie shared `bookloft`):
+  `docs/RELEASE_1.19.1.md`
 
 Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://bookloft.pl/`. Katalog jest oparty bezposrednio o aktywne oferty Allegro konta BookLoft.
 

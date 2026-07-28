@@ -5,8 +5,11 @@ Documentation=file:///home/bookloftpl/docs/OPERATIONS.md
 
 [Service]
 Type=simple
-User=bookloft
-Group=bookloft
+# Dedicated service account — must NOT be the same UID as bookloft-asystent
+# (bookloft). Shared UID would read Asystent ENV (root:bookloft 640) and
+# keys under /home/bookloft/.ssh.
+User=bookloft-shop
+Group=bookloft-shop
 WorkingDirectory=/home/bookloftpl
 EnvironmentFile=/etc/bookloft-shop/bookloft-shop.env
 # Prefer direct node over `npm start` so the service does not depend on npm
@@ -15,7 +18,7 @@ ExecStart=/usr/bin/node /home/bookloftpl/src/server.js
 Restart=always
 RestartSec=5
 
-# Least privilege: the shop process must not run as root.
+# Least privilege: never root; isolate from Asystent/bots secrets and homes.
 NoNewPrivileges=true
 PrivateTmp=true
 PrivateDevices=true
@@ -23,7 +26,9 @@ ProtectSystem=strict
 ProtectHome=read-only
 # Runtime cache, OAuth tokens and storefront JSON live here only.
 ReadWritePaths=/var/lib/bookloft-shop
-InaccessiblePaths=/root /home/bookloft-asystent /home/bot-andrzej /home/bot-jaroslaw
+# Code under /home/bookloftpl must stay world- or group-readable for this user;
+# do not grant write there. Hide Asystent home, bot homes, and Asystent ENV dir.
+InaccessiblePaths=/root /home/bookloft /home/bookloft-asystent /home/bot-andrzej /home/bot-jaroslaw /etc/bookloft-asystent
 ProtectHostname=true
 ProtectClock=true
 ProtectKernelTunables=true
