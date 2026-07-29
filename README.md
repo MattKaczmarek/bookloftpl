@@ -1,8 +1,8 @@
 # BookLoft sklep
 
 Wersja w tej galezi: `1.19.2` na branchu `ver-1.19.2`.
-Produkcja przed wdrozeniem tej galezi: `1.19.1` na `ver-1.19`, commit kodu
-`f861b4c`, tag `bookloftpl-v1.19.1`.
+Produkcja: `1.19.2` na `ver-1.19.2`, commit kodu `9e50073`, tag
+`bookloftpl-v1.19.2`; wdrozone `2026-07-29`.
 
 - Ochrona przed burstem SSR i OOM: `docs/RELEASE_1.19.2.md`
 - Automatyczne dodawanie ofert: `docs/RELEASE_1.19.0.md`

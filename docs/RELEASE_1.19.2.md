@@ -78,5 +78,13 @@ nie odswiezaj recznie cache.
 
 ## Status
 
-Przygotowano na branchu `ver-1.19.2`; status produkcyjny uzupelnij po
-wdrozeniu.
+Wdrozone `2026-07-29` na branchu `ver-1.19.2`, commit kodu `9e50073`, tag
+`bookloftpl-v1.19.2`.
+
+Preflight produkcyjnego ENV, `systemd-analyze verify` i `nginx -t` przeszly.
+Po kontrolowanym restarcie health zwrocil `ok` i wersje `1.19.2`, a nowy unit
+mial aktywne limity pamieci. Burst `60` rownoleglych requestow jednej strony
+produktu zakonczyl sie `16 x 200` oraz `44 x 429`; proces zachowal PID,
+`NRestarts=0`, a peak cgroup wyniosl ok. `273 MB` zamiast nocnych `2 GiB`.
+Publiczny root zwracal `200`, checkout byl czysty, a journal aplikacji od
+restartu nie zawieral warningow.

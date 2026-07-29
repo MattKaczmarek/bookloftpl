@@ -2,9 +2,9 @@
 
 Stan dokumentu: `2026-07-29`.
 Wersja w tej galezi: `1.19.2`.
-Branch wydania: `ver-1.19.2`.
-Stan produkcji przed wdrozeniem tej galezi: `1.19.1` na `ver-1.19`; commit kodu
-`f861b4c`, tag `bookloftpl-v1.19.1`, wdrozone `2026-07-28`.
+Branch produkcyjny: `ver-1.19.2`.
+Stan produkcji: `1.19.2`, commit kodu `9e50073`, tag
+`bookloftpl-v1.19.2`, wdrozone `2026-07-29`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service` — **musi dzialac jako
 `User=bookloft-shop`**, nie jako `root` i nie jako `bookloft` (Asystent).
@@ -44,7 +44,7 @@ branch.**
 Kanoniczna kopia reguly dla agentow: `bookloft-secrets/AGENTS.md`
 (sekcja mapa `bookloftpl`).
 
-## Wersja 1.19.2 - ochrona przed burstem SSR i OOM
+## Wersja produkcyjna 1.19.2 - ochrona przed burstem SSR i OOM
 
 - Incydent `2026-07-29 00:29 CEST`: jeden klient utrzymywal `83` rownolegle
   requesty SSR (`78` stron produktow). Proces osiagnal ok. `1.9 GiB` heap i
@@ -62,6 +62,11 @@ Kanoniczna kopia reguly dla agentow: `bookloft-secrets/AGENTS.md`
 - Nie zmienia sie format cache, katalog, SEO, ceny, dane ofert, harmonogram
   `22:00`, Allegro ani dane runtime. Szczegoly i rollback:
   [`docs/RELEASE_1.19.2.md`](./RELEASE_1.19.2.md).
+- Deploy `2026-07-29`: preflight produkcyjnego ENV, `systemd-analyze verify` i
+  `nginx -t` przeszly. Kontrolowany burst `60` requestow jednej strony
+  produktu zakonczyl sie `16 x 200` i `44 x 429`; PID pozostal bez zmian po
+  tescie, `NRestarts=0`, peak cgroup wyniosl ok. `273 MB`, health `1.19.2`
+  byl `ok`, root zwracal `200`, a journal aplikacji mial `0` warningow.
 
 ## Wersja produkcyjna 1.19.1
 
