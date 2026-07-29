@@ -1,14 +1,14 @@
 # Operacje BookLoft sklep
 
 Stan dokumentu: `2026-07-29`.
-Wersja w tej galezi: `1.19.1`.
-Branch produkcyjny: `ver-1.19`.
-Stan produkcji na Hetznerze: `1.19.1` na `ver-1.19`; commit kodu
+Wersja w tej galezi: `1.19.2`.
+Branch wydania: `ver-1.19.2`.
+Stan produkcji przed wdrozeniem tej galezi: `1.19.1` na `ver-1.19`; commit kodu
 `f861b4c`, tag `bookloftpl-v1.19.1`, wdrozone `2026-07-28`.
 Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service` — **musi dzialac jako
 `User=bookloft-shop`**, nie jako `root` i nie jako `bookloft` (Asystent).
-Patrz `1.19.1` i `deploy/bookloft-shop.service.example`.
+Patrz `docs/RELEASE_1.19.2.md` i `deploy/bookloft-shop.service.example`.
 
 ## Wersjonowanie i branche (obowiazkowe od 2026-07-29)
 
@@ -43,6 +43,25 @@ branch.**
 
 Kanoniczna kopia reguly dla agentow: `bookloft-secrets/AGENTS.md`
 (sekcja mapa `bookloftpl`).
+
+## Wersja 1.19.2 - ochrona przed burstem SSR i OOM
+
+- Incydent `2026-07-29 00:29 CEST`: jeden klient utrzymywal `83` rownolegle
+  requesty SSR (`78` stron produktow). Proces osiagnal ok. `1.9 GiB` heap i
+  zakonczyl sie V8 OOM; systemd odtworzyl go po 5 sekundach.
+- `storefront-cache.json` mial `9 120 974` bajty, a kazda strona produktu
+  uruchamiala dwa niezalezne odczyty i parsowania. `StoreCache` trzyma teraz
+  jeden wspoldzielony snapshot w pamieci i wymienia referencje dopiero po
+  atomowym zapisie nowego storefrontu.
+- Nginx liczy tylko dynamiczne SSR `/`, `/product`, `/kategoria` i `/strona`:
+  maksymalnie `16` rownoleglych requestow z jednego adresu oraz `5 r/s` z
+  burstem `20`. Assety i API maja pusty klucz i nie sa objete tym limitem.
+- Unit systemd ma progi `MemoryHigh=768M`, `MemoryMax=1G`,
+  `MemorySwapMax=256M` i `OOMPolicy=kill`, aby awaryjny burst nie zabral hosta
+  pozostalym uslugom. Lokalny health pokazuje RSS i heap procesu.
+- Nie zmienia sie format cache, katalog, SEO, ceny, dane ofert, harmonogram
+  `22:00`, Allegro ani dane runtime. Szczegoly i rollback:
+  [`docs/RELEASE_1.19.2.md`](./RELEASE_1.19.2.md).
 
 ## Wersja produkcyjna 1.19.1
 
@@ -260,6 +279,8 @@ npm ci --omit=dev
 id bookloft-shop 2>/dev/null || useradd --system --home /var/lib/bookloft-shop \
   --shell /usr/sbin/nologin --user-group bookloft-shop
 install -m 644 deploy/bookloft-shop.service.example /etc/systemd/system/bookloft-shop.service
+install -m 644 deploy/nginx-rate-limits.conf.example \
+  /etc/nginx/conf.d/bookloft-shop-rate-limits.conf
 chown root:bookloft-shop /etc/bookloft-shop
 chmod 750 /etc/bookloft-shop
 chown root:bookloft-shop /etc/bookloft-shop/bookloft-shop.env
@@ -267,8 +288,10 @@ chmod 640 /etc/bookloft-shop/bookloft-shop.env
 chown -R bookloft-shop:bookloft-shop /var/lib/bookloft-shop
 chmod 750 /var/lib/bookloft-shop
 systemd-analyze verify /etc/systemd/system/bookloft-shop.service
+nginx -t
 systemctl daemon-reload
 systemctl restart bookloft-shop.service
+systemctl reload nginx
 systemctl show bookloft-shop.service -p User -p ActiveState --value
 curl -sS http://127.0.0.1:3205/health
 # konto uslugi musi czytac wlasny ENV przez katalog nadrzedny
@@ -279,8 +302,11 @@ sudo -u bookloft-shop test -r /etc/bookloft-asystent/bookloft-asystent.env \
   && echo FAIL || echo OK_isolated
 ```
 
-Reload Nginx jest potrzebny tylko po zmianie konfiguracji reverse proxy. Zwykle zmiany UI/API wymagaja restartu `bookloft-shop.service`. Przy pierwszym
-wdrozeniu `1.19.1` patrz takze `docs/RELEASE_1.19.1.md`.
+Przy wdrozeniu `1.19.2` produkcyjny `location /` musi otrzymac dyrektywy
+`limit_req` i `limit_conn` z `deploy/nginx-root.conf.example`; wykonaj backup,
+`nginx -t` i rollback plikow przy bledzie. Reload Nginx jest potrzebny tylko
+po zmianie konfiguracji reverse proxy. Zwykle zmiany UI/API wymagaja jedynie
+restartu `bookloft-shop.service`.
 
 ## Pelne odswiezenie cache ofert
 

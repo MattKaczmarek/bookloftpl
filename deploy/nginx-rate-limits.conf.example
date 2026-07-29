@@ -1,0 +1,11 @@
+# Install as /etc/nginx/conf.d/bookloft-shop-rate-limits.conf.
+# An empty key is not accounted by limit_req/limit_conn, so assets and API
+# traffic remain outside this SSR-specific guard.
+map $uri $bookloft_shop_dynamic_client {
+    default "";
+    "/" $binary_remote_addr;
+    ~^/(?:product|kategoria|strona)(?:/|$) $binary_remote_addr;
+}
+
+limit_req_zone $bookloft_shop_dynamic_client zone=bookloft_shop_pages:10m rate=5r/s;
+limit_conn_zone $bookloft_shop_dynamic_client zone=bookloft_shop_connections:10m;

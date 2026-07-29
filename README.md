@@ -1,9 +1,10 @@
 # BookLoft sklep
 
-Wersja w tej galezi: `1.19.1` na branchu `ver-1.19`.
-Produkcja: `1.19.1`, wdrozone `2026-07-28`, commit kodu `f861b4c`, tag
-`bookloftpl-v1.19.1`; usluga dziala jako osobne konto `bookloft-shop`.
+Wersja w tej galezi: `1.19.2` na branchu `ver-1.19.2`.
+Produkcja przed wdrozeniem tej galezi: `1.19.1` na `ver-1.19`, commit kodu
+`f861b4c`, tag `bookloftpl-v1.19.1`.
 
+- Ochrona przed burstem SSR i OOM: `docs/RELEASE_1.19.2.md`
 - Automatyczne dodawanie ofert: `docs/RELEASE_1.19.0.md`
 - Off-root systemd jako `bookloft-shop` (nie shared `bookloft`):
   `docs/RELEASE_1.19.1.md`
@@ -114,6 +115,8 @@ Cache jest trzymany w `BOOKLOFT_DATA_DIR`.
 Zasady:
 
 - stany/ceny aktywnych ofert odswiezaja sie co 30 minut,
+- proces trzyma jeden atomowo wymieniany snapshot `storefront-cache.json` w
+  pamieci; rownolegle requesty nie czytaja i nie parsują osobnych kopii pliku,
 - katalog/kategorie odswiezaja sie co 3 godziny,
 - cykliczny refresh stanow i katalogu nie publikuje nowych ID samodzielnie,
 - oferta bez stanu `>= 1` albo nieaktywna znika z katalogu,

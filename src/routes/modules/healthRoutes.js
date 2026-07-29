@@ -18,11 +18,21 @@ export function createHealthRouter(config, storeCache) {
       }
 
       const status = await storeCache.getStatus();
+      const memory = process.memoryUsage();
       res.json({
         status: "ok",
         service: "bookloft-shop",
         version: config.version,
         adminPasswordConfigured: Boolean(config.adminPassword),
+        runtime: {
+          uptimeSeconds: Math.floor(process.uptime()),
+          memory: {
+            rssBytes: memory.rss,
+            heapUsedBytes: memory.heapUsed,
+            heapTotalBytes: memory.heapTotal,
+            externalBytes: memory.external
+          }
+        },
         cache: {
           stockUpdatedAt: status.stockUpdatedAt,
           catalogUpdatedAt: status.catalogUpdatedAt,

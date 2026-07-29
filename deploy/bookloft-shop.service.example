@@ -18,6 +18,13 @@ ExecStart=/usr/bin/node /home/bookloftpl/src/server.js
 Restart=always
 RestartSec=5
 
+# A request burst must not consume the host. Normal runtime is far below these
+# thresholds; MemoryHigh starts reclaim before the hard cgroup boundary.
+MemoryHigh=768M
+MemoryMax=1G
+MemorySwapMax=256M
+OOMPolicy=kill
+
 # Least privilege: never root; isolate from Asystent/bots secrets and homes.
 NoNewPrivileges=true
 PrivateTmp=true

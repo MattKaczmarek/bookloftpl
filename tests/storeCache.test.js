@@ -48,6 +48,64 @@ async function writeJson(filePath, value) {
   await writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
 }
 
+test("storefront snapshot is shared across concurrent reads and replaced atomically", async (t) => {
+  const dataDir = await mkdtemp(path.join(tmpdir(), "bookloft-snapshot-test-"));
+  t.after(() => rm(dataDir, { recursive: true, force: true }));
+  const cache = new StoreCache({
+    version: "1.19.2",
+    dataDir,
+    allegroMarketplaceId: "allegro-pl",
+    allegroSellingFormats: ["BUY_NOW"]
+  });
+  await cache.init();
+
+  await writeJson(cache.files.published, {
+    version: 3,
+    activeOfferIds: ["1"],
+    addedAtByOfferId: {},
+    removedByUnavailable: {},
+    removedOfferSnapshots: {}
+  });
+  await writeJson(cache.files.catalog, {
+    version: "1.19.2",
+    updatedAt: "2026-07-29T12:00:00.000Z",
+    context: { source: "Allegro", currency: "PLN" },
+    categories: [{ category_id: "fantasy", name: "Fantasy", parent_id: "" }],
+    offers: { "1": cachedOffer(1, "Achaja Tom 1 / Andrzej Ziemiański") }
+  });
+  await cache.rebuildStorefront();
+
+  const firstSnapshot = await cache.getStorefront();
+  const concurrentSnapshots = await Promise.all(
+    Array.from({ length: 200 }, () => cache.getStorefront())
+  );
+  assert.equal(concurrentSnapshots.every((snapshot) => snapshot === firstSnapshot), true);
+
+  await writeJson(cache.files.published, {
+    version: 3,
+    activeOfferIds: ["1", "2"],
+    addedAtByOfferId: {},
+    removedByUnavailable: {},
+    removedOfferSnapshots: {}
+  });
+  await writeJson(cache.files.catalog, {
+    version: "1.19.2",
+    updatedAt: "2026-07-29T12:05:00.000Z",
+    context: { source: "Allegro", currency: "PLN" },
+    categories: [{ category_id: "fantasy", name: "Fantasy", parent_id: "" }],
+    offers: {
+      "1": cachedOffer(1, "Achaja Tom 1 / Andrzej Ziemiański"),
+      "2": cachedOffer(2, "Achaja Tom 2 / Andrzej Ziemiański")
+    }
+  });
+  await cache.rebuildStorefront();
+
+  const nextSnapshot = await cache.getStorefront();
+  assert.notEqual(nextSnapshot, firstSnapshot);
+  assert.equal(firstSnapshot.products.length, 1);
+  assert.equal(nextSnapshot.products.length, 2);
+});
+
 test("removed offers retain a lightweight snapshot and clear it after reactivation", async (t) => {
   const dataDir = await mkdtemp(path.join(tmpdir(), "bookloft-cache-test-"));
   t.after(() => rm(dataDir, { recursive: true, force: true }));
@@ -143,7 +201,7 @@ test("availability refresh repairs a product visible in storefront but missing f
       "2": cachedOffer(2, "Achaja Tom 1 / Andrzej Ziemiański")
     }
   });
-  await writeJson(cache.files.storefront, {
+  const driftedStorefront = {
     version: "1.16.1",
     updatedAt: "2026-07-17T08:00:00.000Z",
     products: [
@@ -152,7 +210,9 @@ test("availability refresh repairs a product visible in storefront but missing f
     ],
     categories: [],
     meta: { productCount: 2, categoryCount: 0, hiddenByStockCount: 0, currency: "PLN" }
-  });
+  };
+  await writeJson(cache.files.storefront, driftedStorefront);
+  cache.storefrontSnapshot = driftedStorefront;
   cache.fetchCategoriesForOffers = async (_offers, previousCategories) => previousCategories;
 
   await cache.refreshAvailabilityLocked("test-drift", {

@@ -96,6 +96,8 @@ export class StoreCache {
       storefront: path.join(config.dataDir, STOREFRONT_FILE),
       meta: path.join(config.dataDir, META_FILE)
     };
+    this.storefrontSnapshot = null;
+    this.storefrontLoadPromise = null;
     this.queue = Promise.resolve();
     this.detailEnrichmentQueued = false;
     this.dailyAddNewScheduler = new DailyTaskScheduler({
@@ -139,7 +141,25 @@ export class StoreCache {
   }
 
   async getStorefront() {
-    return readJson(this.files.storefront, emptyStorefront(this.config.version));
+    if (this.storefrontSnapshot) return this.storefrontSnapshot;
+    if (!this.storefrontLoadPromise) {
+      this.storefrontLoadPromise = readJson(
+        this.files.storefront,
+        emptyStorefront(this.config.version)
+      ).then((storefront) => {
+        this.storefrontSnapshot = storefront;
+        return storefront;
+      });
+    }
+
+    const loadPromise = this.storefrontLoadPromise;
+    try {
+      return await loadPromise;
+    } finally {
+      if (this.storefrontLoadPromise === loadPromise) {
+        this.storefrontLoadPromise = null;
+      }
+    }
   }
 
   async getStorefrontList() {
@@ -651,6 +671,7 @@ export class StoreCache {
     };
 
     await writeJson(this.files.storefront, storefront);
+    this.storefrontSnapshot = storefront;
     return storefront;
   }
 
