@@ -11,11 +11,14 @@ Produkcja: `1.19.1`, wdrozone `2026-07-28`, commit kodu `f861b4c`, tag
 
 ## Wersjonowanie (skrot)
 
-**Domyslnie:** kazdy update (nawet maly) = **nowa wersja** + **nowy branch**
-`ver-<semver>` (np. `1.19.2` / `ver-1.19.2`), tag `bookloftpl-v1.19.2`.
+**Domyslnie:** kazda zmiana wplywajaca na wdrozony sklep (nawet mala) =
+**nowa wersja** + **nowy branch** `ver-<semver>` (np. `1.19.2` /
+`ver-1.19.2`), tag `bookloftpl-v1.19.2`.
 
-**Wyjatek:** praca na istniejacym branchu albo bez podbicia wersji **tylko**
-gdy uzytkownik to **wyraznie** zleci.
+**Wyjatek dla zmian runtime:** praca na istniejacym branchu albo bez podbicia
+wersji **tylko** gdy uzytkownik to **wyraznie** zleci. Czysta zmiana
+dokumentacji lub workflow, ktora nie zmienia runtime, nie wymaga nowej wersji
+ani brancha.
 
 Szczegoly: `docs/OPERATIONS.md`.
 
@@ -214,7 +217,7 @@ Standard:
 
 1. zmiana lokalna,
 2. `git push`,
-3. na Hetznerze: `cd /home/bookloftpl && git fetch && git switch ver-<wersja> && git pull --ff-only` (branch = wydawana wersja, np. `ver-1.19.2`),
+3. na Hetznerze: `cd /home/bookloftpl && TARGET_BRANCH=ver-1.19.2 && git fetch && git switch "$TARGET_BRANCH" && git pull --ff-only` (`TARGET_BRANCH` ustaw na zatwierdzony branch wydania),
 4. uzupelnienie ENV Allegro w `/etc/bookloft-shop/bookloft-shop.env`,
 5. `npm ci --omit=dev`,
 6. restart uslugi sklepu,

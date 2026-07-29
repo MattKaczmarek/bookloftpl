@@ -12,29 +12,34 @@ Patrz `1.19.1` i `deploy/bookloft-shop.service.example`.
 
 ## Wersjonowanie i branche (obowiazkowe od 2026-07-29)
 
-**Domyslnie kazdy update sklepu = nowa wersja + nowy branch.**
+**Domyslnie kazda zmiana wplywajaca na wdrozony sklep = nowa wersja + nowy
+branch.**
 
-1. Nawet mala poprawka (tekst, CSS, unit systemd, jedna linia kodu) wymaga:
+1. Nawet mala poprawka runtime (tekst w UI, CSS, unit systemd, jedna linia
+   kodu) wymaga:
    - podbicia semver (`1.19.1` -> `1.19.2` albo wiekszy skok przy wiekszej zmianie),
    - **nowego** brancha Git `ver-<pelna-wersja>`, np. `ver-1.19.2`, `ver-1.20.0`,
    - aktualizacji `package.json`, `package-lock.json`, `src/config.js`,
      query stringow assetow, `README.md`, tego pliku oraz zwykle
      `docs/RELEASE_<wersja>.md`,
    - tagu `bookloftpl-v<wersja>` przy release.
-2. **Nie** dokladaj kolejnych zmian na starym branchu produkcyjnym
+2. **Nie** dokladaj kolejnych zmian runtime na starym branchu produkcyjnym
    (np. kolejne commity na `ver-1.19` po wydaniu `1.19.1`), o ile uzytkownik
    **wyraznie** nie powie inaczej.
-3. Wyjatki (tylko na wyrazne zlecenie uzytkownika), np.:
+3. Wyjatki dla zmian runtime (tylko na wyrazne zlecenie uzytkownika), np.:
    - „na istniejacym branchu”,
    - „bez nowej wersji”,
    - „dopisz do `ver-1.19`”,
    - „hotfix na biezacym bez podbicia”.
-4. Docs-only opisujace **juz wdrozony** stan Hetznera wolno commitem na
-   branchu tej wdrozonej wersji; nowy fix/feature zawsze z pkt 1.
+4. Czysta zmiana dokumentacji lub workflow, ktora nie zmienia kodu,
+   konfiguracji ani zachowania runtime, nie wymaga podbicia wersji ani nowego
+   brancha. Wolno ja commitowac na branchu aktualnej wersji. Nowy fix/feature
+   zawsze podlega pkt 1.
 5. Przed praca potwierdz branch i commit na Hetznerze
    (`git -C /home/bookloftpl branch --show-current` oraz `rev-parse --short HEAD`).
-6. Deploy: `git fetch && git switch ver-<wersja> && git pull --ff-only`
-   (nie hardcoduj starego `ver-1.19` w runbookach przyszlych wydan).
+6. Deploy: ustaw jawnie `TARGET_BRANCH`, np. `TARGET_BRANCH=ver-1.19.2`, a
+   potem wykonaj `git fetch && git switch "$TARGET_BRANCH" && git pull --ff-only`.
+   Nie hardcoduj starego `ver-1.19` w runbookach przyszlych wydan.
 
 Kanoniczna kopia reguly dla agentow: `bookloft-secrets/AGENTS.md`
 (sekcja mapa `bookloftpl`).
@@ -135,9 +140,9 @@ Kanoniczna kopia reguly dla agentow: `bookloft-secrets/AGENTS.md`
 - Nie zmienia meta title, meta description, URL-i, canonicali, danych ofert, cache ani integracji Allegro.
 - Zakres, testy i rollback opisuje `docs/RELEASE_1.16.1.md`.
 
-## Wersja produkcyjna 1.16.0
+## Historyczne wydanie 1.16.0
 
-- Branch `ver-1.16` jest aktywnym branchem produkcyjnym od `2026-07-17`.
+- Branch `ver-1.16` byl branchem produkcyjnym od `2026-07-17`.
 - Wersja nie wymaga migracji danych, zmiany ENV, odswiezenia cache ofert ani modyfikacji Nginx.
 - Zmienia ranking podobnych ofert, linkowanie kategorii, zasady `lastmod` oraz statyczne zasoby bannera.
 - Deploy zachowal dotychczasowy cache 2013 aktywnych ofert; pelne odswiezenie nie bylo potrzebne.
@@ -246,8 +251,9 @@ wyrazne zlecenie.
 
 ```bash
 cd /home/bookloftpl
+TARGET_BRANCH=ver-1.19.2  # ustaw na zatwierdzony branch wydania
 git fetch
-git switch ver-<wersja>   # np. ver-1.19.2 — zgodnie z package.json
+git switch "$TARGET_BRANCH"
 git pull --ff-only
 npm ci --omit=dev
 # Od 1.19.1: osobne konto bookloft-shop (nie root, nie bookloft/Asystent).
@@ -403,23 +409,9 @@ Oczekiwane publicznie:
 
 ## Branch cleanup
 
-Prawidlowe branche repo:
-
-- `main`,
-- `ver-1.00`,
-- `ver-1.01`,
-- `ver-1.02`,
-- `ver-1.03`,
-- `ver-1.04`,
-- `ver-1.05`,
-- `ver-1.06`,
-- `ver-1.07`,
-- `ver-1.08`,
-- `ver-1.09`,
-- `ver-1.11`,
-- `ver-1.12`,
-- `ver-1.13`,
-- `ver-1.14`,
-- `ver-1.15` (produkcja).
-
-Robocze branche z prefiksem `codex/` nie sa linia wersji sklepu i po przeniesieniu zmian do aktualnego brancha `ver-*` powinny byc usuniete lokalnie oraz z GitHuba.
+- `main` i historyczne branche `ver-*` sa poprawna historia repo.
+- Od kolejnego wydania branch ma zawierac pelny semver, np. `ver-1.19.2`.
+- Produkcyjnego brancha nie ustalaj z tej listy; zawsze potwierdz go na
+  Hetznerze.
+- Robocze branche `codex/*` usuwaj dopiero po potwierdzeniu, ze zmiany sa na
+  docelowym branchu `ver-*` i ze ich usuniecie zostalo jawnie zaakceptowane.
