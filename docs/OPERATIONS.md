@@ -1,6 +1,6 @@
 # Operacje BookLoft sklep
 
-Stan dokumentu: `2026-07-28`.
+Stan dokumentu: `2026-07-29`.
 Wersja w tej galezi: `1.19.1`.
 Branch produkcyjny: `ver-1.19`.
 Stan produkcji na Hetznerze: `1.19.1` na `ver-1.19`; commit kodu
@@ -9,6 +9,35 @@ Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service` — **musi dzialac jako
 `User=bookloft-shop`**, nie jako `root` i nie jako `bookloft` (Asystent).
 Patrz `1.19.1` i `deploy/bookloft-shop.service.example`.
+
+## Wersjonowanie i branche (obowiazkowe od 2026-07-29)
+
+**Domyslnie kazdy update sklepu = nowa wersja + nowy branch.**
+
+1. Nawet mala poprawka (tekst, CSS, unit systemd, jedna linia kodu) wymaga:
+   - podbicia semver (`1.19.1` -> `1.19.2` albo wiekszy skok przy wiekszej zmianie),
+   - **nowego** brancha Git `ver-<pelna-wersja>`, np. `ver-1.19.2`, `ver-1.20.0`,
+   - aktualizacji `package.json`, `package-lock.json`, `src/config.js`,
+     query stringow assetow, `README.md`, tego pliku oraz zwykle
+     `docs/RELEASE_<wersja>.md`,
+   - tagu `bookloftpl-v<wersja>` przy release.
+2. **Nie** dokladaj kolejnych zmian na starym branchu produkcyjnym
+   (np. kolejne commity na `ver-1.19` po wydaniu `1.19.1`), o ile uzytkownik
+   **wyraznie** nie powie inaczej.
+3. Wyjatki (tylko na wyrazne zlecenie uzytkownika), np.:
+   - „na istniejacym branchu”,
+   - „bez nowej wersji”,
+   - „dopisz do `ver-1.19`”,
+   - „hotfix na biezacym bez podbicia”.
+4. Docs-only opisujace **juz wdrozony** stan Hetznera wolno commitem na
+   branchu tej wdrozonej wersji; nowy fix/feature zawsze z pkt 1.
+5. Przed praca potwierdz branch i commit na Hetznerze
+   (`git -C /home/bookloftpl branch --show-current` oraz `rev-parse --short HEAD`).
+6. Deploy: `git fetch && git switch ver-<wersja> && git pull --ff-only`
+   (nie hardcoduj starego `ver-1.19` w runbookach przyszlych wydan).
+
+Kanoniczna kopia reguly dla agentow: `bookloft-secrets/AGENTS.md`
+(sekcja mapa `bookloftpl`).
 
 ## Wersja produkcyjna 1.19.1
 
@@ -211,10 +240,14 @@ Jesli token wygasnie albo zostanie cofniety, w panelu pojawi sie blad i trzeba p
 
 ## Deploy
 
+Uzyj brancha **docelowej wersji** (np. `ver-1.19.2`), nie historycznego
+`ver-1.19`, o ile wlasnie ta starsza linia nie jest celem hotfixu na
+wyrazne zlecenie.
+
 ```bash
 cd /home/bookloftpl
 git fetch
-git switch ver-1.19
+git switch ver-<wersja>   # np. ver-1.19.2 — zgodnie z package.json
 git pull --ff-only
 npm ci --omit=dev
 # Od 1.19.1: osobne konto bookloft-shop (nie root, nie bookloft/Asystent).

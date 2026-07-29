@@ -7,6 +7,17 @@ Produkcja: `1.19.1`, wdrozone `2026-07-28`, commit kodu `f861b4c`, tag
 - Automatyczne dodawanie ofert: `docs/RELEASE_1.19.0.md`
 - Off-root systemd jako `bookloft-shop` (nie shared `bookloft`):
   `docs/RELEASE_1.19.1.md`
+- Wersjonowanie i branche: `docs/OPERATIONS.md` (sekcja „Wersjonowanie”)
+
+## Wersjonowanie (skrot)
+
+**Domyslnie:** kazdy update (nawet maly) = **nowa wersja** + **nowy branch**
+`ver-<semver>` (np. `1.19.2` / `ver-1.19.2`), tag `bookloftpl-v1.19.2`.
+
+**Wyjatek:** praca na istniejacym branchu albo bez podbicia wersji **tylko**
+gdy uzytkownik to **wyraznie** zleci.
+
+Szczegoly: `docs/OPERATIONS.md`.
 
 Repo zawiera aplikacje katalogu BookLoft serwowana z root domeny `https://bookloft.pl/`. Katalog jest oparty bezposrednio o aktywne oferty Allegro konta BookLoft.
 
@@ -203,7 +214,7 @@ Standard:
 
 1. zmiana lokalna,
 2. `git push`,
-3. na Hetznerze: `cd /home/bookloftpl && git fetch && git switch ver-1.19 && git pull --ff-only`,
+3. na Hetznerze: `cd /home/bookloftpl && git fetch && git switch ver-<wersja> && git pull --ff-only` (branch = wydawana wersja, np. `ver-1.19.2`),
 4. uzupelnienie ENV Allegro w `/etc/bookloft-shop/bookloft-shop.env`,
 5. `npm ci --omit=dev`,
 6. restart uslugi sklepu,
