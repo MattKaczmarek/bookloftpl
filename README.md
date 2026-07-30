@@ -204,9 +204,15 @@ $env:BOOKLOFT_COOKIE_SECURE="false"
 $env:BOOKLOFT_PUBLIC_ORIGIN="http://127.0.0.1:3225"
 $env:BOOKLOFT_PORT="3225"
 npm install
-npm test
+node --test tests/storeCache.test.js  # przyklad: tylko test zmienianego modulu
 npm start
 ```
+
+Dobieraj pojedyncze pliki testowe do faktycznie zmienionego modulu. `npm test`
+uruchamia caly zestaw i nie jest domyslnym krokiem malej poprawki; uzywaj go
+tylko dla zmian przekrojowych albo na wyrazne polecenie. Test juz zaliczony nie
+jest powtarzany po follow-upie wylacznie dokumentacyjnym. Kanoniczna regula:
+`bookloft-secrets/AGENTS.md`.
 
 Adres lokalny:
 
