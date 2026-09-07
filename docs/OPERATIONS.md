@@ -1,6 +1,6 @@
 # Operacje BookLoft sklep
 
-Stan dokumentu: `2026-07-29`.
+Ostatnia weryfikacja dokumentacji i produkcji: `2026-09-07`, bez deployu.
 Wersja w tej galezi: `1.19.2`.
 Branch produkcyjny: `ver-1.19.2`.
 Stan produkcji: `1.19.2`, commit kodu `9e50073`, tag
@@ -9,6 +9,12 @@ Repo na Hetznerze: `/home/bookloftpl`.
 Usluga aplikacji: `bookloft-shop.service` — **musi dzialac jako
 `User=bookloft-shop`**, nie jako `root` i nie jako `bookloft` (Asystent).
 Patrz `docs/RELEASE_1.19.2.md` i `deploy/bookloft-shop.service.example`.
+
+Kontrola tylko do odczytu 2026-09-07: produkcyjny checkout dokumentacji
+`21ae795`, czysty status Git, kod nadal `9e50073`; usluga aktywna jako
+`bookloft-shop`, `NRestarts=0`, lokalny `http://127.0.0.1:3205/health`
+zwraca HTTP 200 / `ok` / `1.19.2`. Datowane opisy ponizej sa historia
+wydan i pomiarow, nie wynikiem ponownie wykonanego testu obciazeniowego.
 
 ## Wersjonowanie i branche (obowiazkowe od 2026-07-29)
 
